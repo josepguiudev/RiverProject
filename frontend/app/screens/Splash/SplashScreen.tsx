@@ -1,16 +1,29 @@
 import React from 'react';
-import { View, Text, ActivityIndicator} from 'react-native';
+import { View, Text, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { styles } from './styles';
+import { isWeb } from '../../utils/device';
 
 export default function SplashScreen() {
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width > 800;
+
   return (
     <View style={styles.container}>
       <ActivityIndicator 
-      size="large" color="#4CAF50" />
-      <Text style={styles.title}>
-        Splash funcionando ✔️</Text>
+        size={isWeb ? "large" : "small"} // Ejemplo de lógica por plataforma
+        color={isWeb ? "#4CAF50" : "#FFFFFF"} 
+      />
+      
+      <Text style={[
+        styles.title, 
+        isLargeScreen && { fontSize: 32 } // Estilo extra si la pantalla es grande
+      ]}>
+        Splash funcionando ✔️
+      </Text>
+
       <Text style={styles.subtitle}>
-        Todo está bien configurado</Text>
+        {isWeb ? "Accediendo desde el Navegador" : "Iniciando App Móvil"}
+      </Text>
     </View>
   );
 }
