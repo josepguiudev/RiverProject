@@ -1,11 +1,16 @@
 import React from 'react';
 import { View, Text, ActivityIndicator, useWindowDimensions } from 'react-native';
-import { styles } from './styles';
+import { useTheme } from '@react-navigation/native';
 import { isWeb } from '../../utils/device';
+import { createSplashPageStyles } from './theme';
+
 
 export default function SplashScreen() {
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 800;
+  const theme = useTheme();
+  const styles = createSplashPageStyles(theme, isWeb);
+  
 
   return (
     <View style={styles.container}>
