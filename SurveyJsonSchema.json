@@ -1,0 +1,19 @@
+{
+id: 1,
+title: wyjgfwefywefhb
+question_list [ {
+		title: ufweuifhweufhweuifhwe,
+		type: numeric_scalar
+		atributos {max_vlue:4, min_vale:2}
+		},{
+		title: qwuqiquwq,
+		type: multiopcion
+		atributos {opcion1:fwefwe,
+		 	   opcin2:fefbwef}
+		}
+]
+fecha_creacion: cwebfweb f
+fecha_launch:null
+fecha_cierre:null
+pago_a_panelista: 0
+}

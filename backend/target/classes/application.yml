@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:sqlserver://localhost\SQLEXPRESS:1433;databaseName=river_db;encrypt=true;trustServerCertificate=true
+    url: jdbc:sqlserver://localhost\\SQLEXPRESS:1433;databaseName=river_db;encrypt=true;trustServerCertificate=true
     username: sa
     password: politecnics
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
