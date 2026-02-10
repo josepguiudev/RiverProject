@@ -1,34 +1,37 @@
-import React, { useState } from 'react';
-import { 
-    View, 
-    TextInput, 
-    Button, 
-    Text, 
-    StyleSheet 
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from 'react-native-screens/lib/typescript/native-stack/types';
-import { RootStackParamList } from '../../navigation/RootStackParams';
-import { styles } from './styles';
+import React, { useState } from "react";
+import { View, TextInput, Button } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function LoginScreen() {
-    const [userName, setUserName] = useState('');
-    const [surname1, setSurname1] = useState('');
-    const [surname2, setSurname2] = useState('');
-    const [email, setEmail] = useState('');
-    const [steamUrl, setSteamUrl] = useState('');
-    const [password, setPassword] = useState('');
+export default function LoginScreen({ navigation }: any) {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    
-    const handleLogin = () => {
-    if (userName !== null && surname1 !== null && surname2 !== null && email !== null && steamUrl !== null && password !== null) {
-        console.log('Logging in with:', { userName, surname1, surname2, email, steamUrl, password });
-        // Aquí iría la lógica de autenticación
-        navigation.navigate('Home');
-    }else{
-        console.log('Por favor, complete todos los campos.');
-    }
-}
+    const handleLogin = async () => {
+        const res = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        });
+
+        if (!res.ok) {
+        alert("Login incorrecto");
+        return;
+        }
+
+        const data = await res.json();
+        await AsyncStorage.setItem("token", data.token);
+        navigation.replace("Home");
+    };
+    return (
+    <View>
+      <TextInput placeholder="Email" onChangeText={setEmail} />
+      <TextInput
+        placeholder="Password"
+        secureTextEntry
+        onChangeText={setPassword}
+      />
+      <Button title="Login" onPress={handleLogin} />
+    </View>
+  );
 }
 

@@ -1,15 +1,15 @@
 
 //nuevo app para pruebas moha
 import React from 'react';
-import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { View, StatusBar, StyleSheet } from 'react-native';
 import SimpleFormScreen from './screens/SimpleFormScreen';
 
 const App: React.FC = () => {
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f5f5f5" />
       <SimpleFormScreen />
-    </SafeAreaView>
+    </View>
   );
 };
 
