@@ -6,21 +6,30 @@ import com.equipo.backend.model.classesquestiontype.typeMultipleOption;
 import com.equipo.backend.model.classesquestiontype.typeNumeric;
 import com.equipo.backend.model.classesquestiontype.typeNumericEscala;
 import com.equipo.backend.model.classesquestiontype.typeSingleOption;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import com.equipo.backend.model.Question;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Scanner;
 import org.springframework.boot.SpringApplication;
-
 import com.equipo.backend.BackendApplication;
 
+
+
 public class SurveyCreator {
+
 
 	public static void main(String[] args) {
 		
         //creacion del formulario
-        int numQuestionsSuervey;
+
 
 
 	}

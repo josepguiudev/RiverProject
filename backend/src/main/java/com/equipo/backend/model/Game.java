@@ -1,18 +1,22 @@
 package com.equipo.backend.model;
 
 import java.util.ArrayList;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 
+import jakarta.persistence.*;
+
+
+@Entity
+@Table(name = "game")
 public class Game {
-       @Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
     private Boolean isEarlyAcces;
-    private ArrayList<String> generes;
+    @OneToMany
+    @JoinColumn(name = "genere")
+    @nullable private ArrayList<String> generes;
     @nullable private ArrayList<String> logros;
 
     public Long getId() {
