@@ -1,4 +1,32 @@
+// app/App.tsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { AppNavigator } from './navigation/AppNavigator';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+/*import HomeScreen from './screens/Home/HomeScreen';*/
+import LoginScreen from './screens/Auth/LoginScreen';
+
+const Stack = createNativeStackNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        
+        <Stack.Screen name="Login" component={LoginScreen} />
+      </Stack.Navigator>
+      <AppNavigator />
+    </NavigationContainer>
+  );
+}
+  
+
+/*
+<Stack.Screen name="Home" component={HomeScreen} />
+*/
+
+/*
 //nuevo app para pruebas moha
 import React from 'react';
 import { View, StatusBar, StyleSheet } from 'react-native';
@@ -22,21 +50,4 @@ const styles = StyleSheet.create({
 
 export default App;
 
-
-/* old app.tsx el de pepe
-// app/App.tsx
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { AppNavigator } from './navigation/AppNavigator';
-
-
-
-
-export default function App() {
-  return (
-    <NavigationContainer>
-      <AppNavigator />
-    </NavigationContainer>
-  );
-}
-  */
+*/
