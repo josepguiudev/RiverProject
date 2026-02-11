@@ -12,6 +12,7 @@ export default StyleSheet.create({
     marginBottom: 8,
   },
   inputWrapper: {
+    marginTop: "1%",
     backgroundColor: '#1C1C1C', // Fondo oscuro del input
     borderRadius: 8,
     borderWidth: 1,
