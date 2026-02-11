@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, Text, TouchableOpacity } from "react-native";
+import { View, TextInput, Text, TouchableOpacity } from "react-native";
+import CustomButton from "@/app/components/CustomButton/CustomButton";
+import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen({ navigation }: any) {
@@ -24,13 +26,9 @@ export default function LoginScreen({ navigation }: any) {
     };
     return (
     <View>
-      <TextInput placeholder="Email" onChangeText={setEmail} />
-      <TextInput
-        placeholder="Password"
-        secureTextEntry
-        onChangeText={setPassword}
-      />
-      <Button title="Login" onPress={handleLogin} />
+      <CustomInputText label="Dirección de correo electrónico" placeholder="pruebapolitecnics@gmail.com" onChangeText={setEmail}/>
+      <CustomInputText label="Contraseña" placeholder="Password" secureTextEntry onChangeText={setPassword}/>
+      <CustomButton title="Login" onPress={handleLogin} />
       <TouchableOpacity onPress={() => navigation.navigate("Register")}>
         <Text>No tienes cuenta? Regístrate</Text>
       </TouchableOpacity>
