@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.equipo.backend.dto.LoginRequest;
 import com.equipo.backend.dto.LoginResponse;
+import com.equipo.backend.dto.RegisterRequest;
 import com.equipo.backend.model.User;
 import com.equipo.backend.repository.UserRepository;
 import com.equipo.backend.security.JwtService;
@@ -23,6 +24,7 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
+    //Método para añadir usuarios en la base de datos
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Credenciales incorrectas"));
@@ -38,5 +40,19 @@ public class AuthService {
 
         String token = jwtService.generateToken(user);
         return new LoginResponse(token);
+    }
+
+    public void register(RegisterRequest request) {
+
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("El usuario ya existe");
+        }
+
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setId_rol((byte) 1);
+
+        userRepository.save(user);
     }
 }

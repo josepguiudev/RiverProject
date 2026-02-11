@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, Button } from "react-native";
+import { View, TextInput, Button, Text, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen({ navigation }: any) {
@@ -31,6 +31,9 @@ export default function LoginScreen({ navigation }: any) {
         onChangeText={setPassword}
       />
       <Button title="Login" onPress={handleLogin} />
+      <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+        <Text>No tienes cuenta? Regístrate</Text>
+      </TouchableOpacity>
     </View>
   );
 }
