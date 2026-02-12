@@ -1,11 +1,10 @@
-import { StyleSheet } from 'react-native';
-import { Platform } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 export default StyleSheet.create({
     caja: {
         // '000000' es negro, 'B3' es ~70% de opacidad en Hexadecimal
         // También puedes usar 'rgba(0, 0, 0, 0.7)'
-        backgroundColor: '#000000f1', 
+        backgroundColor: '#0e0d0df1', 
         
         borderRadius: 20, // Esquinas redondeadas
         padding: 20,
@@ -27,13 +26,29 @@ export default StyleSheet.create({
     maxHeigth: {
         height: '100%',
     },
+    contendorLogoTitulos:{
+        flexDirection: 'row',
+        height: "15%",
+        padding: 10
+    },
     borde:{
         borderWidth: 1,         // El "1px"
         borderColor: 'red',     // El "red"
         borderStyle: 'solid',   // Opcional (es el valor por defecto)
     },
+    borde2:{
+        borderWidth: 1,         // El "1px"
+        borderColor: 'green',     // El "red"
+        borderStyle: 'solid',   // Opcional (es el valor por defecto)
+    },
     margen1:{
         marginTop: '1%',
+    },
+    margen2:{
+        marginTop: '5%',
+    },
+    noJustify:{
+        justifyContent: 'flex-start'
     },
     alineadoPersonal:{
         display: 'flex',
@@ -43,8 +58,8 @@ export default StyleSheet.create({
         justifyContent: "center",
     },
     containerFoto: {
-        width: '15%', 
-        height: '15%',
+        width: '20%', 
+        height: '100%',
     },
     logo: {
         width: '100%',

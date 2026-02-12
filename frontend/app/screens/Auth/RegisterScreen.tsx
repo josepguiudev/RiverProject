@@ -1,48 +1,98 @@
-import React, { useState } from "react";
-import { View, TextInput, Button, Text, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, Image, Animated } from "react-native";
+import TypeWriter from "react-native-typewriter";
+import styles from "./styles";
+import globalStyles from "@/assets/globalStyles/globalStyles";
+import CustomButton from "@/app/components/CustomButton/CustomButton";
+import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
+
 
 export default function RegisterScreen({ navigation }: any) {
+  const cursorOpacity = React.useRef(new Animated.Value(1)).current;
+  
+  // Animación del cursor parpadeante
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(cursorOpacity, { toValue: 0, duration: 500, useNativeDriver: true }),
+        Animated.timing(cursorOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [] );  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [repassword, setRepassword] = useState("");
 
   const handleRegister = async () => {
-    const res = await fetch("http://localhost:8080/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    if(password === repassword){
+      const res = await fetch("http://localhost:8080/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (!res.ok) {
-      alert("Error al registrar");
-      return;
+      if (!res.ok) {
+        alert("Error al registrar");
+        return;
+      }
+
+      alert("Usuario creado correctamente");
+      navigation.navigate("Login");
+    }else{
+      alert("La contraseña insertada no es la misma");
     }
-
-    alert("Usuario creado correctamente");
-    navigation.navigate("Login");
   };
 
   return (
-    <View>
-      <TextInput
-        placeholder="Email"
-        onChangeText={setEmail}
-        value={email}
-      />
-
-      <TextInput
-        placeholder="Password"
-        secureTextEntry
-        onChangeText={setPassword}
-        value={password}
-      />
-
-      <Button title="Registrarse" onPress={handleRegister} />
-
-      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-        <Text>¿Ya tienes cuenta? Inicia sesión</Text>
-      </TouchableOpacity>
+      <View style={[styles.maxWidth, styles.maxHeigth, globalStyles.padre]}>
+      <View style={[styles.contendorLogoTitulos]}>
+        <View style={[styles.containerFoto]}>
+          <Image 
+            source={require('../../../assets/images/logo.png')} 
+            style={styles.logo} 
+          />
+        </View>
+        <View style={[styles.contenedorWritter, styles.alineadoPersonal]}>
+          <Text style={styles.tituloHero}>
+            RIVER{" "} 
+            <TypeWriter typing={1} style={styles.destaqueAzul}>
+              APP
+            </TypeWriter>
+          </Text>
+        </View>
+      </View>
+      <View style={[styles.contenedorWritter]}>
+        <View style={styles.textWrapper}>
+          <TypeWriter 
+            typing={1} 
+            maxDelay={50}
+            style={styles.mainText}
+          >
+            Soluciones estadísticas del mercado <Text style={styles.blueText}>Gaming.</Text>
+          </TypeWriter>
+          
+          {/* El cursor va fuera para que siempre esté al final */}
+          <Animated.View style={[styles.cursor, { opacity: cursorOpacity }]} />
+        </View>
+      </View>
+      {/* Parte del recuadro del login */}
+      <View style={[styles.alineadoPersonal, styles.maxHeigth, styles.noJustify]}>
+        <View style={[styles.caja, styles.margen2]}>
+          <CustomInputText label="Dirección de correo electrónico" placeholder="pruebapolitecnics@gmail.com" onChangeText={setEmail} value={email}/>
+          <CustomInputText label="Contraseña" placeholder="Password" secureTextEntry onChangeText={setPassword} value={password}/>
+          <CustomInputText label="Repita la contraseña" placeholder="Password" secureTextEntry onChangeText={setRepassword}/>
+          <CustomButton title="Registrar" onPress={handleRegister} />
+          <View style={[styles.maxWidth, styles.margen1]}>
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+              <Text style={[styles.texto, styles.alineadoPersonal]}>¿Ya tienes cuenta? Inicia sesión</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      
     </View>
   );
 }
