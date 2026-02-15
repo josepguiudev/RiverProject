@@ -12,20 +12,22 @@ import java.util.List;
 @Service
 public class FormSurveyService {
     
-     @Autowired
+    @Autowired
     private FormSurveyResponseRepsitory repository;
     
-    // Guardar una respuesta
+   
+    public FormSurveyService(FormSurveyResponseRepsitory repository) {
+        this.repository = repository;
+    }
+    
     public Survey guardarRespuesta(Survey respuesta) {
         return repository.save(respuesta);
     }
     
-    // Obtener todas las respuestas
     public List<Survey> obtenerTodasRespuestas() {
         return repository.findAll();
     }
     
-    // Obtener una respuesta por ID
     public Survey obtenerRespuestaPorId(Long id) {
         return repository.findById(id).orElse(null);
     }

@@ -1,14 +1,7 @@
 package com.equipo.backend.model;
 
-import com.equipo.backend.model.classesquestiontype.QuestionType;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "question")
@@ -16,23 +9,22 @@ public class Question {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+        private Long id_question;
         private String textQuestion;
 
-        //@OneToOne
-        //@JoinColumn(name = "question_type")
-        private String questionType;
+        @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)
+        private QuestionConfig config;
         
         @ManyToOne
         @JoinColumn(name = "id_survey")
         private Survey survey;
 
         public Long getId() {
-            return id;
+            return id_question;
         }
 
         public void setId(Long id) {
-            this.id = id;
+            this.id_question = id;
         }
 
         public String getTextQuestion() {
@@ -43,15 +35,6 @@ public class Question {
             this.textQuestion = textQuestion;
         }
 
-        public String getQuestionType() {
-            return questionType;
-        }
-
-        public void setQuestionType(String questionType) {
-            this.questionType = questionType;
-        }
-
-
         public Survey getSurvey() {
             return this.survey;
         }
@@ -60,6 +43,13 @@ public class Question {
             this.survey = Survey;
         }
 
+        public QuestionConfig getConfig() {
+        return this.config;
+        }
+
+        public void setConfig(QuestionConfig config) {
+            this.config = config;
+        }
 
 
 

@@ -29,12 +29,12 @@ public class Survey {
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
     private List<Question> questionList = new ArrayList<>();
 
-    @OneToOne
-    @JoinColumn(name = "id_pago")
+    @OneToOne(cascade = CascadeType.ALL) //solo para pruebas borrar cascade luego
+    @JoinColumn(name = "id_pago", nullable = true)
     private Pago pago;
 
-    @OneToOne
-    @JoinColumn(name = "id_pago_panelista")
+    @OneToOne(cascade = CascadeType.ALL) //solo para pruebas borrar cascade luego
+    @JoinColumn(name = "id_pago_panelista", nullable = true)
     private PagoPanelista pagoPanelista;
 
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
@@ -132,7 +132,7 @@ public class Survey {
 
  
      
-    Survey() {  }
+    public Survey() {  }
 
     Survey(String name, Timestamp  creationDate, ArrayList<Question> questionlist){
         this.name = name;
