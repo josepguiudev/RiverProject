@@ -30,6 +30,7 @@ export default function App() {
 /*
 //nuevo app para pruebas moha
 import React from 'react';
+<<<<<<< HEAD
 import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
 import SimpleFormScreen from './screens/SurveyCreatorScreen';
 import { View, StatusBar, StyleSheet } from 'react-native';
