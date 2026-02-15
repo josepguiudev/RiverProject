@@ -4,16 +4,10 @@ package com.equipo.backend.model;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
+
 import lombok.Data;
 
 
@@ -24,33 +18,43 @@ import lombok.Data;
 public class Survey {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id_survey;
 
+    private int numQuestions;
     private String name;
     private Timestamp  creationDate;
-    @nullable private Timestamp  launchDate;
-    @nullable private Date closeDate;
-    @nullable private ArrayList<String> questionList;
+    @Column(nullable = true) private Timestamp  launchDate;
+    @Column(nullable = true) private Date closeDate;
+    
+    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
+    private List<Question> questionList = new ArrayList<>();
 
     @OneToOne
-    @JoinColumn(name = "pago")
-    private int id_pago;
+    @JoinColumn(name = "id_pago")
+    private Pago pago;
 
     @OneToOne
-    @JoinColumn(name = "pago_panelista")
-    private int id_pago_panelista;
+    @JoinColumn(name = "id_pago_panelista")
+    private PagoPanelista pagoPanelista;
 
-    @OneToMany
-    @JoinColumn(name = "genere")
-    private ArrayList<Question> genereList;
+    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
+    private List<Genere> genereList = new ArrayList<>();
 
 
     public Long getId() {
-        return this.id;
+        return this.id_survey;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.id_survey = id;
+    }
+
+    public int getNumQuestions() {
+        return this.numQuestions;
+    }
+
+    public void setNumQuestions(int numQuestions) {
+        this.numQuestions = numQuestions;
     }
 
     public String getName() {
@@ -85,39 +89,48 @@ public class Survey {
         this.closeDate = closeDate;
     }
 
-    public ArrayList<Question> getQuestionList() {
+    public List<Question> getQuestionList() {
         return this.questionList;
     }
 
-    public void setQuestionList(ArrayList<Question> questionList) {
+    public void setQuestionList(List<Question> questionList) {
         this.questionList = questionList;
     }
 
-    public int getId_pago() {
-        return this.id_pago;
+    public Pago getPago() {
+        return this.pago;
     }
 
-    public void setId_pago(int id_pago) {
-        this.id_pago = id_pago;
+    public void setPago(Pago pago) {
+        this.pago = pago;
     }
 
-    public int getId_pago_panelista() {
-        return this.id_pago_panelista;
+    public PagoPanelista getPagoPanelista() {
+        return this.pagoPanelista;
     }
 
-    public void setId_pago_panelista(int id_pago_panelista) {
-        this.id_pago_panelista = id_pago_panelista;
+    public void setPagoPanelista(PagoPanelista pagoPanelista) {
+        this.pagoPanelista = pagoPanelista;
     }
 
-    public ArrayList<Question> getGenereList() {
+
+    public Long getId_survey() {
+        return this.id_survey;
+    }
+
+    public void setId_survey(Long id_survey) {
+        this.id_survey = id_survey;
+    }
+
+    public List<Genere> getGenereList() {
         return this.genereList;
     }
 
-    public void setGenereList(ArrayList<Question> genereList) {
+    public void setGenereList(List<Genere> genereList) {
         this.genereList = genereList;
     }
 
-   
+ 
      
     Survey() {  }
 

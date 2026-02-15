@@ -8,7 +8,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -20,13 +19,13 @@ public class Question {
         private Long id;
         private String textQuestion;
 
-        @OneToOne
-        @JoinColumn(name = "question")
-        private QuestionType questionType;
+        //@OneToOne
+        //@JoinColumn(name = "question_type")
+        private String questionType;
         
         @ManyToOne
-        @JoinColumn(name = "survey")
-        private int idEncuesta;
+        @JoinColumn(name = "id_survey")
+        private Survey survey;
 
         public Long getId() {
             return id;
@@ -44,21 +43,23 @@ public class Question {
             this.textQuestion = textQuestion;
         }
 
-        public QuestionType getQuestionType() {
+        public String getQuestionType() {
             return questionType;
         }
 
-        public void setQuestionType(QuestionType questionType) {
+        public void setQuestionType(String questionType) {
             this.questionType = questionType;
         }
 
-        public int getIdEncuesta() {
-            return idEncuesta;
+
+        public Survey getSurvey() {
+            return this.survey;
         }
 
-        public void setIdEncuesta(int idEncuesta) {
-            this.idEncuesta = idEncuesta;
+        public void setSurvey(Survey Survey) {
+            this.survey = Survey;
         }
+
 
 
 

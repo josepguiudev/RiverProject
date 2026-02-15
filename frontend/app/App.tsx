@@ -2,7 +2,7 @@
 //nuevo app para pruebas moha
 import React from 'react';
 import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
-import SimpleFormScreen from './screens/SimpleFormScreen';
+import SimpleFormScreen from './screens/SurveyCreatorScreen';
 
 const App: React.FC = () => {
   return (
