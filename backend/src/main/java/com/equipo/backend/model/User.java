@@ -5,6 +5,7 @@ import jakarta.persistence.GenerationType;
 
 import java.util.Date;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
@@ -22,17 +23,20 @@ public class User {
 
 
     private String name;
-    private String apellido1;
+    @nullable private String apellido1;
     @nullable private String apellido2;
+    @Column(unique = true)
     private String email;
-    private Byte genero;
-    private Byte edad;
-    private String localizacion;
-    private String urlIdStream;
-    private Date creacionCuentaUsuario;
-    private Date creacionCuentaSteam;
+    @nullable private Byte genero;
+    @nullable private Byte edad;
+    @nullable private String localizacion;
+    @nullable private String urlIdStream;
+    @nullable private Date creacionCuentaUsuario;
+    @nullable private Date creacionCuentaSteam;
     private String password;
     @nullable private String urlImgUsuario;
+    @nullable private Byte banned;
+    @nullable private Byte id_rol;
 
     public Long getId() {
         return this.id;
@@ -119,6 +123,13 @@ public class User {
         this.email = email;
     }
     
+    public Byte getId_rol() {
+        return this.id_rol;
+    }
+    public void setId_rol(Byte id_rol) {
+        this.id_rol = id_rol;
+    }
+
     public String getPassword() {
         return this.password;
     }
