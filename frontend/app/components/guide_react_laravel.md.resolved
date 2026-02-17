@@ -1,0 +1,242 @@
+# Guía de React/Expo para Desarrolladores Laravel
+
+¡Bienvenido al mundo de React! Entiendo perfectamente que vengas de Laravel. El cambio de mentalidad de "Backend renderizando HTML" a "Frontend gestionando estado y UI" es el paso más importante.
+
+Esta guía está adaptada a tu proyecto actual (Expo con TypeScript y Router Manual en [App.tsx](file:///c:/xampp/htdocs/RiverProject/frontend/app/App.tsx)).
+
+---
+
+## 1. Cambio de Mentalidad: Laravel vs React
+
+| Concepto en Laravel (Blade) | Concepto en React | Diferencia Clave |
+| :--- | :--- | :--- |
+| **Vistas** (`resources/views/*.blade.php`) | **Componentes** ([.tsx](file:///c:/xampp/htdocs/RiverProject/frontend/app/App.tsx)) | Blade se compila en el servidor. React vive en el navegador/móvil. |
+| **Routes** (`routes/web.php`) | **Navegación** (`react-navigation`) | En tu proyecto actual, defines qué pantalla se muestra manualmente en [App.tsx](file:///c:/xampp/htdocs/RiverProject/frontend/app/App.tsx). |
+| **Variables PHP** (`$nombre`) | **Estado** (`useState`) y **Props** | Las variables de PHP mueren al terminar la request. El Estado de React vive mientras la pantalla esté abierta. |
+| **Controladores** | **Hooks / Event Handlers** | La lógica de "qué pasa cuando hago click" ocurre en el mismo componente o en funciones auxiliares. |
+
+---
+
+## 2. Estructura de tu Proyecto
+
+Tu proyecto está organizado de una forma muy estándar y limpia:
+
+-   **`app/` (El Corazón - Rutas y Pantallas)**
+    -   [App.tsx](file:///c:/xampp/htdocs/RiverProject/frontend/app/App.tsx): Es el "Jefe". Decidirá qué pantalla mostrar (similar a tu `routes/web.php` pero visual).
+    -   `screens/`: Aquí guardas tus pantallas completas (Login, Home, Perfil).
+
+-   **`components/` (Piezas de LEGO)**
+    -   Aquí va todo lo reutilizable. Botones, tarjetas, inputs.
+    -   **Regla de oro**: Si lo vas a usar más de una vez, hazlo componente.
+
+-   **`services/` o `api/`**
+    -   Aquí deberías poner tus llamadas a la API (Axios).
+    -   Sería el equivalente a tus Modelos/Logica de negocio para obtener datos.
+
+---
+
+## 3. ¿Cómo crear un Componente?
+
+### Naming Conventions (Nombres)
+-   **PascalCase**: Los componentes y sus archivos SIEMPRE empiezan con mayúscula.
+    -   ✅ `MiBoton.tsx`
+    -   ✅ `UserProfile.tsx`
+    -   ❌ `miBoton.tsx`
+    -   ❌ `user_profile.tsx`
+
+### Estructura Básica
+Un componente en React es simplemente una función que devuelve UI (similar a HTML).
+
+Crea un archivo: `components/Saludo.tsx`
+
+```tsx
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+// 1. Definimos las "Props" (Argumentos)
+// Equivalente a lo que pasas a un componente Blade: <x-saludo nombre="Juan" />
+interface SaludoProps {
+  nombre: string;
+}
+
+// 2. La Función del Componente
+export default function Saludo({ nombre }: SaludoProps) {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.texto}>Hola, {nombre}!</Text>
+    </View>
+  );
+}
+
+// 3. Estilos (CSS en JS)
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    backgroundColor: '#f0f0f0',
+  },
+  texto: {
+    fontSize: 18,
+    color: '#333',
+  },
+});
+```
+
+### ¿Cómo usarlo?
+En cualquier otra pantalla (por ejemplo `app/screens/Home.tsx`):
+
+```tsx
+import Saludo from '../components/Saludo'; // Importamos
+
+export default function HomeScreen() {
+  return (
+    <View>
+       <Saludo nombre="Pepe" />
+       <Saludo nombre="Maria" />
+    </View>
+  );
+}
+```
+
+---
+
+## 4. Estado (State) - La gran diferencia
+
+En Laravel, si quieres cambiar un dato, recargas la página o haces una petición AJAX que devuelve HTML nuevo.
+En React, usas el **Estado**. Si cambias el estado, React actualiza la pantalla automáticamente "mágicamente".
+
+```tsx
+import React, { useState } from 'react'; // Importamos useState
+import { View, Text, Button } from 'react-native';
+
+export default function Contador() {
+  // Declaramos el estado
+  // cuenta: el valor actual
+  // setCuenta: la función para cambiar el valor
+  const [cuenta, setCuenta] = useState(0); // Empieza en 0
+
+  return (
+    <View>
+      <Text>Has hecho click {cuenta} veces</Text>
+      
+      <Button 
+        title="Incrementar" 
+        onPress={() => setCuenta(cuenta + 1)} // Actualizamos el estado
+      />
+    </View>
+  );
+}
+```
+
+---
+
+## 5. Fetching de Datos (Consumir APIs)
+
+En Laravel, el controlador obtiene los datos (`User::all()`) y se los pasa a la vista.
+En React, la vista se "monta" vacía, y luego pide los datos.
+
+Usamos `useEffect` (Efecto secundario) para esto. Piensa en ello como el "Code behind" o el `$(document).ready()`.
+
+**Ejemplo de Flujo de Datos (Spring Boot -> React)**
+
+1.  **Spring Boot**: Tiene un endpoint `/api/productos` que devuelve JSON: `[{"id": 1, "nombre": "Zapatos"}]`
+2.  **React (Service)**: `services/productService.ts` llama a axios:
+    ```ts
+    import axios from 'axios';
+    export const getProductos = async () => {
+        const response = await axios.get('http://tu-ip:8080/api/productos');
+        return response.data;
+    }
+    ```
+3.  **React (Componente)**:
+    ```tsx
+    const [productos, setProductos] = useState([]);
+    const [cargando, setCargando] = useState(true);
+
+    useEffect(() => {
+        // Llamamos al servicio al cargar
+        const cargarDatos = async () => {
+            try {
+                const data = await getProductos();
+                setProductos(data);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setCargando(false);
+            }
+        };
+        cargarDatos();
+    }, []); // El array vacío [] significa "ejecutar solo una vez al montar"
+    ```
+
+---
+---
+
+## 6. Respuestas a tus Preguntas (Q&A)
+
+### Teoria General
+**"Tenía entendido que eran con la extensión .jsx"**
+En el mundo moderno, usamos **TypeScript** ([.tsx](file:///c:/xampp/htdocs/RiverProject/frontend/app/App.tsx)) en lugar de JavaScript puro (`.jsx`).
+-   **¿Por qué?** Porque te avisa de errores *antes* de ejecutar el código. Si intentas pasar un número donde debería ir un texto, TypeScript te grita en rojo.
+-   Tu proyecto ya está configurado con TypeScript, así que úsalo. Es tu mejor amigo.
+
+**"Qué pasa si no se escribe PascalCase?"**
+**React NO funcionará.**
+-   React distingue entre componentes nativos (como `<View>`, `<Text>`) y tus componentes personalizados por la mayúscula.
+-   `<componente />` -> React cree que es una etiqueta HTML estándar.
+-   `<Componente />` -> React sabe que es tu código.
+
+### Backend y Datos
+**"Axios: ¿Qué es exactamente?"**
+Es el equivalente al **Guzzle** de Laravel o `fetch` de JS.
+-   Es una librería para hacer peticiones HTTP (GET, POST, PUT, DELETE) a tu backend.
+-   Tu Backend Spring Boot expone una API (JSON). Axios es el mensajero que va, pide los datos y los trae a React.
+
+**"services/ o api/ y Spring Boot"**
+Exacto. Tu Spring Boot tiene la **Lógica de Negocio** y la **Base de Datos**.
+-   En React, la carpeta `services/` o `api/` solo contiene funciones para llamar a los endpoints de Spring Boot.
+-   Ejemplo: `services/UserService.ts` tendría una función `getUsers()` que hace un `axios.get('https://tu-api.com/users')`.
+
+**"Props: ¿Aquí irían los datos mandados desde una API?"**
+Sí y no.
+-   Las **Props** son datos que *un padre le pasa a un hijo*.
+-   Puede ser un dato que vino de la API (Padre pide API -> Padre tiene datos -> Padre pasa datos a Hijo via Props).
+-   O puede ser configuración simple (Padre dice "Hijo, ponte de color azul").
+
+### Estructura y Estilos
+**"CSS: ¿Estilos aquí o en archivo aparte?"**
+En **React Native / Expo**, *no existen los archivos CSS tradicionales* (como `styles.css`).
+-   Usamos `StyleSheet.create({})` que es JS que *parece* CSS.
+-   **Ventaja:** Los estilos viven junto al componente, así que si borras el componente, borras sus estilos. No queda CSS muerto ("Zombie CSS").
+-   Se pueden hacer archivos de estilos compartidos, pero lo normal es tenerlos en el mismo archivo o usar librerías de UI.
+
+**"Estilos: ¿Y si Login y SignIn son casi idénticos? ¿Copio y pego?"**
+¡No! Al igual que no copias el CSS en Laravel, aquí tampoco. Tienes dos opciones elegantes:
+1.  **Archivo de Estilos Compartido (Lo más común):** Crea un archivo `app/styles/authStyles.ts` y exporta los estilos. Luego en `Login.tsx` lo importas: `import { authStyles } from '../styles/authStyles';`
+2.  **Componente Wrapper (Más "Pro"):** Crea un componente `AuthLayout.tsx` que tenga el logo, el fondo y el contenedor blanco, y mete el formulario dentro.
+
+**"Estructura: ¿Por qué tengo una carpeta `screens`?"**
+He revisado tu archivo [index.js](file:///c:/xampp/htdocs/RiverProject/frontend/index.js) y [App.tsx](file:///c:/xampp/htdocs/RiverProject/frontend/app/App.tsx) y he descubierto algo importante:
+**Tu proyecto NO está usando el "Router Automático" de Expo en este momento.**
+
+Aunque tienes la librería instalada, tu [App.tsx](file:///c:/xampp/htdocs/RiverProject/frontend/app/App.tsx) carga manualmente las pantallas (`import SimpleFormScreen from './screens/SimpleFormScreen'`).
+
+Por eso tienes una carpeta `screens`: **Es simplemente una carpeta para organizar tu código.**
+En tu configuración actual:
+1.  [app/App.tsx](file:///c:/xampp/htdocs/RiverProject/frontend/app/App.tsx) es el "Jefe". Decidirá qué pantalla mostrar.
+2.  `app/screens/*` son las pantallas que el Jefe puede elegir.
+3.  `app/components/*` son los trocitos de UI.
+
+**No es mágico, es manual.** Si quieres cambiar esto a "Router Automático" (donde carpetas = rutas), habría que reconfigurar el proyecto, pero por ahora, **sigue la corriente de tu proyecto actual**:
+-   Crea pantallas en `screens/`.
+-   Impórtalas en [App.tsx](file:///c:/xampp/htdocs/RiverProject/frontend/app/App.tsx).
+
+---
+
+## Resumen Final de Pasos para tu Proyecto
+
+1.  **¿Es una nueva pantalla?** -> Crea un archivo en `screens/TuPantalla.tsx` y luego impórtala en [App.tsx](file:///c:/xampp/htdocs/RiverProject/frontend/app/App.tsx) para mostrarla.
+2.  **¿Es un elemento visual que se repite?** -> Crea un archivo en `components/NombreElemento.tsx`.
+3.  **¿Necesita datos dinámicos?** -> Usa `useState` para guardarlos dentro del componente y `useEffect` con `axios` para pedirlos a tu API de Spring Boot.
+4.  **¿Estilos?** -> Usa `StyleSheet.create({})` dentro del archivo, o crea un archivo compartido si se repite mucho.
+
+¡Mucho ánimo! Al principio parece mucho boilerplate, pero te da un control increíble sobre la interactividad.
