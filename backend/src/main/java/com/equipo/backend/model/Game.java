@@ -1,56 +1,72 @@
 package com.equipo.backend.model;
 
 import java.util.ArrayList;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import java.util.List;
 
+import jakarta.persistence.*;
+
+
+@Entity
+@Table(name = "game")
 public class Game {
-       @Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id_game;
 
     private String title;
-    private Boolean isEarlyAcces;
-    private ArrayList<String> generes;
-    @nullable private ArrayList<String> logros;
+    private byte isEarlyAcces;
 
-    public Long getId() {
-        return this.id;
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @nullable private List<Genere> genereList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @nullable private List<Logro> logros;
+
+
+    public Long getId_game() {
+        return this.id_game;
     }
-    public void setId(Long id) {
-        this.id = id;
+
+    public void setId_game(Long id_game) {
+        this.id_game = id_game;
     }
 
     public String getTitle() {
         return this.title;
     }
+
     public void setTitle(String title) {
         this.title = title;
     }
 
-    public Boolean isIsEarlyAcces() {
+    public byte isIsEarlyAcces() {
         return this.isEarlyAcces;
     }
-    public Boolean getIsEarlyAcces() {
+
+    public byte getIsEarlyAcces() {
         return this.isEarlyAcces;
     }
-    public void setIsEarlyAcces(Boolean isEarlyAcces) {
+
+    public void setIsEarlyAcces(byte isEarlyAcces) {
         this.isEarlyAcces = isEarlyAcces;
     }
 
-    public ArrayList<String> getGeneres() {
-        return this.generes;
-    }
-    public void setGeneres(ArrayList<String> generes) {
-        this.generes = generes;
+    public List<Genere> getGenereList() {
+        return this.genereList;
     }
 
-    public ArrayList<String> getLogros() {
+    public void setGenereList(List<Genere> genereList) {
+        this.genereList = genereList;
+    }
+
+
+    public List<Logro> getLogros() {
         return this.logros;
     }
-    public void setLogros(ArrayList<String> logros) {
+
+    public void setLogros(List<Logro> logros) {
         this.logros = logros;
     }
+
 
 }

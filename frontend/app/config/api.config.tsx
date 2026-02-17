@@ -5,9 +5,9 @@ export const API_CONFIG = {
   // ⚠️ CAMBIAR POR TU IP LOCAL
   BASE_URL: 'http://localhost:8080',
   ENDPOINTS: {
-    SUBMIT_FORM: '/api/forms/submit',
-    GET_RESPONSES: '/api/forms/responses',
-    TEST: '/api/forms/test',
+    SUBMIT_FORM: '/api/formSurvey/submit',
+    GET_RESPONSES: '/api/formSurvey/responses',
+    TEST: '/api/formSurvey/test',
   },
   TIMEOUT: 10000, // 10 segundos
 };
