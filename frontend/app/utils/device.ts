@@ -1,11 +1,11 @@
 import { Dimensions, Platform } from 'react-native';
-
-export const isIOS = Platform.OS === 'ios';
-export const isAndroid = Platform.OS === 'android';
 export const isWeb = Platform.OS === 'web';
 
 export const isMobile = isIOS || isAndroid;
 
+
+export const isIOS = Platform.OS === 'ios';
+export const isAndroid = Platform.OS === 'android';
 // 2. Función de detección dinámica (La "Inteligencia")
 export const getLayout = (width: number) => {
   return {
