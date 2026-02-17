@@ -14,11 +14,13 @@ public class Game {
     private Long id_game;
 
     private String title;
-    private Boolean isEarlyAcces;
+    private byte isEarlyAcces;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
-    @nullable private List<Genere> genereList;
-    @nullable private ArrayList<String> logros;
+    @nullable private List<Genere> genereList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @nullable private List<Logro> logros;
 
 
     public Long getId_game() {
@@ -37,15 +39,15 @@ public class Game {
         this.title = title;
     }
 
-    public Boolean isIsEarlyAcces() {
+    public byte isIsEarlyAcces() {
         return this.isEarlyAcces;
     }
 
-    public Boolean getIsEarlyAcces() {
+    public byte getIsEarlyAcces() {
         return this.isEarlyAcces;
     }
 
-    public void setIsEarlyAcces(Boolean isEarlyAcces) {
+    public void setIsEarlyAcces(byte isEarlyAcces) {
         this.isEarlyAcces = isEarlyAcces;
     }
 
@@ -57,12 +59,14 @@ public class Game {
         this.genereList = genereList;
     }
 
-    public ArrayList<String> getLogros() {
+
+    public List<Logro> getLogros() {
         return this.logros;
     }
 
-    public void setLogros(ArrayList<String> logros) {
+    public void setLogros(List<Logro> logros) {
         this.logros = logros;
     }
+
 
 }
