@@ -1,4 +1,6 @@
-package com.equipo.backend.model;
+package com.equipo.backend.model.classesquestiontype;
+
+import com.equipo.backend.model.Question;
 
 import jakarta.persistence.*;
 

@@ -25,16 +25,38 @@ export class FormApiService {
    * @returns Promise con la respuesta guardada
    */
   static async submitForm(formData: Survey): Promise<Survey> {
-    try {
-      const response = await apiClient.post<Survey>(
-        API_CONFIG.ENDPOINTS.SUBMIT_FORM,
-        formData
-      );
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
+  try {
+    // Transformem l'objecte TS al format exacte que espera la @Entity de Java
+    const payload = {
+      name: formData.nombre,           // A Java tens 'name', no 'nombre'
+      numQuestions: formData.questions.length,
+      // A Java la llista es diu 'questionList'
+      questionList: formData.questions.map(q => ({
+        questionText: q.questionText,
+        type: q.type,
+        // Assegura't que Question.java tingui 'optionList' o 'options'
+        optionList: q.options || [] 
+      })),
+      // A Java es diu 'genereList'
+      genereList: formData.generes || [],
+      
+      // Enviem objectes buits o nulls per als objectes Pago
+      pago: null, 
+      pagoPanelista: null,
+      creationDate: new Date().toISOString()
+    };
+
+    console.log("🚀 Payload cap a Java:", payload);
+
+    const response = await apiClient.post<Survey>(
+      "/submit", 
+      payload
+    );
+    return response.data;
+  } catch (error) {
+    throw this.handleError(error);
   }
+}
 
   /**
    * Obtener todas las respuestas del backend
