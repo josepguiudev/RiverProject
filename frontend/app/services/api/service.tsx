@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { API_CONFIG, getFullUrl } from '../../config/api.config';
-import { FormResponse } from '../../types/forms.types';;
+import { Survey } from '../../types/formsSurvey.types';;
 
 
 // Configurar axios con valores por defecto
@@ -24,9 +24,9 @@ export class FormApiService {
    * @param formData - Datos del formulario
    * @returns Promise con la respuesta guardada
    */
-  static async submitForm(formData: FormResponse): Promise<FormResponse> {
+  static async submitForm(formData: Survey): Promise<Survey> {
     try {
-      const response = await apiClient.post<FormResponse>(
+      const response = await apiClient.post<Survey>(
         API_CONFIG.ENDPOINTS.SUBMIT_FORM,
         formData
       );
@@ -40,9 +40,9 @@ export class FormApiService {
    * Obtener todas las respuestas del backend
    * @returns Promise con array de respuestas
    */
-  static async getAllResponses(): Promise<FormResponse[]> {
+  static async getAllResponses(): Promise<Survey[]> {
     try {
-      const response = await apiClient.get<FormResponse[]>(
+      const response = await apiClient.get<Survey[]>(
         API_CONFIG.ENDPOINTS.GET_RESPONSES
       );
       return response.data;
