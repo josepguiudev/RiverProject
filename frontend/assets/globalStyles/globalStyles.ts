@@ -25,4 +25,9 @@ export default StyleSheet.create({
         alignItems: 'center', // Centra verticalmente
         justifyContent: 'flex-start', // Alinea al inicio (izquierda) horizontalmente
     },
+    borde:{
+        borderWidth: 1,         // El "1px"
+        borderColor: 'red',     // El "red"
+        borderStyle: 'solid',   // Opcional (es el valor por defecto)
+    },
 });
