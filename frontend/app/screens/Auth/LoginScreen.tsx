@@ -18,7 +18,7 @@ export default function LoginScreen({ navigation }: any) {
           Animated.timing(cursorOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
         ])
       ).start();
-    }, [] );  
+    } );  
   
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

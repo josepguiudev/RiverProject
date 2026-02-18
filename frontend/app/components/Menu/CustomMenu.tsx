@@ -36,7 +36,7 @@ export default function MenuLateral({ visible, onClose }: any) {
       easing: Easing.out(Easing.exp), // Empieza rápido y termina suave
       useNativeDriver: true,
     }).start();
-  }, [visible]);
+  });
 
   if (!visible) return null;
 
