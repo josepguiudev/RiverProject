@@ -21,7 +21,7 @@ function App() {
     return <StorybookUI />;
   }
 
-  // Si no, devolvemos tu navegación normal
+  // Si no, devolvemos tu navegación normal  
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
