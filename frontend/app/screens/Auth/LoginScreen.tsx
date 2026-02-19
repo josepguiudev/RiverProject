@@ -32,7 +32,7 @@ export default function LoginScreen({ navigation }: any) {
         });
 
         if (!res.ok) {
-        alert("Login incorrecto");
+        alert(strings.badLogin);
         return;
         }
 
@@ -83,7 +83,7 @@ export default function LoginScreen({ navigation }: any) {
           <CustomButton title={strings.login} onPress={handleLogin} />
           <View style={[styles.maxWidth, styles.margen1]}>
             <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-              <Text style={[styles.texto, styles.alineadoPersonal]}>No tienes cuenta? Regístrate</Text>
+              <Text style={[styles.texto, styles.alineadoPersonal]}>{strings.noCuenta}</Text>
             </TouchableOpacity>
           </View>
         </View>

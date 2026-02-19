@@ -9,6 +9,7 @@
     "contrasenia": "Comtraseña",
     "placePassword": "Password",
     "login": "Login",
+    "noCuenta": "No tienes cuenta? Regístrate",
 
     "repetirContrasenia": "Repita la contraseña",
     "registrar": "Registrar",
@@ -26,5 +27,6 @@
 
     "alertErrorRegistrar": "Error al registrar",
     "alertCreaUser": "Usuario creado correctamente",
-    "alertNotSamePassword": "La contraseña insertada no es la misma"
+    "alertNotSamePassword": "La contraseña insertada no es la misma",
+    "badLogin": "Login incorrecto"
 }
