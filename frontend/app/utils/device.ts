@@ -1,7 +1,6 @@
 import { Dimensions, Platform } from 'react-native';
 export const isWeb = Platform.OS === 'web';
 
-export const isMobile = isIOS || isAndroid;
 
 
 export const isIOS = Platform.OS === 'ios';
@@ -17,3 +16,4 @@ export const getLayout = (width: number) => {
     isMobileView: width < 768,
   };
 };
+export const isMobile = isIOS || isAndroid;
