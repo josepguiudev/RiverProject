@@ -1,5 +1,18 @@
 {
     "name": "River",
+    "nameMayus": "RIVER",
+    "appMayus": "APP",
+    "tittle1": "Soluciones estadísticas del mercado",
+    "tittle2": "Gaming.",
+    "direccionEmail": "Dirección de correo electrónico",
+    "placeEmail": "pruebapolitecnics@gmail.com",
+    "contrasenia": "Comtraseña",
+    "placePassword": "Password",
+    "login": "Login",
+
+    "repetirContrasenia": "Repita la contraseña",
+    "registrar": "Registrar",
+
     "menu": "☰ Menú",
     "perfil": "Perfil",
     "configuracion": "Configuración",
@@ -9,5 +22,9 @@
     "type1": "1",
     "type2": "2",
     "type3": "3",
-    "type4": "4"
+    "type4": "4",
+
+    "alertErrorRegistrar": "Error al registrar",
+    "alertCreaUser": "Usuario creado correctamente",
+    "alertNotSamePassword": "La contraseña insertada no es la misma"
 }
