@@ -4,6 +4,7 @@ import { View, TouchableOpacity, Text } from "react-native";
 import TypeWriter from "react-native-typewriter";
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import styles from "./styles";
+import ListaEncuestas from '@/app/components/Cards/ListEncuestas';
 
 import MenuPrincipal from "@/app/components/Menu/CustomMenu";
 
@@ -34,6 +35,7 @@ export default function HomeScreen({ navigation }: any) {
                         </TypeWriter>
                     </View>
                     <View style={[styles.borde3, styles.cajaComponentesEncuestas]}>
+                        <ListaEncuestas/>
                     </View>
                 </View>
                 <View style={[styles.borde2, styles.cajaEncuestas]}>
