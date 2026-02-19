@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SignIn from './signin';
 
 const Stack = createNativeStackNavigator();
+//ede
 
 export default {
   title: 'Screens/Auth/SignIn',

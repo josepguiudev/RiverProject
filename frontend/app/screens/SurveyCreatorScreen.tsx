@@ -1,252 +1,182 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Button,
-  StyleSheet,
-  ScrollView,
-  Alert,
-} from 'react-native';
-import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
-import { Survey, Question, QuestionType, Option } from '../types/formsSurvey.types';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { Survey, Question, Option, QuestionType } from '../types/formsSurvey.types';
+import { FormApiService } from '../services/api/service';
 
-export default function SurveyBuilder() {
+const SurveyCreatorScreen = () => {
+  // 1. Estat inicial segons la teva interfície Survey
   const [survey, setSurvey] = useState<Survey>({
-    tempId: Date.now().toString(),
-    nombre: '',
+    nombre: "",
     numQuestions: 0,
+    tempId: Math.random().toString(36).substr(2, 9),
     questions: [],
-    generes: [],
+    generes: []
   });
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  // -------- Agregar Pregunta --------
-  const addQuestion = (type: QuestionType) => {
+  // 2. Funció per afegir una nova pregunta (estil Google Forms)
+  const addQuestion = () => {
     const newQuestion: Question = {
-      id: '',
-      tempId: Date.now().toString(),
-      type,
-      questionText: '',
-      options:
-        type !== 'shortAnswer' && type !== 'longAnswer'
-          ? [{ id: Date.now().toString(), text: '' }]
-          : [],
+      tempId: Math.random().toString(36).substr(2, 9),
+      type: "multipleChoice", // Tipus per defecte
+      questionText: "",
+      options: [{ id: "1", text: "Opció 1" }]
     };
-    setSurvey({
-      ...survey,
-      questions: [...survey.questions, newQuestion],
-      numQuestions: survey.questions.length + 1,
-    });
+
+    setSurvey(prev => ({
+      ...prev,
+      questions: [...prev.questions, newQuestion],
+      numQuestions: prev.questions.length + 1
+    }));
   };
 
-  // -------- Validar Survey --------
-  const validateSurvey = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
-    if (!survey.nombre.trim()) newErrors['surveyTitle'] = 'Survey must have a title';
-    survey.questions.forEach((q) => {
-      if (!q.questionText.trim()) newErrors[q.tempId] = 'Question text is required';
-      if (
-        (q.type === 'multipleChoice' || q.type === 'checkbox' || q.type === 'dropdown') &&
-        (!q.options || q.options.length === 0 || q.options.some((o) => !o.text.trim()))
-      ) {
-        newErrors[q.tempId] = 'All options must have text';
-      }
-    });
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  // 3. Funció per afegir una opció a una pregunta específica
+  const addOption = (qTempId: string) => {
+    setSurvey(prev => ({
+      ...prev,
+      questions: prev.questions.map(q => {
+        if (q.tempId === qTempId) {
+          const newOption: Option = {
+            id: (q.options!.length + 1).toString(),
+            text: `Opció ${q.options!.length + 1}`
+          };
+          return { ...q, options: [...(q.options || []), newOption] };
+        }
+        return q;
+      })
+    }));
   };
 
-  // -------- Actualizar Pregunta --------
-  const updateQuestion = (tempId: string, updated: Partial<Question>) => {
-    setSurvey({
-      ...survey,
-      questions: survey.questions.map((q) =>
-        q.tempId === tempId ? { ...q, ...updated } : q
-      ),
-    });
-  };
+  // 4. Funció per enviar al Backend usant el teu FormApiService
+  const handleSave = async () => {
+  console.log("------- DADES QUE S'ENVIARAN -------");
+  console.log(JSON.stringify(survey, null, 2)); // Això imprimeix el JSON bonic a la terminal
 
-  // -------- Agregar/Actualizar/Eliminar Opción --------
-  const addOption = (tempId: string) => {
-    setSurvey({
-      ...survey,
-      questions: survey.questions.map((q) =>
-        q.tempId === tempId
-          ? {
-              ...q,
-              options: [...(q.options || []), { id: Date.now().toString(), text: '' }],
-            }
-          : q
-      ),
-    });
-  };
-
-  const updateOption = (qId: string, optionId: string, text: string) => {
-    setSurvey({
-      ...survey,
-      questions: survey.questions.map((q) =>
-        q.tempId === qId
-          ? { ...q, options: q.options?.map((o) => (o.id === optionId ? { ...o, text } : o)) }
-          : q
-      ),
-    });
-  };
-
-  const removeOption = (qId: string, optionId: string) => {
-    setSurvey({
-      ...survey,
-      questions: survey.questions.map((q) =>
-        q.tempId === qId ? { ...q, options: q.options?.filter((o) => o.id !== optionId) } : q
-      ),
-    });
-  };
-
-  // -------- Enviar Survey --------
-  const submitSurvey = async () => {
-    if (!validateSurvey()) {
-      Alert.alert('Error', 'Please fix validation errors');
-      return;
-    }
-    try {
-      const res = await fetch('http://localhost:8080/api/formSurvey', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(survey),
-      });
-      if (!res.ok) throw new Error('Failed to save survey');
-      const data = await res.json();
-      Alert.alert('Success', 'Survey saved successfully!');
-      setSurvey({
-        tempId: Date.now().toString(),
-        nombre: '',
-        numQuestions: 0,
-        questions: [],
-        generes: [],
-      });
-      setErrors({});
-    } catch (err) {
-      console.error(err);
-      Alert.alert('Error', 'Could not save survey');
-    }
-  };
-
-  // -------- Render Pregunta --------
-  const renderQuestion = ({ item, drag, isActive }: RenderItemParams<Question>) => {
-    return (
-      <TouchableOpacity
-        style={[styles.questionCard, { backgroundColor: isActive ? '#f0f0f0' : '#fff' }]}
-        onLongPress={drag}
-      >
-        <Text style={styles.questionLabel}>
-          {item.type.toUpperCase()} QUESTION
-        </Text>
-
-        <TextInput
-          style={styles.questionText}
-          placeholder="Enter question text"
-          value={item.questionText}
-          onChangeText={(text) => updateQuestion(item.tempId, { questionText: text })}
-        />
-        {errors[item.tempId] && <Text style={styles.errorText}>{errors[item.tempId]}</Text>}
-
-        {item.options && (
-          <View style={{ marginTop: 8 }}>
-            {item.options.map((o) => (
-              <View key={o.id} style={styles.optionRow}>
-                <TextInput
-                  style={styles.optionInput}
-                  placeholder="Option text"
-                  value={o.text}
-                  onChangeText={(text) => updateOption(item.tempId, o.id, text)}
-                />
-                <TouchableOpacity onPress={() => removeOption(item.tempId, o.id)}>
-                  <Text style={styles.deleteOption}>X</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-            <TouchableOpacity style={styles.addOptionBtn} onPress={() => addOption(item.tempId)}>
-              <Text style={styles.addButtonText}>+ Add Option</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </TouchableOpacity>
-    );
+  try {
+    const result = await FormApiService.submitForm(survey);
+    console.log("✅ RESPOSTA DEL SERVIDOR:", result);
+  } catch (error: any) {
+    console.log("❌ ERROR EN LA PETICIÓ:");
+    // Això és clau per veure si és un error 400, 500 o de xarxa
+    console.error(error); 
+  }
   };
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Create Survey</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Survey Title"
-        value={survey.nombre}
-        onChangeText={(text) => setSurvey({ ...survey, nombre: text })}
-      />
-      {errors['surveyTitle'] && <Text style={styles.errorText}>{errors['surveyTitle']}</Text>}
-
-      <View style={styles.questionTypeContainer}>
-        {(['shortAnswer', 'longAnswer', 'multipleChoice', 'checkbox', 'dropdown'] as QuestionType[]).map(
-          (type) => (
-            <TouchableOpacity key={type} style={styles.addButton} onPress={() => addQuestion(type)}>
-              <Text style={styles.addButtonText}>{type}</Text>
-            </TouchableOpacity>
-          )
-        )}
+      {/* Targeta de Títol */}
+      <View style={styles.headerCard}>
+        <View style={styles.topBar} />
+        <TextInput
+          style={styles.titleInput}
+          placeholder="Títol del formulari"
+          value={survey.nombre}
+          onChangeText={(text) => setSurvey({ ...survey, nombre: text })}
+        />
       </View>
 
-      <DraggableFlatList
-        data={survey.questions}
-        renderItem={renderQuestion}
-        keyExtractor={(item) => item.tempId}
-        onDragEnd={({ data }) => setSurvey({ ...survey, questions: data })}
-        style={{ marginVertical: 16 }}
-      />
+      {/* Llista de preguntes dinàmiques */}
+      {survey.questions.map((q, index) => (
+        <View key={q.tempId} style={styles.questionCard}>
+          <TextInput
+            style={styles.questionInput}
+            placeholder="Pregunta"
+            value={q.questionText}
+            onChangeText={(text) => {
+              const newQuestions = [...survey.questions];
+              newQuestions[index].questionText = text;
+              setSurvey({ ...survey, questions: newQuestions });
+            }}
+          />
 
-      <Button title="Submit Survey" onPress={submitSurvey} />
+          {/* Render de les opcions (si és multipleChoice o checkbox) */}
+          {(q.type === 'multipleChoice' || q.type === 'checkbox') && (
+            <View style={styles.optionsArea}>
+              {q.options?.map((opt, optIndex) => (
+                <View key={opt.id} style={styles.optionRow}>
+                  <View style={styles.radioCircle} />
+                  <TextInput
+                    style={styles.optionInput}
+                    value={opt.text}
+                    onChangeText={(text) => {
+                      const newQuestions = [...survey.questions];
+                      newQuestions[index].options![optIndex].text = text;
+                      setSurvey({ ...survey, questions: newQuestions });
+                    }}
+                  />
+                </View>
+              ))}
+              <TouchableOpacity onPress={() => addOption(q.tempId)}>
+                <Text style={styles.addOptionText}>+ Afegeix opció</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      ))}
+
+      {/* Botons d'acció */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.addButton} onPress={addQuestion}>
+          <Text style={styles.buttonText}>Afegir Pregunta</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={[styles.addButton, styles.saveButton]} onPress={handleSave}>
+          <Text style={styles.buttonText}>Guardar a la BD</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#f9f9f9' },
-  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 16, color: '#333' },
-  input: { borderBottomWidth: 1, marginBottom: 12, fontSize: 18, paddingVertical: 6 },
-  errorText: { color: 'red', marginBottom: 6 },
-  questionTypeContainer: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16 },
-  addButton: {
-    backgroundColor: '#007bff',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  addButtonText: { color: '#fff', fontWeight: '600' },
-  questionCard: {
-    padding: 16,
+  container: { flex: 1, backgroundColor: '#f0ebf8', padding: 12 },
+  headerCard: {
+    backgroundColor: 'white',
     borderRadius: 8,
-    backgroundColor: '#fff',
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    overflow: 'hidden',
     elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
   },
-  questionLabel: { fontWeight: '700', marginBottom: 8, color: '#444' },
-  questionText: { fontSize: 16, borderBottomWidth: 1, paddingVertical: 6 },
-  optionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
-  optionInput: { flex: 1, borderBottomWidth: 1, paddingVertical: 4, marginRight: 8 },
-  deleteOption: { color: '#ff4d4d', fontWeight: 'bold', fontSize: 16 },
-  addOptionBtn: {
-    backgroundColor: '#28a745',
-    padding: 8,
-    borderRadius: 6,
+  topBar: { height: 10, backgroundColor: '#673ab7' },
+  titleInput: { fontSize: 24, padding: 20, fontWeight: 'bold' },
+  questionCard: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 8,
+    marginBottom: 12,
+    elevation: 2,
+  },
+  questionInput: {
+    fontSize: 16,
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 4,
+    marginBottom: 15,
+  },
+  optionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  radioCircle: {
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#70757a',
+    marginRight: 10,
+  },
+  optionInput: { fontSize: 14, flex: 1, borderBottomWidth: 1, borderBottomColor: '#eee' },
+  addOptionText: { color: '#4285f4', fontWeight: 'bold', marginTop: 10 },
+  buttonContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 40 },
+  addButton: {
+    backgroundColor: '#673ab7',
+    padding: 15,
+    borderRadius: 8,
+    flex: 0.48,
     alignItems: 'center',
-    marginTop: 4,
   },
+  saveButton: { backgroundColor: '#0f9d58' },
+  buttonText: { color: 'white', fontWeight: 'bold' },
+  optionsArea: { marginTop: 10 }
 });
+
+export default SurveyCreatorScreen;

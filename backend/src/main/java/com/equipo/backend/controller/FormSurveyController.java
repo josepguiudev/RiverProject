@@ -21,10 +21,14 @@ public class FormSurveyController {
     
     @PostMapping("/submit")
     public ResponseEntity<Survey> submitForm(@RequestBody Survey respuesta) {
+        // Afegeix aquesta línia per veure el JSON que rep Java a la consola de l'IDE
+        System.out.println("S'ha rebut una enquesta: " + respuesta.getName()); 
+
         try {
             Survey guardada = FormSurveyService.guardarRespuesta(respuesta);
             return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
         } catch (Exception e) {
+            e.printStackTrace(); // Això imprimirà tot l'error detallat a la consola de Java
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }

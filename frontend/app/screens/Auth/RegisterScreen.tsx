@@ -5,6 +5,7 @@ import styles from "./styles";
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import CustomButton from "@/app/components/CustomButton/CustomButton";
 import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
+import strings from "../../../assets/supportFiles/strings.json";
 
 
 export default function RegisterScreen({ navigation }: any) {
@@ -35,14 +36,14 @@ export default function RegisterScreen({ navigation }: any) {
       });
 
       if (!res.ok) {
-        alert("Error al registrar");
+        alert(strings.alertErrorRegistrar);
         return;
       }
 
-      alert("Usuario creado correctamente");
+      alert(strings.alertCreaUser);
       navigation.navigate("Login");
     }else{
-      alert("La contraseña insertada no es la misma");
+      alert(strings.alertNotSamePassword);
     }
   };
 
@@ -57,9 +58,9 @@ export default function RegisterScreen({ navigation }: any) {
         </View>
         <View style={[styles.contenedorWritter, styles.alineadoPersonal]}>
           <Text style={styles.tituloHero}>
-            RIVER{" "} 
+            {strings.nameMayus}{" "} 
             <TypeWriter typing={1} style={styles.destaqueAzul}>
-              APP
+              {strings.appMayus}
             </TypeWriter>
           </Text>
         </View>
@@ -71,7 +72,7 @@ export default function RegisterScreen({ navigation }: any) {
             maxDelay={50}
             style={styles.mainText}
           >
-            Soluciones estadísticas del mercado <Text style={styles.blueText}>Gaming.</Text>
+            {strings.tittle1} <Text style={styles.blueText}>{strings.tittle2}</Text>
           </TypeWriter>
           
           {/* El cursor va fuera para que siempre esté al final */}
@@ -81,10 +82,10 @@ export default function RegisterScreen({ navigation }: any) {
       {/* Parte del recuadro del login */}
       <View style={[styles.alineadoPersonal, styles.maxHeigth, styles.noJustify]}>
         <View style={[styles.caja, styles.margen2]}>
-          <CustomInputText label="Dirección de correo electrónico" placeholder="pruebapolitecnics@gmail.com" onChangeText={setEmail} value={email}/>
-          <CustomInputText label="Contraseña" placeholder="Password" secureTextEntry onChangeText={setPassword} value={password}/>
-          <CustomInputText label="Repita la contraseña" placeholder="Password" secureTextEntry onChangeText={setRepassword}/>
-          <CustomButton title="Registrar" onPress={handleRegister} />
+          <CustomInputText label={strings.direccionEmail} placeholder={strings.placeEmail} onChangeText={setEmail} value={email}/>
+          <CustomInputText label={strings.contrasenia} placeholder={strings.placePassword} secureTextEntry onChangeText={setPassword} value={password}/>
+          <CustomInputText label={strings.repetirContrasenia} placeholder={strings.placePassword} secureTextEntry onChangeText={setRepassword}/>
+          <CustomButton title={strings.registrar} onPress={handleRegister} />
           <View style={[styles.maxWidth, styles.margen1]}>
             <TouchableOpacity onPress={() => navigation.navigate("Login")}>
               <Text style={[styles.texto, styles.alineadoPersonal]}>¿Ya tienes cuenta? Inicia sesión</Text>

@@ -31,7 +31,7 @@ public class Survey {
 
     @OneToOne(cascade = CascadeType.ALL) //solo para pruebas borrar cascade luego
     @JoinColumn(name = "id_pago", nullable = true)
-    private Pago pago;
+    private Pago pago = null;
 
     @OneToOne(cascade = CascadeType.ALL) //solo para pruebas borrar cascade luego
     @JoinColumn(name = "id_pago_panelista", nullable = true)

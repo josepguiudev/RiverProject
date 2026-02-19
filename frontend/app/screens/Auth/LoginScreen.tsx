@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import styles from "./styles";
 import TypeWriter from "react-native-typewriter";
 import globalStyles from "@/assets/globalStyles/globalStyles";
+import strings from "../../../assets/supportFiles/strings.json";
 
 export default function LoginScreen({ navigation }: any) {
     const cursorOpacity = React.useRef(new Animated.Value(1)).current;
@@ -18,7 +19,7 @@ export default function LoginScreen({ navigation }: any) {
           Animated.timing(cursorOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
         ])
       ).start();
-    }, [] );  
+    } );  
   
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -31,7 +32,7 @@ export default function LoginScreen({ navigation }: any) {
         });
 
         if (!res.ok) {
-        alert("Login incorrecto");
+        alert(strings.badLogin);
         return;
         }
 
@@ -53,9 +54,9 @@ export default function LoginScreen({ navigation }: any) {
         </View>
         <View style={[styles.contenedorWritter, styles.alineadoPersonal]}>
           <Text style={styles.tituloHero}>
-            RIVER{" "} 
+            {strings.nameMayus}{" "} 
             <TypeWriter typing={1} style={styles.destaqueAzul}>
-              APP
+              {strings.appMayus}
             </TypeWriter>
           </Text>
         </View>
@@ -67,7 +68,7 @@ export default function LoginScreen({ navigation }: any) {
             maxDelay={50}
             style={styles.mainText}
           >
-            Soluciones estadísticas del mercado <Text style={styles.blueText}>Gaming.</Text>
+            {strings.tittle1} <Text style={styles.blueText}>{strings.tittle2}</Text>
           </TypeWriter>
           
           {/* El cursor va fuera para que siempre esté al final */}
@@ -77,12 +78,12 @@ export default function LoginScreen({ navigation }: any) {
       {/* Parte del recuadro del login */}
       <View style={[styles.alineadoPersonal, styles.maxHeigth, styles.noJustify]}>
         <View style={[styles.caja, styles.margen2]}>
-          <CustomInputText label="Dirección de correo electrónico" placeholder="pruebapolitecnics@gmail.com" onChangeText={setEmail}/>
-          <CustomInputText label="Contraseña" placeholder="Password" secureTextEntry onChangeText={setPassword}/>
-          <CustomButton title="Login" onPress={handleLogin} />
+          <CustomInputText label={strings.direccionEmail} placeholder={strings.placeEmail} onChangeText={setEmail}/>
+          <CustomInputText label={strings.contrasenia} placeholder={strings.placePassword} secureTextEntry onChangeText={setPassword}/>
+          <CustomButton title={strings.login} onPress={handleLogin} />
           <View style={[styles.maxWidth, styles.margen1]}>
             <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-              <Text style={[styles.texto, styles.alineadoPersonal]}>No tienes cuenta? Regístrate</Text>
+              <Text style={[styles.texto, styles.alineadoPersonal]}>{strings.noCuenta}</Text>
             </TouchableOpacity>
           </View>
         </View>

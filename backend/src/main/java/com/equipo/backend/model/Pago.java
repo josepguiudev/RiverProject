@@ -14,6 +14,12 @@ public class Pago {
         private String empresaNombre;
         private double totalCuota;
         private double pagoEnquesta;
+        private byte isEnquestaPagada;
+        
+        @OneToOne
+        @JoinColumn(name = "id_survey")
+        private Survey survey;
+
 
 
         public Long getId_pago() {
@@ -47,6 +53,23 @@ public class Pago {
         public void setPagoEnquesta(double pagoEnquesta) {
                 this.pagoEnquesta = pagoEnquesta;
         }
+
+        public byte getIsEnquestaPagada() {
+                return this.isEnquestaPagada;
+        }
+
+        public void setIsEnquestaPagada(byte isEnquestaPagada) {
+                this.isEnquestaPagada = isEnquestaPagada;
+        }
+
+        public Survey getSurvey() {
+                return this.survey;
+        }
+
+        public void setSurvey(Survey survey) {
+                this.survey = survey;
+        }
+
 
 
 }
