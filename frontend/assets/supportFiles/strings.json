@@ -1,4 +1,5 @@
 {
+    "______comentario1_______": "LOGIN",
     "name": "River",
     "nameMayus": "RIVER",
     "appMayus": "APP",
@@ -11,9 +12,11 @@
     "login": "Login",
     "noCuenta": "No tienes cuenta? Regístrate",
 
+    "______comentario2_______": "REGISTRO",
     "repetirContrasenia": "Repita la contraseña",
     "registrar": "Registrar",
 
+    "______comentario3_______": "HOME",
     "menu": "☰ Menú",
     "perfil": "Perfil",
     "configuracion": "Configuración",
@@ -25,6 +28,7 @@
     "type3": "3",
     "type4": "4",
 
+    "______comentario4_______": "ALERTS DE TODA APP",
     "alertErrorRegistrar": "Error al registrar",
     "alertCreaUser": "Usuario creado correctamente",
     "alertNotSamePassword": "La contraseña insertada no es la misma",
