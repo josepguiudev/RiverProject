@@ -1,4 +1,4 @@
-# 🗂️ Tutorial: Crear una API REST con Spring Boot y conectarla a React
+# 🗂️ Tutorial: Crear una API REST con Spring Boot y conectarla a React Native
 
 ---
 
@@ -6,102 +6,110 @@
 
 ### ¿Qué vamos a construir?
 
-Una API REST que sigue el patrón clásico de Spring Boot:
+Un endpoint `GET /api/surveys` que consulta la base de datos MySQL y devuelve los datos de las encuestas al componente `ListEncuestas.tsx` de React Native.
+
+El flujo completo es:
 
 ```
-Base de datos (MySQL/H2)
-        ↓
-   Repository       ← accede a la BD
-        ↓
-    Service         ← lógica de negocio + mapeo a DTO
-        ↓
-   Controller       ← expone el endpoint HTTP
-        ↓
-   Frontend React   ← consume la API con fetch/axios
+MySQL (XAMPP)
+    ↓
+SurveyRepository.java    ← 1. accede a la BD (generado por Spring JPA)
+    ↓
+SurveyService.java       ← 2. transforma Survey → SurveyRequest (DTO)
+    ↓
+SurveyController.java    ← 3. expone GET /api/surveys
+    ↓
+ListEncuestas.tsx        ← 4. hace fetch() y muestra los datos
 ```
 
-### ¿Qué es un DTO y para qué sirve?
+### ¿Qué es un DTO?
 
-Un **DTO (Data Transfer Object)** como tu `SurveyRequest.java` es un objeto "intermedio" que decide **qué datos del modelo se mandan al frontend** — no tienes que exponer toda la entidad `Survey` con todos sus campos internos.
+Un **DTO (Data Transfer Object)** como `SurveyRequest.java` decide **qué datos de la entidad se mandan al frontend**. No expones toda la entidad `Survey` con sus listas de preguntas, géneros, etc —solo lo que el front necesita.
 
 ```
-Entidad Survey (modelo completo de BD)  →  SurveyRequest DTO (solo lo que el front necesita)
+Survey (entidad completa de BD)  →  SurveyRequest (solo los campos que necesita el front)
 ```
+
+> En este proyecto el DTO es un **Java Record**: inmutable, sin getters/setters, sin Lombok. Solo declaras los campos y Java lo genera todo.
 
 ---
 
-## PARTE 2 — CREACIÓN DEL BACK
+## PARTE 2 — BACKEND (4 pasos)
 
-### Paso 1: El DTO (ya lo tienes)
+---
 
-Asegúrate de que `SurveyRequest.java` tenga exactamente los campos que el frontend va a consumir:
+### ✅ Paso 1 — El DTO (ya lo tienes)
+
+**¿Qué hace?** Define qué campos viajan de Java al JSON que recibe el frontend.
+
+**Archivo:** `src/main/java/com/equipo/backend/dto/SurveyRequest.java`
 
 ```java
-// src/main/java/com/tuapp/dto/SurveyRequest.java
-package com.tuapp.dto;
-
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+package com.equipo.backend.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class SurveyRequest {
-    private Long id;
-    private String name;          // título de la encuesta
-    private LocalDate creationDate;
-    private LocalDate launchDate;
-    private LocalDate closeDate;
-    private Integer numQuestions;
-    private Integer pago;         // importe del pago asociado
-}
+public record SurveyRequest(
+        Long id,
+        String name,
+        LocalDateTime creationDate,  // Timestamp en BD → LocalDateTime → String ISO en JSON
+        LocalDateTime launchDate,    // nullable → puede llegar como null al frontend
+        LocalDate closeDate,         // java.sql.Date → LocalDate → "YYYY-MM-DD" en JSON
+        Integer numQuestions,        // Integer (con mayúscula) para que pueda ser null
+        Integer pago                 // null si la encuesta no tiene pago asociado
+) { }
 ```
 
-> ⚠️ **Importante:** Los nombres de los campos aquí deben coincidir con lo que el frontend espera recibir en el JSON.
+> **Regla clave:** El nombre de cada campo aquí (`name`, `pago`, `numQuestions`...) es exactamente el nombre de clave que aparecerá en el JSON. La interfaz TypeScript del frontend debe usar los mismos nombres.
+
+**Nada que crear — ya existe.**
 
 ---
 
-### Paso 2: El Repository
+### ✅ Paso 2 — El Repository
 
-El repositorio le habla directamente a la base de datos. Como usas JPA, Spring genera las queries automáticamente:
+**¿Qué hace?** Habla directamente con la base de datos. Spring Data JPA genera automáticamente las queries básicas (`findAll`, `findById`, `save`...) — no escribes SQL.
+
+**Archivo a crear:** `src/main/java/com/equipo/backend/repository/SurveyRepository.java`
 
 ```java
-// src/main/java/com/tuapp/repository/SurveyRepository.java
-package com.tuapp.repository;
+package com.equipo.backend.repository;
 
-import com.tuapp.model.Survey;
+import com.equipo.backend.model.Survey;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SurveyRepository extends JpaRepository<Survey, Long> {
-    // JpaRepository ya te da: findAll(), findById(), save(), delete()...
-    // Si necesitas queries personalizadas las añades aquí
+    // Spring genera automáticamente: findAll(), findById(), save(), deleteById()...
+    // Si en el futuro necesitas buscar por nombre o fecha, las añades aquí:
+    // List<Survey> findByName(String name);
+    // List<Survey> findByLaunchDateAfter(Timestamp fecha);
 }
 ```
 
+> **¿Por qué es una `interface` y no una clase?** Porque Spring la implementa por ti en tiempo de arranque. Tú solo declaras qué entidad (`Survey`) y qué tipo de ID (`Long`) maneja.
+
 ---
 
-### Paso 3: El Service
+### ✅ Paso 3 — El Service
 
-El servicio contiene la lógica: obtiene las encuestas de la BD y las **mapea** al DTO:
+**¿Qué hace?** Contiene la lógica: obtiene los `Survey` de la BD y los **transforma** al DTO `SurveyRequest`. Este paso de transformación se llama **mapeo**.
+
+**Archivo a crear:** `src/main/java/com/equipo/backend/service/SurveyService.java`
 
 ```java
-// src/main/java/com/tuapp/service/SurveyService.java
-package com.tuapp.service;
+package com.equipo.backend.service;
 
-import com.tuapp.dto.SurveyRequest;
-import com.tuapp.model.Survey;
-import com.tuapp.repository.SurveyRepository;
+import com.equipo.backend.dto.SurveyRequest;
+import com.equipo.backend.model.Survey;
+import com.equipo.backend.repository.SurveyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class SurveyService {
@@ -109,244 +117,198 @@ public class SurveyService {
     @Autowired
     private SurveyRepository surveyRepository;
 
-    @Transactional
+    @Transactional  // ← OBLIGATORIO (ver sección de errores comunes)
     public List<SurveyRequest> getAllSurveys() {
-        return surveyRepository.findAll()
+        return surveyRepository.findAll()   // 1. obtiene todos los Survey de la BD
                 .stream()
-                .map(this::toDTO)       // convierte cada Survey en SurveyRequest
-                .collect(Collectors.toList());
+                .map(this::toDTO)           // 2. convierte cada Survey a SurveyRequest
+                .toList();
     }
 
-    // Método de mapeo: Survey (entidad) → SurveyRequest (DTO)
+    // Mapeo: Survey (entidad) → SurveyRequest (DTO)
+    // Este método es privado: nadie fuera del service lo necesita.
     private SurveyRequest toDTO(Survey survey) {
-        SurveyRequest dto = new SurveyRequest();
-        dto.setId(survey.getId());
-        dto.setName(survey.getName());
-        dto.setCreationDate(survey.getCreationDate());
-        dto.setLaunchDate(survey.getLaunchDate());
-        dto.setCloseDate(survey.getCloseDate());
-        dto.setNumQuestions(survey.getQuestions() != null
-            ? survey.getQuestions().size() : 0);
-        // Si el pago está en una entidad relacionada:
-        dto.setPago(survey.getPago() != null
-            ? survey.getPago().getAmount() : null);
-        return dto;
+        return new SurveyRequest(
+            survey.getId(),
+            survey.getName(),
+            // survey.getCreationDate() devuelve java.sql.Timestamp
+            // .toLocalDateTime() lo convierte al tipo que espera el DTO
+            survey.getCreationDate() != null ? survey.getCreationDate().toLocalDateTime() : null,
+            survey.getLaunchDate()   != null ? survey.getLaunchDate().toLocalDateTime()   : null,
+            // survey.getCloseDate() devuelve java.sql.Date
+            // .toLocalDate() lo convierte al tipo que espera el DTO
+            survey.getCloseDate()    != null ? survey.getCloseDate().toLocalDate()        : null,
+            // numQuestions es un campo directo en Survey (int), no hay que calcularlo
+            survey.getNumQuestions(),
+            // pago es una relación @OneToOne, puede ser null si la encuesta no tiene pago
+            // Pago.getPagoEnquesta() devuelve double → lo casteamos a Integer
+            survey.getPago() != null ? (int) survey.getPago().getPagoEnquesta() : null
+        );
     }
 }
 ```
 
-> 💡 El método `toDTO` es clave — aquí decides qué campos de `Survey` se exponen y con qué nombre.
+> **¿Por qué `@Transactional`?** `Survey` tiene relaciones `@OneToMany` (preguntas, géneros) y `@OneToOne` (pago) que JPA carga de forma perezosa (lazy). Sin `@Transactional`, al intentar acceder a `survey.getPago()` dentro de `toDTO` Spring lanza `LazyInitializationException` porque la sesión de BD ya se cerró.
 
 ---
 
-### Paso 4: El Controller
+### ✅ Paso 4 — El Controller
 
-El controlador expone el endpoint HTTP que el frontend llamará:
+**¿Qué hace?** Expone el endpoint HTTP `GET /api/surveys`. Recibe la petición del frontend, llama al service y devuelve el JSON.
+
+**Archivo a crear:** `src/main/java/com/equipo/backend/controller/SurveyController.java`
 
 ```java
-// src/main/java/com/tuapp/controller/SurveyController.java
-package com.tuapp.controller;
+package com.equipo.backend.controller;
 
-import com.tuapp.dto.SurveyRequest;
-import com.tuapp.service.SurveyService;
+import com.equipo.backend.dto.SurveyRequest;
+import com.equipo.backend.service.SurveyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/surveys")
-@CrossOrigin(origins = "http://localhost:5173") // puerto de Vite/React
+@RestController                      // Indica que esta clase gestiona peticiones REST
+@RequestMapping("/api/surveys")      // Prefijo de todas las rutas de este controller
+@CrossOrigin(origins = "*")          // Permite peticiones desde cualquier origen (React Native / Expo)
 public class SurveyController {
 
     @Autowired
     private SurveyService surveyService;
 
-    // GET /api/surveys → devuelve todas las encuestas
+    // GET http://localhost:8080/api/surveys
     @GetMapping
     public ResponseEntity<List<SurveyRequest>> getAllSurveys() {
         List<SurveyRequest> surveys = surveyService.getAllSurveys();
-        return ResponseEntity.ok(surveys);
-    }
-
-    // GET /api/surveys/{id} → devuelve una encuesta concreta (opcional)
-    @GetMapping("/{id}")
-    public ResponseEntity<SurveyRequest> getSurveyById(@PathVariable Long id) {
-        // puedes ampliar el service para este caso
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(surveys);  // 200 OK + lista en el body
     }
 }
 ```
 
 ---
 
-### ✅ Verificación del back
+### 🧪 Verificación del backend
 
-Arranca el backend y prueba en el navegador o con `curl`:
+**1.** Arranca el backend (Spring Boot + XAMPP MySQL)
 
-```bash
-curl http://localhost:8080/api/surveys
+**2.** Abre Postman o el navegador y haz:
+```
+GET http://localhost:8080/api/surveys
 ```
 
-Deberías recibir algo como:
-
+**3.** Debes recibir un `200 OK` con un array JSON:
 ```json
 [
   {
     "id": 1,
     "name": "Encuesta de satisfacción",
-    "creationDate": "2024-01-10",
-    "launchDate": "2024-01-15",
+    "creationDate": "2024-01-10T10:00:00",
+    "launchDate": "2024-01-15T09:00:00",
     "closeDate": "2024-02-15",
     "numQuestions": 5,
     "pago": 20
+  },
+  {
+    "id": 2,
+    "name": "Encuesta sin pago",
+    "creationDate": "2024-02-01T08:30:00",
+    "launchDate": null,
+    "closeDate": null,
+    "numQuestions": 3,
+    "pago": null
   }
 ]
 ```
 
+Si el array llega vacío `[]`, la tabla `survey` de la BD está vacía — inserta alguna fila de prueba.
+
 ---
 
-## PARTE 3 — CONEXIÓN CON EL FRONT
+## PARTE 3 — FRONTEND (2 pasos)
 
-### Paso 1: Ajusta la interfaz TypeScript
+---
 
-En `ListEncuestas.tsx`, la interfaz debe reflejar **exactamente** los campos del DTO:
+### ✅ Paso 1 — Actualiza la interfaz TypeScript
+
+En `ListEncuestas.tsx`, la interfaz `Encuesta` debe reflejar **exactamente** los mismos campos y nombres que `SurveyRequest.java`. Los campos opcionales (`?`) son los que pueden llegar como `null` desde el backend.
 
 ```tsx
-// Debe coincidir campo a campo con SurveyRequest.java
-interface Encuesta {
+// frontend/app/components/Cards/ListEncuestas.tsx
+
+export interface Encuesta {
   id: number;
-  name: string;          // ← antes era "titulo", ahora es "name" como en el DTO
-  creationDate: string;
-  launchDate: string;
-  closeDate: string;
-  numQuestions: number;
-  pago: number | null;
+  name: string;            // SurveyRequest.name
+  creationDate?: string;   // LocalDateTime → string ISO "2024-01-10T10:00:00"
+  launchDate?: string;     // nullable en BD → puede ser null
+  closeDate?: string;      // LocalDate → string "YYYY-MM-DD"
+  numQuestions?: number;
+  pago?: number | null;    // null si no hay pago
 }
 ```
 
 ---
 
-### Paso 2: Haz el fetch a la API real
+### ✅ Paso 2 — Reemplaza los datos mock por fetch real
 
-Sustituye los datos hardcodeados por una llamada real:
+En `ListEncuestas.tsx`, sustituye el bloque `// TO DO: HACER CONEXIÓN CON API` por la llamada real:
 
 ```tsx
-import { useEffect, useState } from "react";
-
-const ListEncuestas = () => {
-  const [encuestas, setEncuestas] = useState<Encuesta[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("http://localhost:8080/api/surveys")
-      .then((res) => {
-        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
-        return res.json();
-      })
-      .then((data: Encuesta[]) => {
-        setEncuestas(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) return <p>Cargando encuestas...</p>;
-  if (error) return <p>Error: {error}</p>;
-
-  return (
-    <div>
-      {encuestas.map((e) => (
-        <div key={e.id}>
-          <h2>{e.name}</h2>
-          <p>Preguntas: {e.numQuestions}</p>
-          <p>Pago: {e.pago ?? "Sin pago"} €</p>
-        </div>
-      ))}
-    </div>
-  );
+const fetchData = async () => {
+  try {
+    const response = await fetch("http://localhost:8080/api/surveys");
+    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+    const data: Encuesta[] = await response.json();
+    setEncuestas(data);
+  } catch (error) {
+    console.error("Error al obtener encuestas:", error);
+  }
 };
-
-export default ListEncuestas;
 ```
+
+> ⚠️ **Dispositivos físicos o emulador Android:** `localhost` apunta al propio dispositivo, no al PC. Usa la IP local del PC (ej. `192.168.1.45`) en su lugar:
+> ```tsx
+> fetch("http://192.168.1.45:8080/api/surveys")
+> ```
+> Para saber tu IP local: abre una terminal y escribe `ipconfig` (Windows).
 
 ---
 
-## PARTE 4 — COSAS A TENER EN CUENTA Y EXCEPCIONES
+## PARTE 4 — ERRORES COMUNES
 
-### ⚠️ 1. CORS
-
-El error más común al conectar front y back. Si ves en la consola del navegador:
-
-```
-Access to fetch blocked by CORS policy
-```
-
-La solución ya está en el controlador con `@CrossOrigin`. Asegúrate de que el puerto coincide con el de tu frontend (Vite usa `5173` por defecto).
-
----
-
-### ⚠️ 2. Nombres de campos: camelCase vs snake_case
-
-Spring Boot serializa a **camelCase** por defecto (`creationDate`). React debe usar exactamente los mismos nombres. Si cambiases la configuración de Jackson en el back para usar `snake_case` (`creation_date`), tendrías que actualizar la interfaz TypeScript.
+| Error | Causa | Solución |
+|---|---|---|
+| `LazyInitializationException` | Acceder a `survey.getPago()` sin `@Transactional` | Añadir `@Transactional` al método del service |
+| `Access to fetch blocked by CORS` | El navegador bloquea la petición cross-origin | `@CrossOrigin(origins = "*")` en el controller |
+| El JSON llega con `null` en campos de fechas | La BD los tiene vacíos | Normal si son `nullable = true`. Manéjalo en el frontend con `??` |
+| `Network request failed` en Expo | `localhost` no apunta al PC | Usar la IP local del PC en lugar de `localhost` |
+| Array vacío `[]` | La tabla `survey` está vacía | Insertar filas de prueba en la BD |
+| `ClassCastException` al castear pago | `getPagoEnquesta()` devuelve `double` no `int` | Usar `(int)` o cambiar el DTO a `Double` |
 
 ---
 
-### ⚠️ 3. Fechas
-
-`LocalDate` en Java se serializa como `"2024-01-10"` (string ISO). En TypeScript el tipo es `string`, no `Date`. Si necesitas formatearla:
-
-```ts
-new Date(e.creationDate).toLocaleDateString("es-ES")
-```
-
----
-
-### ⚠️ 4. Relaciones lazy (LazyInitializationException)
-
-Si `Survey` tiene relaciones como `@OneToMany` con preguntas o pagos, y accedes a ellas fuera de una transacción, Spring lanzará `LazyInitializationException`. Solución: añade `@Transactional` al método del service.
+### ⚠️ Norma fundamental: nunca devuelvas la entidad directamente
 
 ```java
-@Transactional  // ← añade esto en el service
-public List<SurveyRequest> getAllSurveys() { ... }
+// ❌ MAL — expone datos internos, puede generar JSON circular
+return ResponseEntity.ok(surveyRepository.findAll());
+
+// ✅ BIEN — solo expones lo que el front necesita
+return ResponseEntity.ok(surveyService.getAllSurveys());
 ```
 
----
-
-### ⚠️ 5. Campos nulos
-
-Si `pago` puede ser `null` en BD, refléjalo en el DTO como `Integer` (no `int`) en Java y como `number | null` en TypeScript. Usa el operador `??` en el frontend para manejar nulos:
-
-```tsx
-{e.pago ?? "Sin pago"} €
-```
-
----
-
-### ⚠️ 6. El DTO nunca debe ser la entidad
-
-Nunca retornes directamente un `Survey` desde el controlador. Podrías:
-- Exponer datos sensibles de la BD
-- Generar referencias circulares en el JSON
-- Acoplarte demasiado a la estructura interna
-
-**Siempre mapea a un DTO antes de responder.**
+`Survey` tiene listas anidadas (`questionList`, `genereList`) que generarían un JSON enorme o referencias circulares. El DTO actúa como filtro.
 
 ---
 
 ## 📌 Resumen del flujo completo
 
 ```
-MySQL
-  → SurveyRepository (acceso a BD)
-  → SurveyService (mapeo Survey → DTO)
-  → SurveyController (GET /api/surveys)
-  → fetch() en React
-  → useState()
-  → render en el componente
+MySQL (XAMPP)
+  → SurveyRepository.java   findAll() → List<Survey>
+  → SurveyService.java      toDTO()   → List<SurveyRequest>
+  → SurveyController.java   GET /api/surveys → JSON
+  → fetch() en ListEncuestas.tsx
+  → setEncuestas(data)
+  → FlatList → EncuestaCard (name, pago)
 ```
