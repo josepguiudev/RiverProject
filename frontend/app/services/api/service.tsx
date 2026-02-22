@@ -1,11 +1,8 @@
-//CLASE DE PRUEBA PARA PRACTICAR, NO ESSENCIAL
-
 import axios, { AxiosError } from 'axios';
-import { API_CONFIG, getFullUrl } from '../../config/api.config';
-import { Survey } from '../../types/formsSurvey.types';;
+import { API_CONFIG } from '../../config/api.config';
+import { Survey } from '../../types/formsSurvey.types';
 
-
-// Configurar axios con valores por defecto
+// Configurar axios con valores por defecto desde tu archivo de configuración
 const apiClient = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
@@ -15,57 +12,59 @@ const apiClient = axios.create({
 });
 
 /**
- * Servicio para manejar todas las llamadas al API
+ * Servicio para manejar todas las llamadas al API de Encuestas
  */
 export class FormApiService {
   
   /**
-   * Enviar formulario al backend
-   * @param formData - Datos del formulario
-   * @returns Promise con la respuesta guardada
+   * Enviar una nueva plantilla de encuesta al backend
+   * Mapea los datos del Frontend a la @Entity de Java
    */
   static async submitForm(formData: Survey): Promise<Survey> {
-  try {
-    // Transformem l'objecte TS al format exacte que espera la @Entity de Java
-    const payload = {
-      name: formData.nombre,           // A Java tens 'name', no 'nombre'
-      numQuestions: formData.questions.length,
-      // A Java la llista es diu 'questionList'
-      questionList: formData.questions.map(q => ({
-        questionText: q.questionText,
-        type: q.type,
-        // Assegura't que Question.java tingui 'optionList' o 'options'
-        optionList: q.options || [] 
-      })),
-      // A Java es diu 'genereList'
-      genereList: formData.generes || [],
+    try {
+      // Transformamos el objeto para que coincida con Survey.java y Question.java
+      const payload = {
+        name: formData.name, 
+        numQuestions: formData.questionList.length,
+        
+        // Mapeo de la lista de preguntas
+        questionList: formData.questionList.map(q => ({
+          text_question: q.text_question, // Coincide con la columna SQL y el campo Java
+          type_name: q.type_name,         // SHORT_TEXT, NUMERIC, SINGLE_CHOICE, etc.
+          
+          // Opciones de respuesta (si las hay)
+          options: q.options ? q.options.map(opt => ({
+            text_opcion: opt.text_opcion // Coincide con QuestionOption.java
+          })) : []
+        })),
+
+        // Campos adicionales de la entidad Survey
+        genereList: [], // Puedes mapear géneros si los tienes en el formulario
+        pago: null, 
+        pagoPanelista: null,
+        creationDate: new Date().toISOString() // LocalDateTime en Java acepta este formato
+      };
+
+      console.log("🚀 Enviando Payload a Spring Boot:", JSON.stringify(payload, null, 2));
+
+      const response = await apiClient.post<Survey>(
+        "/api/formSurvey/submit", 
+        payload
+      );
       
-      // Enviem objectes buits o nulls per als objectes Pago
-      pago: null, 
-      pagoPanelista: null,
-      creationDate: new Date().toISOString()
-    };
-
-    console.log("🚀 Payload cap a Java:", payload);
-
-    const response = await apiClient.post<Survey>(
-      "/submit", 
-      payload
-    );
-    return response.data;
-  } catch (error) {
-    throw this.handleError(error);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
   }
-}
 
   /**
-   * Obtener todas las respuestas del backend
-   * @returns Promise con array de respuestas
+   * Obtener todas las encuestas guardadas en la base de datos
    */
   static async getAllResponses(): Promise<Survey[]> {
     try {
       const response = await apiClient.get<Survey[]>(
-        API_CONFIG.ENDPOINTS.GET_RESPONSES
+        "/api/formSurvey/responses"
       );
       return response.data;
     } catch (error) {
@@ -74,13 +73,12 @@ export class FormApiService {
   }
 
   /**
-   * Probar conexión con el backend
-   * @returns Promise con mensaje de prueba
+   * Probar si el servidor está arriba
    */
   static async testConnection(): Promise<string> {
     try {
       const response = await apiClient.get<string>(
-        API_CONFIG.ENDPOINTS.TEST
+        "/api/formSurvey/test"
       );
       return response.data;
     } catch (error) {
@@ -89,28 +87,25 @@ export class FormApiService {
   }
 
   /**
-   * Manejo centralizado de errores
-   * @param error - Error de axios
-   * @returns Error formateado
+   * Manejo centralizado de errores con Axios
    */
   private static handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
       
       if (axiosError.response) {
-        // El servidor respondió con un error
+        // El servidor respondió pero con un código de error (400, 404, 500)
+        console.error("Data error:", axiosError.response.data);
         return new Error(
           `Error del servidor: ${axiosError.response.status} - ${axiosError.response.statusText}`
         );
       } else if (axiosError.request) {
-        // La petición se hizo pero no hubo respuesta
+        // No hubo respuesta (servidor apagado o IP incorrecta)
         return new Error(
-          'No se pudo conectar al servidor. Verifica tu conexión.'
+          'No se pudo conectar al servidor. Revisa si el Backend está corriendo o la IP en api.config.'
         );
       }
     }
-    
-    // Error desconocido
     return new Error('Error inesperado al comunicarse con el servidor');
   }
 }
