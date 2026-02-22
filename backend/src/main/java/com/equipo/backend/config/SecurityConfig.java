@@ -22,7 +22,8 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll() 
+                .requestMatchers("/api/formSurvey/**").permitAll() // Linie para Moha i hacer pruebas saltando el auth
                 .anyRequest().authenticated()
             );
 

@@ -1,138 +1,223 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
-import { Question, QuestionOption, Survey } from '../types/formsSurvey.types';
-import { surveyService } from '../services/api/service';
+import { 
+  View, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  FlatList, 
+  Text, 
+  KeyboardAvoidingView, 
+  Platform,
+  Alert,
+  ActivityIndicator 
+} from 'react-native';
+import { Question, Survey } from '../types/formsSurvey.types';
+import { FormApiService } from '../services/api/service';
+import { QuestionCard } from '../components/QuestionCard/QuestionCard';
 
 const SurveyCreatorScreen = () => {
   const [surveyName, setSurveyName] = useState('');
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // 1. Añadir una nueva pregunta base
+  // --- LÓGICA DE PREGUNTAS ---
+
   const addQuestion = () => {
-    const newQuestion: Question = {
-      text_question: '',
-      type_name: 'SHORT_TEXT',
-      options: []
-    };
-    setQuestions([...questions, newQuestion]);
+    setQuestions([...questions, { 
+      text_question: '', 
+      type_name: 'SHORT_TEXT', 
+      options: [] 
+    }]);
   };
 
-  // 2. Añadir una opción a una pregunta específica (solo para SINGLE_CHOICE)
-  const addOptionToQuestion = (qIndex: number) => {
-    const updatedQuestions = [...questions];
-    const newOption: QuestionOption = { text_opcion: '' };
+  const removeQuestion = (index: number) => {
+    const updated = [...questions];
+    updated.splice(index, 1);
+    setQuestions(updated);
+  };
+
+  const updateQuestionText = (index: number, text: string) => {
+    const updated = [...questions];
+    updated[index].text_question = text;
+    setQuestions(updated);
+  };
+
+  const updateType = (index: number, type: 'SHORT_TEXT' | 'NUMERIC' | 'SINGLE_CHOICE') => {
+    const updated = [...questions];
+    updated[index].type_name = type;
     
-    if (!updatedQuestions[qIndex].options) {
-        updatedQuestions[qIndex].options = [];
+    // Si el tipo es SINGLE_CHOICE, inicializar con una opción vacía si no tiene
+    if (type === 'SINGLE_CHOICE' && (!updated[index].options || updated[index].options.length === 0)) {
+      updated[index].options = [{ text_opcion: '' }];
     }
-    
-    updatedQuestions[qIndex].options?.push(newOption);
-    setQuestions(updatedQuestions);
+    setQuestions(updated);
   };
 
-  // 3. Actualizar el texto de una opción
-  const updateOptionText = (text: string, qIndex: number, oIndex: number) => {
-    const updatedQuestions = [...questions];
-    if (updatedQuestions[qIndex].options) {
-      updatedQuestions[qIndex].options![oIndex].text_opcion = text;
-      setQuestions(updatedQuestions);
+  // --- LÓGICA DE OPCIONES ---
+
+  const addOption = (qIndex: number) => {
+    const updated = [...questions];
+    if (!updated[qIndex].options) updated[qIndex].options = [];
+    updated[qIndex].options!.push({ text_opcion: '' });
+    setQuestions(updated);
+  };
+
+  const updateOptionText = (qIndex: number, oIndex: number, text: string) => {
+    const updated = [...questions];
+    if (updated[qIndex].options) {
+      updated[qIndex].options![oIndex].text_opcion = text;
+      setQuestions(updated);
     }
   };
 
-  const saveFullSurvey = async () => {
-    const finalSurvey: Survey = {
-      name: surveyName,
-      numQuestions: questions.length,
-      questionList: questions
-    };
-    await surveyService.createTemplate(finalSurvey);
+  // --- ENVÍO AL BACKEND ---
+
+  const handleSaveSurvey = async () => {
+    // Validaciones básicas
+    if (!surveyName.trim()) {
+      Alert.alert("Error", "El nombre de la encuesta es obligatorio");
+      return;
+    }
+    if (questions.length === 0) {
+      Alert.alert("Error", "Debes añadir al menos una pregunta");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const finalSurvey: Survey = {
+        name: surveyName,
+        numQuestions: questions.length,
+        questionList: questions
+      };
+
+      await FormApiService.submitForm(finalSurvey);
+      
+      Alert.alert("Éxito", "Encuesta guardada correctamente en River DB");
+      
+      // Opcional: Limpiar el formulario tras éxito
+      setSurveyName('');
+      setQuestions([]);
+      
+    } catch (error) {
+      Alert.alert("Error de conexión", (error as Error).message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput 
-        placeholder="Nombre de la encuesta" 
-        onChangeText={setSurveyName} 
-        style={styles.mainInput} 
-      />
-
-      <FlatList
-        data={questions}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item, index: qIndex }) => (
-          <View style={styles.questionCard}>
-            <TextInput
-              placeholder="Escribe la pregunta..."
-              onChangeText={(text) => {
-                const updated = [...questions];
-                updated[qIndex].text_question = text;
-                setQuestions(updated);
-              }}
-              style={styles.input}
-            />
-            
-            {/* Selector de Tipo (Simplificado para el ejemplo) */}
-            <View style={styles.row}>
-                {['SHORT_TEXT', 'NUMERIC', 'SINGLE_CHOICE'].map((type) => (
-                    <TouchableOpacity 
-                        key={type}
-                        onPress={() => {
-                            const updated = [...questions];
-                            updated[qIndex].type_name = type as any;
-                            setQuestions(updated);
-                        }}
-                        style={[styles.typeBtn, item.type_name === type && styles.activeBtn]}
-                    >
-                        <Text style={styles.btnText}>{type.split('_')[0]}</Text>
-                    </TouchableOpacity>
-                ))}
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }} 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={styles.container}>
+        <FlatList
+          contentContainerStyle={styles.scrollContent}
+          ListHeaderComponent={
+            <View style={styles.headerSection}>
+              <Text style={styles.labelHeader}>Título de la Encuesta</Text>
+              <TextInput 
+                placeholder="Ej: Encuesta de Satisfacción 2026" 
+                style={styles.mainTitleInput}
+                value={surveyName}
+                onChangeText={setSurveyName}
+              />
             </View>
+          }
+          data={questions}
+          keyExtractor={(_, i) => i.toString()}
+          renderItem={({ item, index }) => (
+            <QuestionCard 
+              question={item}
+              index={index}
+              onUpdateQuestion={(text) => updateQuestionText(index, text)}
+              onRemoveQuestion={() => removeQuestion(index)}
+              onUpdateType={(type) => updateType(index, type)}
+              onAddOption={() => addOption(index)}
+              onUpdateOption={(text, oIndex) => updateOptionText(index, oIndex, text)}
+            />
+          )}
+          ListFooterComponent={
+            <TouchableOpacity style={styles.addBtn} onPress={addQuestion}>
+               <Text style={styles.addBtnText}>+ Añadir Nueva Pregunta</Text>
+            </TouchableOpacity>
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No hay preguntas aún. Presiona el botón de abajo.</Text>
+            </View>
+          }
+        />
 
-            {/* Renderizar opciones solo si es SINGLE_CHOICE */}
-            {item.type_name === 'SINGLE_CHOICE' && (
-              <View style={styles.optionsContainer}>
-                {item.options?.map((opt, oIndex) => (
-                  <TextInput
-                    key={oIndex}
-                    placeholder={`Opción ${oIndex + 1}`}
-                    onChangeText={(text) => updateOptionText(text, qIndex, oIndex)}
-                    style={styles.optionInput}
-                  />
-                ))}
-                <TouchableOpacity onPress={() => addOptionToQuestion(qIndex)}>
-                  <Text style={styles.addOptionText}>+ Añadir Opción</Text>
-                </TouchableOpacity>
-              </View>
+        {/* Botón Flotante de Guardar */}
+        <View style={styles.footerAction}>
+          <TouchableOpacity 
+            style={[styles.saveBtn, loading && styles.disabledBtn]} 
+            onPress={handleSaveSurvey}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.saveText}>Guardar en River DB</Text>
             )}
-          </View>
-        )}
-      />
-
-      <TouchableOpacity style={styles.saveBtn} onPress={addQuestion}>
-        <Text style={styles.saveBtnText}>Nueva Pregunta</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={[styles.saveBtn, {backgroundColor: '#4CAF50'}]} onPress={saveFullSurvey}>
-        <Text style={styles.saveBtnText}>Guardar Todo en River DB</Text>
-      </TouchableOpacity>
-    </View>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
-  mainInput: { fontSize: 20, fontWeight: 'bold', borderBottomWidth: 2, marginBottom: 20 },
-  questionCard: { backgroundColor: 'white', padding: 15, borderRadius: 10, marginBottom: 15, elevation: 3 },
-  input: { borderBottomWidth: 1, borderColor: '#ddd', marginBottom: 10 },
-  row: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: 10 },
-  typeBtn: { padding: 8, borderRadius: 5, backgroundColor: '#eee' },
-  activeBtn: { backgroundColor: '#2196F3' },
-  btnText: { fontSize: 10, color: '#333' },
-  optionsContainer: { marginTop: 10, paddingLeft: 20, borderLeftWidth: 2, borderLeftColor: '#2196F3' },
-  optionInput: { fontSize: 14, color: '#666', marginBottom: 5 },
-  addOptionText: { color: '#2196F3', fontWeight: 'bold', marginTop: 5 },
-  saveBtn: { padding: 15, borderRadius: 10, backgroundColor: '#2196F3', alignItems: 'center', marginTop: 10 },
-  saveBtnText: { color: 'white', fontWeight: 'bold' }
+  container: { flex: 1, backgroundColor: '#F0F2F5' },
+  scrollContent: { padding: 20, paddingBottom: 120 },
+  headerSection: { marginBottom: 25 },
+  labelHeader: { fontSize: 12, color: '#666', fontWeight: 'bold', marginBottom: 5, textTransform: 'uppercase' },
+  mainTitleInput: { 
+    fontSize: 26, 
+    fontWeight: 'bold', 
+    color: '#1A1A1A', 
+    borderBottomWidth: 3, 
+    borderColor: '#2196F3', 
+    paddingVertical: 5 
+  },
+  addBtn: { 
+    padding: 20, 
+    borderStyle: 'dashed', 
+    borderWidth: 2, 
+    borderColor: '#2196F3', 
+    borderRadius: 15, 
+    alignItems: 'center', 
+    marginTop: 10,
+    backgroundColor: 'rgba(33, 150, 243, 0.05)'
+  },
+  addBtnText: { color: '#2196F3', fontWeight: 'bold', fontSize: 16 },
+  footerAction: { 
+    position: 'absolute', 
+    bottom: 0, 
+    left: 0, 
+    right: 0, 
+    padding: 20, 
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderColor: '#eee'
+  },
+  saveBtn: { 
+    backgroundColor: '#4CAF50', 
+    padding: 18, 
+    borderRadius: 15, 
+    alignItems: 'center', 
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5
+  },
+  disabledBtn: { backgroundColor: '#A5D6A7' },
+  saveText: { color: 'white', fontWeight: 'bold', fontSize: 18 },
+  emptyContainer: { padding: 40, alignItems: 'center' },
+  emptyText: { color: '#999', textAlign: 'center', fontSize: 14 }
 });
 
 export default SurveyCreatorScreen;

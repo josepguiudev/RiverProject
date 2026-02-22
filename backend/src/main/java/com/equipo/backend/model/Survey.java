@@ -1,11 +1,11 @@
 package com.equipo.backend.model;
 
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.*;
 
@@ -23,8 +23,14 @@ public class Survey {
 
     private int numQuestions;
     private String name;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime  creationDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     @Column(nullable = true) private LocalDateTime  launchDate;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     @Column(nullable = true) private LocalDateTime closeDate;
     
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
