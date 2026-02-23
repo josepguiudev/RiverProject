@@ -30,4 +30,14 @@ export default StyleSheet.create({
         borderColor: 'red',     // El "red"
         borderStyle: 'solid',   // Opcional (es el valor por defecto)
     },
+    borde2:{
+        borderWidth: 1,         // El "1px"
+        borderColor: 'blue',     // El "red"
+        borderStyle: 'solid',   // Opcional (es el valor por defecto)
+    },
+    filas:{
+        display: 'flex',
+        flexDirection: 'row', // Asegura el eje horizontal
+        justifyContent: 'space-between' 
+    }
 });

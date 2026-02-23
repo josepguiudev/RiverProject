@@ -11,6 +11,8 @@ import HomeScreen from './screens/Home/HomeScreen';
 
 import LoginScreen from './screens/Auth/LoginScreen';
 
+import AdminScreen from './screens/Admin/AdminScreen';
+
 // 2. INTERRUPTOR DIRECTO
 // Cambia a true para ver Storybook, false para la App normal
 const SHOW_STORYBOOK = false;
@@ -31,6 +33,7 @@ function App() {
         <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}}/>                   
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Admin" component={AdminScreen} />
         <Stack.Screen name="SuerveyCreator" component={SurveyCreatorScreen} />     
       </Stack.Navigator>
     </NavigationContainer>

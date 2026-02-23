@@ -15,6 +15,15 @@ public class JwtService {
 
     //Creacion del TOKEN del usuario
     public String generateToken(User user){
+        System.out.println(Jwts.builder()
+                .setSubject(user.getEmail())
+                .claim("role", user.getId())
+                .setIssuedAt(new Date())
+                .setExpiration(
+                    new Date(System.currentTimeMillis() + 1000 * 60 * 60)
+                )
+                .signWith(Keys.hmacShaKeyFor(SECRET.getBytes()))
+                .compact()+ "----------------------------------------------------------------------------------ssssssssssssssssssssssssssss");
         return Jwts.builder()
                 .setSubject(user.getEmail())
                 .claim("role", user.getId())
