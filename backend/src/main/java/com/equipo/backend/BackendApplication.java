@@ -26,7 +26,7 @@ public class BackendApplication {
 			return args -> {
 				System.out.println("--- Insertando datos de user_steam_queries ---");
 
-				/*UserSteamQueries q0 = new UserSteamQueries();
+				UserSteamQueries q0 = new UserSteamQueries();
 				q0.setQuery("https://api.steampowered.com/ISteamUser/");
 				q0.setType(0);
 				q0.setDescription("Dirección hhtps de API Steam");
@@ -42,7 +42,7 @@ public class BackendApplication {
 				q2.setDescription("Obtener usuarios amigos de un usuario por ID");
 
 				// Guardamos todos
-				repository.saveAll(List.of(q0, q1, q2));*/
+				repository.saveAll(List.of(q0, q1, q2));
 
 				System.out.println("--- Datos de user_steam_queries insertados con éxito ---");
 			};
