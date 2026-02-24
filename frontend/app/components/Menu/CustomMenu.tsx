@@ -3,15 +3,22 @@ import { View, Text, TouchableWithoutFeedback, Animated, Dimensions, Pressable, 
 import styles from './styles';
 import strings from "../../../assets/supportFiles/strings.json";
 import globalStyles from '@/assets/globalStyles/globalStyles';
+import { useNavigation } from '@react-navigation/native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
+interface SteamMenuItemProps {
+  label: string;
+  onPress?: () => void; // El signo '?' lo hace opcional
+}
+
 // Componente auxiliar para el ítem con efecto Steam
-const SteamMenuItem = ({ label }: { label: string }) => {
+const SteamMenuItem = ({ label, onPress }: SteamMenuItemProps) => {
   const [hovered, setHovered] = useState(false);
 
   return (
     <Pressable
+      onPress={onPress}
       onPressIn={() => setHovered(true)}
       onPressOut={() => setHovered(false)}
       // Para Web
@@ -28,6 +35,7 @@ const SteamMenuItem = ({ label }: { label: string }) => {
 
 export default function MenuLateral({ visible, onClose }: any) {
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current; // Inicia fuera a la izquierda
+  const navigation = useNavigation();
 
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -52,6 +60,7 @@ export default function MenuLateral({ visible, onClose }: any) {
         <View style={styles.linea} />
         
         {/* Aquí tus opciones de menú */}
+        <SteamMenuItem label={strings.adminScreen} onPress={() => navigation.navigate("Admin" as never)}/>
         <SteamMenuItem label={strings.perfil} />
         <SteamMenuItem label={strings.configuracion} />
         <SteamMenuItem label={strings.cerrarSesion} />

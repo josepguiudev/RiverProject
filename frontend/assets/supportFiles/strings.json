@@ -21,6 +21,7 @@
     "perfil": "Perfil",
     "configuracion": "Configuración",
     "cerrarSesion": "Cerrar Sesión",
+    "adminScreen": "Pantalla de Administrador",
     "survey": "Tipo encuesta",
     "type0": "0",
     "type1": "1",
@@ -32,5 +33,22 @@
     "alertErrorRegistrar": "Error al registrar",
     "alertCreaUser": "Usuario creado correctamente",
     "alertNotSamePassword": "La contraseña insertada no es la misma",
-    "badLogin": "Login incorrecto"
+    "badLogin": "Login incorrecto",
+
+    "______comentario5_______": "URLS DE STEAM",
+    "urlApiSteam": "https://api.steampowered.com/ISteamUser/",
+
+    "obtenerUsuario": "Obtener usuario por id",
+    "urlPlayer": "GetPlayerSummaries/v2/",
+
+    "urlRangeplayers": "GetPlayerSummaries/v2/",
+
+    "obtenerAmigosUsuario": "Obtener los amigos del usuario por id",
+    "urlFriendsPlayer": "GetFriendList/v1/",
+
+    "obtenerUsuariosJuegoCount": "Conteo de usuarios por id de juego",
+    "urlCountUserGame": "GetNumberOfCurrentPlayers/v1/",
+
+
+    "idPlayerJoako": "76561199167008828"
 }
