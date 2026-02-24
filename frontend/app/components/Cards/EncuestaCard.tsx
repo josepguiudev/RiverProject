@@ -1,5 +1,6 @@
 import React, { memo } from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { wp, hp, fontScale } from "@/app/utils/device";
 
 /**
  * Propiedades del componente {@link EncuestaCard}.
@@ -52,17 +53,17 @@ export default memo(EncuestaCard); //Memo permite evitar que si cambiamos solo u
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 8,
-    marginVertical: 8,
+    padding: wp(4),
+    borderRadius: wp(2),
+    marginVertical: hp(1),
     elevation: 3,
   },
   title: {
-    fontSize: 18,
+    fontSize: fontScale(18),
     fontWeight: "bold",
   },
   pago: {
-    fontSize: 14,
+    fontSize: fontScale(14),
     fontWeight: "600",
   },
 });

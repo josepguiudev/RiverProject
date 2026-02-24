@@ -1,13 +1,14 @@
 import { StyleSheet } from 'react-native';
+import { wp, hp } from '@/app/utils/device';
 
 export default StyleSheet.create({
-    cajaPrincipal:{
-        width: "80%",
-        height: "80%"
+    cajaPrincipal: {
+        width: wp(80),
+        height: hp(80),
     },
-    contenedorFila:{
-        width: "33%",
-        height: "100%",
-        borderRadius: 20
+    contenedorFila: {
+        width: wp(33),
+        height: hp(100),
+        borderRadius: wp(5),
     }
 })

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Survey, Question, Option, QuestionType } from '../types/formsSurvey.types';
 import { FormApiService } from '../services/api/service';
+import { wp, hp, fontScale } from '../utils/device';
 
 const SurveyCreatorScreen = () => {
   // 1. Estat inicial segons la teva interfície Survey
@@ -48,17 +49,17 @@ const SurveyCreatorScreen = () => {
 
   // 4. Funció per enviar al Backend usant el teu FormApiService
   const handleSave = async () => {
-  console.log("------- DADES QUE S'ENVIARAN -------");
-  console.log(JSON.stringify(survey, null, 2)); // Això imprimeix el JSON bonic a la terminal
+    console.log("------- DADES QUE S'ENVIARAN -------");
+    console.log(JSON.stringify(survey, null, 2)); // Això imprimeix el JSON bonic a la terminal
 
-  try {
-    const result = await FormApiService.submitForm(survey);
-    console.log("✅ RESPOSTA DEL SERVIDOR:", result);
-  } catch (error: any) {
-    console.log("❌ ERROR EN LA PETICIÓ:");
-    // Això és clau per veure si és un error 400, 500 o de xarxa
-    console.error(error); 
-  }
+    try {
+      const result = await FormApiService.submitForm(survey);
+      console.log("✅ RESPOSTA DEL SERVIDOR:", result);
+    } catch (error: any) {
+      console.log("❌ ERROR EN LA PETICIÓ:");
+      // Això és clau per veure si és un error 400, 500 o de xarxa
+      console.error(error);
+    }
   };
 
   return (
@@ -118,7 +119,7 @@ const SurveyCreatorScreen = () => {
         <TouchableOpacity style={styles.addButton} onPress={addQuestion}>
           <Text style={styles.buttonText}>Afegir Pregunta</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={[styles.addButton, styles.saveButton]} onPress={handleSave}>
           <Text style={styles.buttonText}>Guardar a la BD</Text>
         </TouchableOpacity>
@@ -128,55 +129,55 @@ const SurveyCreatorScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0ebf8', padding: 12 },
+  container: { flex: 1, backgroundColor: '#f0ebf8', padding: wp(3) },
   headerCard: {
     backgroundColor: 'white',
-    borderRadius: 8,
-    marginBottom: 12,
+    borderRadius: wp(2),
+    marginBottom: hp(1.5),
     overflow: 'hidden',
     elevation: 3,
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: wp(1.3),
   },
-  topBar: { height: 10, backgroundColor: '#673ab7' },
-  titleInput: { fontSize: 24, padding: 20, fontWeight: 'bold' },
+  topBar: { height: hp(1.2), backgroundColor: '#673ab7' },
+  titleInput: { fontSize: fontScale(24), padding: wp(5), fontWeight: 'bold' },
   questionCard: {
     backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 8,
-    marginBottom: 12,
+    padding: wp(5),
+    borderRadius: wp(2),
+    marginBottom: hp(1.5),
     elevation: 2,
   },
   questionInput: {
-    fontSize: 16,
+    fontSize: fontScale(16),
     backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 4,
-    marginBottom: 15,
+    padding: wp(3),
+    borderRadius: wp(1),
+    marginBottom: hp(1.8),
   },
-  optionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  optionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: hp(1.2) },
   radioCircle: {
-    height: 20,
-    width: 20,
-    borderRadius: 10,
+    height: wp(5),
+    width: wp(5),
+    borderRadius: wp(2.5),
     borderWidth: 2,
     borderColor: '#70757a',
-    marginRight: 10,
+    marginRight: wp(2.5),
   },
-  optionInput: { fontSize: 14, flex: 1, borderBottomWidth: 1, borderBottomColor: '#eee' },
-  addOptionText: { color: '#4285f4', fontWeight: 'bold', marginTop: 10 },
-  buttonContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 40 },
+  optionInput: { fontSize: fontScale(14), flex: 1, borderBottomWidth: 1, borderBottomColor: '#eee' },
+  addOptionText: { color: '#4285f4', fontWeight: 'bold', marginTop: hp(1.2) },
+  buttonContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: hp(5) },
   addButton: {
     backgroundColor: '#673ab7',
-    padding: 15,
-    borderRadius: 8,
+    padding: wp(4),
+    borderRadius: wp(2),
     flex: 0.48,
     alignItems: 'center',
   },
   saveButton: { backgroundColor: '#0f9d58' },
   buttonText: { color: 'white', fontWeight: 'bold' },
-  optionsArea: { marginTop: 10 }
+  optionsArea: { marginTop: hp(1.2) }
 });
 
 export default SurveyCreatorScreen;

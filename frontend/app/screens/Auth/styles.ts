@@ -1,14 +1,14 @@
 import { StyleSheet, Platform } from 'react-native';
+import { wp, hp, fontScale } from '@/app/utils/device';
 
 export default StyleSheet.create({
     caja: {
         // '000000' es negro, 'B3' es ~70% de opacidad en Hexadecimal
         // También puedes usar 'rgba(0, 0, 0, 0.7)'
-        backgroundColor: '#0e0d0df1', 
-        
-        borderRadius: 20, // Esquinas redondeadas
-        padding: 20,
-        width: '70%',
+        backgroundColor: '#0e0d0df1',
+        borderRadius: wp(5),
+        padding: wp(5),
+        width: wp(70),
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
@@ -17,40 +17,40 @@ export default StyleSheet.create({
         height: 'auto'
     },
     texto: {
-        marginTop: '1%',
+        marginTop: hp(0.5),
         color: 'white',
     },
     maxWidth: {
-        width: '100%',
+        width: wp(100),
     },
     maxHeigth: {
-        height: '100%',
+        height: hp(100),
     },
-    contendorLogoTitulos:{
+    contendorLogoTitulos: {
         flexDirection: 'row',
-        height: "15%",
-        padding: 10
+        height: hp(15),
+        padding: wp(2.5),
     },
-    borde:{
+    borde: {
         borderWidth: 1,         // El "1px"
         borderColor: 'red',     // El "red"
         borderStyle: 'solid',   // Opcional (es el valor por defecto)
     },
-    borde2:{
+    borde2: {
         borderWidth: 1,         // El "1px"
         borderColor: 'green',     // El "red"
         borderStyle: 'solid',   // Opcional (es el valor por defecto)
     },
-    margen1:{
-        marginTop: '1%',
+    margen1: {
+        marginTop: hp(0.5),
     },
-    margen2:{
-        marginTop: '5%',
+    margen2: {
+        marginTop: hp(3),
     },
-    noJustify:{
+    noJustify: {
         justifyContent: 'flex-start'
     },
-    alineadoPersonal:{
+    alineadoPersonal: {
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
@@ -58,17 +58,17 @@ export default StyleSheet.create({
         justifyContent: "center",
     },
     containerFoto: {
-        width: '20%', 
-        height: '100%',
+        width: wp(20),
+        height: hp(100),
     },
     logo: {
-        width: '100%',
-        height: '100%',
+        width: wp(100),
+        height: hp(100),
         resizeMode: 'contain', // Ajusta la imagen sin deformarla
     },
     contenedorWritter: {
         alignItems: 'center',
-        padding: 20,
+        padding: wp(5),
     },
     row: {
         flexDirection: 'row',
@@ -78,7 +78,7 @@ export default StyleSheet.create({
     },
     mainText: {
         color: '#fff',
-        fontSize: 32,
+        fontSize: fontScale(32),
         fontWeight: 'bold',
         textAlign: 'center',
         // En Android la fuente bold a veces necesita esto para verse muy gruesa
@@ -88,12 +88,12 @@ export default StyleSheet.create({
         color: '#5b55c0', // El azul característico de Aceternity
     },
     cursor: {
-        width: 4,
-        height: 35,
+        width: wp(1),
+        height: hp(4.5),
         backgroundColor: '#5b55c0',
-        marginLeft: 5,
+        marginLeft: wp(1.3),
         // Puedes añadir una animación simple de opacidad para el parpadeo
-    }, 
+    },
     textWrapper: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -101,23 +101,21 @@ export default StyleSheet.create({
         alignItems: 'center',
     },
     tituloHero: {
-        fontSize: 70,
+        fontSize: fontScale(70),
         fontWeight: '900', // Grosor máximo
         color: '#5b55c0',
         textAlign: 'center',
-        letterSpacing: -1.5, // Letras más juntas para estilo moderno
-        lineHeight: 48,
-        // Efecto de brillo sutil (Glow)
+        letterSpacing: wp(-0.4), // Letras más juntas para estilo moderno
+        lineHeight: fontScale(48), // Efecto de brillo sutil (Glow)
         textShadowColor: 'rgba(255, 255, 255, 0.3)',
         textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 15,
-        // Ajuste de fuente según sistema
+        textShadowRadius: wp(4), // Ajuste de fuente según sistema
         fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed',
     },
     destaqueAzul: {
         color: '#3b82f6',
         // Un azul eléctrico tipo Aceternity
         textShadowColor: 'rgba(59, 130, 246, 0.5)',
-        textShadowRadius: 20,
+        textShadowRadius: wp(5),
     }
 });

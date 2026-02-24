@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { FormApiService } from '../services/api/service';
 import { FormState, FormErrors, FormResponse } from '../types/forms.types';
+import { wp, hp, fontScale } from '../utils/device';
 
 /**
  * Pantalla de formulario simple
@@ -65,7 +66,7 @@ const SimpleFormScreen: React.FC = () => {
     }
 
     setErrors(newErrors);
-    
+
     // Si no hay errores, el formulario es válido
     return Object.keys(newErrors).length === 0;
   };
@@ -127,11 +128,11 @@ const SimpleFormScreen: React.FC = () => {
       );
     } catch (error) {
       console.error('❌ Error al enviar:', error);
-      
+
       Alert.alert(
         '❌ Error',
-        error instanceof Error 
-          ? error.message 
+        error instanceof Error
+          ? error.message
           : 'No se pudo enviar el formulario'
       );
     } finally {
@@ -144,15 +145,15 @@ const SimpleFormScreen: React.FC = () => {
    */
   const testConnection = async (): Promise<void> => {
     setLoading(true);
-    
+
     try {
       const message = await FormApiService.testConnection();
       Alert.alert('✅ Conexión exitosa', message);
     } catch (error) {
       Alert.alert(
         '❌ Error de conexión',
-        error instanceof Error 
-          ? error.message 
+        error instanceof Error
+          ? error.message
           : 'No se puede conectar al servidor'
       );
     } finally {
@@ -176,7 +177,7 @@ const SimpleFormScreen: React.FC = () => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
@@ -283,29 +284,29 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   formContainer: {
-    padding: 20,
-    marginTop: 40,
+    padding: wp(5),
+    marginTop: hp(5),
   },
   title: {
-    fontSize: 28,
+    fontSize: fontScale(28),
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: fontScale(14),
     color: '#666',
-    marginBottom: 30,
-    lineHeight: 20,
+    marginBottom: hp(3.5),
+    lineHeight: fontScale(20),
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: hp(2.5),
   },
   label: {
-    fontSize: 16,
+    fontSize: fontScale(16),
     fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   required: {
     color: '#e74c3c',
@@ -314,9 +315,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
+    borderRadius: wp(2),
+    padding: wp(3),
+    fontSize: fontScale(16),
     color: '#333',
   },
   inputError: {
@@ -325,15 +326,15 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#e74c3c',
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 4,
+    fontSize: fontScale(12),
+    marginTop: hp(0.5),
+    marginLeft: wp(1),
   },
   button: {
-    padding: 16,
-    borderRadius: 8,
+    padding: wp(4),
+    borderRadius: wp(2),
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: hp(1.2),
     flexDirection: 'row',
     justifyContent: 'center',
   },
@@ -353,12 +354,12 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: fontScale(16),
     fontWeight: '600',
   },
   resetButtonText: {
     color: '#666',
-    fontSize: 16,
+    fontSize: fontScale(16),
     fontWeight: '600',
   },
 });

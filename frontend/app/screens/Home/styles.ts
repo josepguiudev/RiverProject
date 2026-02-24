@@ -1,60 +1,60 @@
 import { StyleSheet, Platform } from 'react-native';
+import { wp, hp, fontScale } from '@/app/utils/device';
 
 export default StyleSheet.create({
-    borde:{
-        borderWidth: 1,         // El "1px"
-        borderColor: 'red',     // El "red"
-        borderStyle: 'solid',   // Opcional (es el valor por defecto)
+    borde: {
+        borderWidth: 1,
+        borderColor: 'red',
+        borderStyle: 'solid',
     },
-    borde2:{
-        borderWidth: 1,         // El "1px"
-        borderColor: 'green',     // El "red"
-        borderStyle: 'solid',   // Opcional (es el valor por defecto)
+    borde2: {
+        borderWidth: 1,
+        borderColor: 'green',
+        borderStyle: 'solid',
     },
-    borde3:{
-        borderWidth: 1,         // El "1px"
-        borderColor: 'orange',     // El "red"
-        borderStyle: 'solid',   // Opcional (es el valor por defecto)
+    borde3: {
+        borderWidth: 1,
+        borderColor: 'orange',
+        borderStyle: 'solid',
     },
     cajaHome: {
-        width: '90%',
-        height: '95%'
+        width: wp(90),
+        height: hp(95),
     },
-    cajaEncuestas:{
-        width: '90%',
-        height: '23%',
-        backgroundColor: '#0e0d0df1', 
-        borderRadius: 20, // Esquinas redondeadas
+    cajaEncuestas: {
+        width: wp(90),
+        height: hp(23),
+        backgroundColor: '#0e0d0df1',
+        borderRadius: wp(5),
     },
-    cajaTextoEncuestas:{
-        width: '100%',
-        height: '15%',
-        paddingLeft: '2%', 
+    cajaTextoEncuestas: {
+        width: wp(100),
+        height: hp(4),
+        paddingLeft: wp(2),
         display: 'flex',
         flexDirection: 'row',
     },
-    cajaComponentesEncuestas:{
-        width: '100%',
-        height: '85%'
+    cajaComponentesEncuestas: {
+        width: wp(100),
+        height: hp(19),
     },
-    width98:{
-        width: '98%',
+    width98: {
+        width: wp(98),
     },
-    width2:{
-        width: '2%',
+    width2: {
+        width: wp(2),
     },
-    margin1:{
-        margin: '1%'
+    margin1: {
+        margin: wp(1),
     },
-    justify1:{
-        justifyContent: 'space-between'
+    justify1: {
+        justifyContent: 'space-between',
     },
     tittleTextSurvey: {
         color: '#fff',
-        fontSize: 12,
+        fontSize: fontScale(12),
         fontWeight: 'bold',
         textAlign: 'left',
-        // En Android la fuente bold a veces necesita esto para verse muy gruesa
         fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed',
     },
 });

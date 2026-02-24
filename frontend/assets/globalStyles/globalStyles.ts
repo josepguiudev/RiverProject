@@ -1,25 +1,26 @@
 import { StyleSheet } from 'react-native';
+import { wp, hp } from '@/app/utils/device';
 
 export default StyleSheet.create({
     padre: {
-        backgroundColor: '#000000', // Puedes usar nombres, HEX (#ff0000) o RGB
+        backgroundColor: '#000000',
     },
     cajaMenu: {
-        width: '100%',
-        height: '5%'
+        width: wp(100),
+        height: hp(5),
     },
-    tamanoCajaPadre:{
+    tamanoCajaPadre: {
         width: '100%',
         height: '100%',
     },
-    alineadoPersonal:{
+    alineadoPersonal: {
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
         alignContent: 'center', // Verticalmente
         justifyContent: "center",
     },
-    alineadoPersonalVertical:{
+    alineadoPersonalVertical: {
         display: 'flex',
         flexDirection: 'row', // Asegura el eje horizontal
         alignItems: 'center', // Centra verticalmente
@@ -31,24 +32,24 @@ export default StyleSheet.create({
         alignItems: 'center',       // eje cruzado horizontal → centra horizontalmente
         justifyContent: 'flex-start' // eje principal vertical → alinea arriba
     },
-    borde:{
+    borde: {
         borderWidth: 1,         // El "1px"
         borderColor: 'red',     // El "red"
         borderStyle: 'solid',   // Opcional (es el valor por defecto)
     },
-    borde2:{
+    borde2: {
         borderWidth: 1,         // El "1px"
         borderColor: 'blue',     // El "red"
         borderStyle: 'solid',   // Opcional (es el valor por defecto)
     },
-    borde3:{
+    borde3: {
         borderWidth: 1,         // El "1px"
         borderColor: 'orange',     // El "red"
         borderStyle: 'solid',   // Opcional (es el valor por defecto)
     },
-    filas:{
+    filas: {
         display: 'flex',
         flexDirection: 'row', // Asegura el eje horizontal
-        justifyContent: 'space-between' 
+        justifyContent: 'space-between'
     }
 });
