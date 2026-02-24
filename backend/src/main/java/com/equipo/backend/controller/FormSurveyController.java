@@ -45,9 +45,10 @@ public class FormSurveyController {
     @GetMapping("/surveis")
     public ResponseEntity<List<Survey>> getAllSurveis() {
         try {
-            List<Survey> encuestas = formSurveyService.obtenerTodas();
-            return ResponseEntity.ok(encuestas);
+            List<Survey> surveys = formSurveyService.obtenerTodas();
+            return ResponseEntity.ok(surveys);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }

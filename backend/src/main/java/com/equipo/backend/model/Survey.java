@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 
@@ -34,6 +35,7 @@ public class Survey {
     @Column(nullable = true) private LocalDateTime closeDate;
     
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Question> questionList = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL) //solo para pruebas borrar cascade luego

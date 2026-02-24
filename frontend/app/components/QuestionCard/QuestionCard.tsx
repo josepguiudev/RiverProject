@@ -1,96 +1,96 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; 
 import { Question, QuestionOption } from '../../types/formsSurvey.types';
+import { ShortTextQuestion } from './ShortTextQuestion';
+import { NumericQuestion } from './NumericQuestion';
+import { SingleChoiceQuestion } from './SingleChoiceQuestion';
+import { MultipleChoiceQuestion } from './MultipleChoiceQuestion';
 
-interface QuestionCardProps {
+interface Props {
   question: Question;
   index: number;
   onUpdateQuestion: (text: string) => void;
-  onUpdateType: (type: 'SHORT_TEXT' | 'NUMERIC' | 'SINGLE_CHOICE') => void;
-  onAddOption: () => void;
-  onUpdateOption: (text: string, oIndex: number) => void;
   onRemoveQuestion: () => void;
+  onUpdateType: (type: Question['type_name']) => void;
+  onAddOption?: () => void;
+  onUpdateOption?: (text: string, oIndex: number) => void;
 }
 
 export const QuestionCard = ({
   question,
   index,
   onUpdateQuestion,
+  onRemoveQuestion,
   onUpdateType,
   onAddOption,
-  onUpdateOption,
-  onRemoveQuestion
-}: QuestionCardProps) => {
+  onUpdateOption
+}: Props) => {
+
+  const renderQuestionByType = () => {
+    switch (question.type_name) {
+      case 'SHORT_TEXT':
+        return <ShortTextQuestion question={question} onUpdateQuestion={onUpdateQuestion} />;
+      case 'NUMERIC':
+        return <NumericQuestion question={question} onUpdateQuestion={onUpdateQuestion} />;
+      case 'SINGLE_CHOICE':
+        return (
+          <SingleChoiceQuestion 
+            question={question} 
+            onUpdateQuestion={onUpdateQuestion} 
+            onAddOption={onAddOption!} 
+            onUpdateOption={onUpdateOption!} 
+          />
+        );
+      case 'MULTIPLE_CHOICE':
+        return (
+          <MultipleChoiceQuestion 
+            question={question} 
+            onUpdateQuestion={onUpdateQuestion} 
+            onAddOption={onAddOption!} 
+            onUpdateOption={onUpdateOption!} 
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.questionNumber}>Pregunta {index + 1}</Text>
+        <Text style={styles.label}>Pregunta {index + 1}</Text>
         <TouchableOpacity onPress={onRemoveQuestion}>
-          <Ionicons name="trash-outline" size={20} color="#FF5252" />
+          <Text style={styles.remove}>Eliminar</Text>
         </TouchableOpacity>
       </View>
 
-      <TextInput
-        placeholder="Escribe tu pregunta aquí..."
-        value={question.text_question}
+      <TextInput 
+        placeholder="Escribe la pregunta..." 
+        style={styles.input} 
+        value={question.text_question} 
         onChangeText={onUpdateQuestion}
-        style={styles.input}
-        multiline
       />
 
-      <Text style={styles.label}>Tipo de respuesta:</Text>
-      <View style={styles.typeRow}>
-        {(['SHORT_TEXT', 'NUMERIC', 'SINGLE_CHOICE'] as const).map((type) => (
-          <TouchableOpacity
-            key={type}
-            onPress={() => onUpdateType(type)}
-            style={[styles.typeBtn, question.type_name === type && styles.activeBtn]}
-          >
-            <Text style={[styles.btnText, question.type_name === type && styles.activeBtnText]}>
-              {type === 'SHORT_TEXT' ? 'Texto' : type === 'NUMERIC' ? 'Número' : 'Opciones'}
-            </Text>
+      {renderQuestionByType()}
+
+      <View style={styles.typeButtons}>
+        {['SHORT_TEXT','NUMERIC','SINGLE_CHOICE','MULTIPLE_CHOICE'].map(type => (
+          <TouchableOpacity key={type} onPress={() => onUpdateType(type as Question['type_name'])} style={styles.typeBtn}>
+            <Text style={styles.typeBtnText}>{type}</Text>
           </TouchableOpacity>
         ))}
       </View>
-
-      {question.type_name === 'SINGLE_CHOICE' && (
-        <View style={styles.optionsBox}>
-          {question.options?.map((opt, oIndex) => (
-            <View key={oIndex} style={styles.optionRow}>
-              <Ionicons name="radio-button-off" size={16} color="#2196F3" />
-              <TextInput
-                placeholder={`Opción ${oIndex + 1}`}
-                value={opt.text_opcion}
-                onChangeText={(text) => onUpdateOption(text, oIndex)}
-                style={styles.optionInput}
-              />
-            </View>
-          ))}
-          <TouchableOpacity style={styles.addOptionBtn} onPress={onAddOption}>
-            <Ionicons name="add-circle-outline" size={18} color="#2196F3" />
-            <Text style={styles.addOptionText}>Añadir opción</Text>
-          </TouchableOpacity>
-        </View>
-      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: 'white', padding: 16, borderRadius: 12, marginBottom: 16, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  questionNumber: { fontSize: 12, fontWeight: 'bold', color: '#999', textTransform: 'uppercase' },
-  input: { fontSize: 16, borderBottomWidth: 1, borderColor: '#eee', paddingVertical: 8, color: '#333' },
-  label: { fontSize: 12, color: '#666', marginTop: 15, marginBottom: 8 },
-  typeRow: { flexDirection: 'row', gap: 8 },
-  typeBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8, backgroundColor: '#f5f5f5', borderWidth: 1, borderColor: '#eee' },
-  activeBtn: { backgroundColor: '#E3F2FD', borderColor: '#2196F3' },
-  btnText: { fontSize: 12, color: '#666' },
-  activeBtnText: { color: '#2196F3', fontWeight: 'bold' },
-  optionsBox: { marginTop: 15, paddingLeft: 10, borderLeftWidth: 2, borderLeftColor: '#E3F2FD' },
-  optionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  optionInput: { flex: 1, fontSize: 14, paddingVertical: 4, color: '#444' },
-  addOptionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 5 },
-  addOptionText: { color: '#2196F3', fontSize: 13, fontWeight: '600' }
+  card: { padding: 15, backgroundColor: '#fff', marginBottom: 15, borderRadius: 10, elevation: 2 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  label: { fontWeight: 'bold', fontSize: 14 },
+  remove: { color: '#F44336', fontWeight: 'bold' },
+  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom: 10 },
+  typeButtons: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 10 },
+  typeBtn: { marginRight: 10, marginBottom: 5, backgroundColor: '#2196F3', padding: 5, borderRadius: 5 },
+  typeBtnText: { color: 'white', fontSize: 12 }
 });
