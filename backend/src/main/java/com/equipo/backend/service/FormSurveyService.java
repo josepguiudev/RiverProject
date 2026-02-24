@@ -49,4 +49,9 @@ public class FormSurveyService {
         return surveyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Encuesta no encontrada con ID: " + id));
     }
+
+    public void guardarRespuesta(Survey survey) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'guardarRespuesta'");
+    }
 }

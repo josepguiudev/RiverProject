@@ -1,6 +1,7 @@
 package com.equipo.backend.model;
 
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,5 +49,15 @@ public class Survey {
 
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
     private List<Genere> genereList = new ArrayList<>();
+
+    public void setCreationDate(LocalDateTime timestamp) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setCreationDate'");
+    }
+
+    public void setCreationDate(Timestamp timestamp) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setCreationDate'");
+    }
 
 }
