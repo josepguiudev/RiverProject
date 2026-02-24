@@ -1,0 +1,115 @@
+import React, { useEffect, useState } from "react";
+import { View, Alert, ActivityIndicator } from "react-native";
+import styles from "./styles";
+import globalStyles from "@/assets/globalStyles/globalStyles";
+import TypeWriter from "react-native-typewriter";
+
+import CustomDropdown from '@/app/components/CustomDropDown/CustomDropDown';
+import CustomInputText from "../CustomInputText/CustomInputText";
+import CustomButton from "../CustomButton/CustomButton";
+
+import strings from "../../../assets/supportFiles/strings.json";
+
+import type {Option}  from '@/app/components/CustomDropDown/CustomDropDown';
+
+import Constants from 'expo-constants';
+
+
+type Props = {
+    title: string;
+    value: number;
+};
+
+type SteamQuery = {
+    id: number;
+    description: string;
+    query: string;
+    type: number;
+};
+
+const CustomInputCard = ({ title, value}: Props) => {
+    const [queries, setQueries] = useState<SteamQuery[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedOption, setSelectedOption] = useState<Option | null>(null);
+    const [inputUserId, setInputUserId] = useState("");
+
+    useEffect(() => {
+        const cargarQueries = async () => {
+            try {
+                const response = await fetch("http://localhost:8080/api/queries/bytype1"); 
+
+                if (!response.ok) {
+                    throw new Error("Error al obtener queries");
+                }
+
+                const data: SteamQuery[] = await response.json();
+
+                //const soloStrings = data.map(item => item.query);
+                setQueries(data);
+
+            } catch (error) {
+                console.error(error);
+                Alert.alert("Error", "No se pudieron cargar las consultas");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        cargarQueries();
+    }, []);
+
+    const buscarPeticion = async () => {
+        console.log("clic")
+        if (!selectedOption) {
+        console.log("No se ha seleccionado ninguna opción");
+        return;
+    }
+
+    console.log("ID Query:", selectedOption.id);
+    console.log("Query seleccionada:", selectedOption.value);
+    console.log("Descripción:", selectedOption.label);
+    console.log("Descripción:", Constants.expoConfig?.extra?.STEAM_API_KEY);
+    console.log("ID Usuario:", inputUserId);
+    }
+
+    return (
+        <View style={[styles.cardSize, styles.back]}>
+            <View style={[styles.contenedorWritter]}>
+                <View style={[styles.textWrapper]}>
+                    <TypeWriter 
+                        typing={1}  
+                        maxDelay={50}
+                        style={styles.mainText}
+                    >
+                        {title}
+                    </TypeWriter>
+                </View>
+            </View>
+
+            <View style={[styles.contenedorSecundario, globalStyles.alineadoPersonalHorizontal]}>
+                <View style={[styles.contenedorInterno]}>
+                    {loading ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                        <CustomDropdown label="Seleccione una consulta" options={queries.map(q => ({
+                            id: q.id,
+                            label: q.description,   //  LO QUE SE MUESTRA
+                            value: q.query          //  LO QUE REALMENTE USAS
+                        }))} 
+                        onSelect={item => setSelectedOption(item)}/>
+                    )}
+                </View>
+                <View style={[styles.contenedorInterno2]}>
+                    <CustomInputText placeholder="Inserta el id del usuario" isAdmin={true} onChangeText={setInputUserId}/>
+                </View>
+            </View>
+
+            <View style={[styles.contenedorTerciario, globalStyles.alineadoPersonal]}>
+                <CustomButton title="Buscar" onPress={buscarPeticion} isAdmin={true}  />
+            </View>
+
+        </View>
+    )
+}
+
+export default CustomInputCard;

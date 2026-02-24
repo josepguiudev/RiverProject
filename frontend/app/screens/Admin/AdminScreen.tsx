@@ -7,6 +7,8 @@ import styles from './styles';
 import MenuPrincipal from '@/app/components/Menu/CustomMenu';
 import strings from "../../../assets/supportFiles/strings.json";
 
+import CustomInputCard from '@/app/components/CustomInputCard/CustomInputCard';
+
 export default function AdminScreen({ navigation }: any) {
     const [menuVisible, setMenuVisible] = useState(false);
     
@@ -21,11 +23,11 @@ export default function AdminScreen({ navigation }: any) {
 
             <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre, globalStyles.alineadoPersonal]}>
                 <View style={[styles.cajaPrincipal, globalStyles.borde, globalStyles.filas]}>
-                    <View style={[globalStyles.borde2, styles.contenedorFila]}>
-
+                    <View style={[globalStyles.borde2, styles.contenedorFila, globalStyles.alineadoPersonalHorizontal]}>
+                        <CustomInputCard title='Extraer Users' value={1}/>
                     </View>
                     <View style={[globalStyles.borde2, styles.contenedorFila]}>
-
+                        
                     </View>
                     <View style={[globalStyles.borde2, styles.contenedorFila]}>
 

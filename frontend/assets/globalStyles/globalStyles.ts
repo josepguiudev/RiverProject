@@ -25,6 +25,12 @@ export default StyleSheet.create({
         alignItems: 'center', // Centra verticalmente
         justifyContent: 'flex-start', // Alinea al inicio (izquierda) horizontalmente
     },
+    alineadoPersonalHorizontal: {
+        display: 'flex',
+        flexDirection: 'column',    // eje principal vertical
+        alignItems: 'center',       // eje cruzado horizontal → centra horizontalmente
+        justifyContent: 'flex-start' // eje principal vertical → alinea arriba
+    },
     borde:{
         borderWidth: 1,         // El "1px"
         borderColor: 'red',     // El "red"
@@ -33,6 +39,11 @@ export default StyleSheet.create({
     borde2:{
         borderWidth: 1,         // El "1px"
         borderColor: 'blue',     // El "red"
+        borderStyle: 'solid',   // Opcional (es el valor por defecto)
+    },
+    borde3:{
+        borderWidth: 1,         // El "1px"
+        borderColor: 'orange',     // El "red"
         borderStyle: 'solid',   // Opcional (es el valor por defecto)
     },
     filas:{

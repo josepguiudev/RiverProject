@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 
 import com.equipo.backend.model.*;
 import com.equipo.backend.repository.FormSurveyResponseRepsitory;
+import com.equipo.backend.repository.UserSteamQueriesRepository;
 import com.equipo.backend.service.FormSurveyService;
 
 @SpringBootApplication
@@ -19,6 +20,34 @@ public class BackendApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(BackendApplication.class, args);
 	}
+	
+		@Bean
+		CommandLineRunner initSteamQueries(UserSteamQueriesRepository repository) {
+			return args -> {
+				System.out.println("--- Insertando datos de user_steam_queries ---");
+
+				/*UserSteamQueries q0 = new UserSteamQueries();
+				q0.setQuery("https://api.steampowered.com/ISteamUser/");
+				q0.setType(0);
+				q0.setDescription("Dirección hhtps de API Steam");
+
+				UserSteamQueries q1 = new UserSteamQueries();
+				q1.setQuery("GetPlayerSummaries/v2/");
+				q1.setType(1);
+				q1.setDescription("Obtener a un usuario por ID");
+
+				UserSteamQueries q2 = new UserSteamQueries();
+				q2.setQuery("GetFriendList/v1/");
+				q2.setType(1);
+				q2.setDescription("Obtener usuarios amigos de un usuario por ID");
+
+				// Guardamos todos
+				repository.saveAll(List.of(q0, q1, q2));*/
+
+				System.out.println("--- Datos de user_steam_queries insertados con éxito ---");
+			};
+		}
+
 
 		//probas moha
 		@Bean
