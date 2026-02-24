@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 
 @Entity
 @Table(name = "game")
+@Data
 public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,6 +23,8 @@ public class Game {
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
     @nullable private List<Logro> logros;
+
+
 
 
     public Long getId_game() {
@@ -65,6 +69,16 @@ public class Game {
     }
 
     public void setLogros(List<Logro> logros) {
+        this.logros = logros;
+    }
+
+    public Game(){}
+
+    public Game(Long id_game, String title, byte isEarlyAcces, List<Genere> genereList, List<Logro> logros) {
+        this.id_game = id_game;
+        this.title = title;
+        this.isEarlyAcces = isEarlyAcces;
+        this.genereList = genereList;
         this.logros = logros;
     }
 

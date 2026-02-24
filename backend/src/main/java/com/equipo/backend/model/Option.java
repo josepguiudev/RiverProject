@@ -1,5 +1,7 @@
 package com.equipo.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -14,6 +16,7 @@ public class Option {
 
     @ManyToOne
     @JoinColumn(name = "id_question")
+    @JsonBackReference
     private Question question;
 
 

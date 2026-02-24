@@ -15,21 +15,23 @@ import AdminScreen from './screens/Admin/AdminScreen';
 
 // 2. INTERRUPTOR DIRECTO
 // Cambia a true para ver Storybook, false para la App normal
-const SHOW_STORYBOOK = false;
+//const SHOW_STORYBOOK = false;
 
 const Stack = createNativeStackNavigator();
 
 function App() {
   // Si el interruptor está activo, devolvemos Storybook
+  /*
   if (SHOW_STORYBOOK) {
     const StorybookUI = require('../.rnstorybook').default;
     return <StorybookUI />;
   }
+    */
 
   // Si no, devolvemos tu navegación normal  
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login" screenOptions={{headerShown: false}}>
+      <Stack.Navigator initialRouteName="SuerveyCreator" screenOptions={{headerShown: false}}>
         <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}}/>                   
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />

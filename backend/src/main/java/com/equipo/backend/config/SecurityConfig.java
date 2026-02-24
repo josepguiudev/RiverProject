@@ -24,6 +24,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/queries/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll() 
+                .requestMatchers("/api/formSurvey/**").permitAll() // Linie para Moha i hacer pruebas saltando el auth
                 .anyRequest().authenticated()
             );
 

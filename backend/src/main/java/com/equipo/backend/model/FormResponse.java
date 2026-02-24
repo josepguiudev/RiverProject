@@ -30,6 +30,8 @@ public class FormResponse {
         this.email = email;
         this.fechaEnvio = LocalDateTime.now();
     }
+
+    ////////////////
     
     // Getters y Setters
     public Long getId() { return id; }

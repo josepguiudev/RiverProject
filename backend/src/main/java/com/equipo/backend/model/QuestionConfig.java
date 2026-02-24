@@ -1,4 +1,4 @@
-package com.equipo.backend.model.classesquestiontype;
+package com.equipo.backend.model;
 
 import com.equipo.backend.model.Question;
 

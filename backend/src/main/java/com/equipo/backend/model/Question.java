@@ -3,6 +3,9 @@ package com.equipo.backend.model;
 
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -19,9 +22,11 @@ public class Question {
         
     @ManyToOne
     @JoinColumn(name = "id_survey")
+    @JsonBackReference
     private Survey survey;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Option> option;
 
 
