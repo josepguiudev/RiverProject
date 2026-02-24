@@ -1,6 +1,5 @@
 package com.equipo.backend.model;
 
-import com.equipo.backend.model.Question;
 
 import jakarta.persistence.*;
 
