@@ -137,6 +137,31 @@ public class User {
         this.password = password;
     }
 
+
+    public User() {
+    }
+
+
+    public User(Long id, String name, String apellido1, String apellido2, String email, Byte genero, Byte edad, String localizacion, String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned, Byte id_rol) {
+        this.id = id;
+        this.name = name;
+        this.apellido1 = apellido1;
+        this.apellido2 = apellido2;
+        this.email = email;
+        this.genero = genero;
+        this.edad = edad;
+        this.localizacion = localizacion;
+        this.urlIdStream = urlIdStream;
+        this.creacionCuentaUsuario = creacionCuentaUsuario;
+        this.creacionCuentaSteam = creacionCuentaSteam;
+        this.password = password;
+        this.urlImgUsuario = urlImgUsuario;
+        this.banned = banned;
+        this.id_rol = id_rol;
+    }
+
+
+
     @Override
     public String toString() {
         return "User [id=" + id + ", name=" + name + ", email=" + email + ", password=" + password + ", getEmail()="

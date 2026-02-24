@@ -1,33 +1,33 @@
 package com.equipo.backend.model;
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "respuesta")
+@Data
 public class Respuesta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_respuesta;
+    private Long id;
 
     @OneToOne
-    @JoinColumn(name = "id_option")
+    @JoinColumn(name = "id")
     private Option option;
 
     @ManyToOne
-    @JoinColumn(name = "id_user")
+    @JoinColumn(name = "id")
     private User user;
 
     private String valueRespuesta;
 
 
-
-
-    public Long getId_respuesta() {
-        return this.id_respuesta;
+    public Long getId() {
+        return this.id;
     }
 
-    public void setId_respuesta(Long id_respuesta) {
-        this.id_respuesta = id_respuesta;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Option getOption() {
@@ -51,6 +51,17 @@ public class Respuesta {
     }
 
     public void setValueRespuesta(String valueRespuesta) {
+        this.valueRespuesta = valueRespuesta;
+    }
+
+
+    public Respuesta() {
+    }
+
+    public Respuesta(Long id, Option option, User user, String valueRespuesta) {
+        this.id = id;
+        this.option = option;
+        this.user = user;
         this.valueRespuesta = valueRespuesta;
     }
 

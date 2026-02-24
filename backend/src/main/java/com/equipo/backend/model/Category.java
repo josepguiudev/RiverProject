@@ -4,18 +4,18 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "genere")
+@Table(name = "category")
 @Data
-public class Genere {
+public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nombreGenero;
-
+    private String description;
+    
     @ManyToOne
-    @JoinColumn(name = "id") 
+    @JoinColumn(name = "id")
     private Game game;
 
     @ManyToOne
@@ -31,13 +31,14 @@ public class Genere {
         this.id = id;
     }
 
-    public String getNombreGenero() {
-        return this.nombreGenero;
+    public String getDescription() {
+        return this.description;
     }
 
-    public void setNombreGenero(String nombreGenero) {
-        this.nombreGenero = nombreGenero;
+    public void setDescription(String description) {
+        this.description = description;
     }
+
 
     public Game getGame() {
         return this.game;
@@ -55,14 +56,13 @@ public class Genere {
         this.survey = survey;
     }
 
-
-    public Genere() {
+    public Category() {
     }
 
 
-    public Genere(Long id, String nombreGenero, Game game, Survey survey) {
+    public Category(Long id, String description, Game game, Survey survey) {
         this.id = id;
-        this.nombreGenero = nombreGenero;
+        this.description = description;
         this.game = game;
         this.survey = survey;
     }

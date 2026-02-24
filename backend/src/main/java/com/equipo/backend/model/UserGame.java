@@ -11,10 +11,10 @@ public class UserGame {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
 
     @OneToMany(mappedBy = "Game", cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_game", nullable = true)
+    @JoinColumn(name = "id", nullable = true)
     private Game game;
 
     private float numHoursGame;

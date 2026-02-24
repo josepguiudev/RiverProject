@@ -2,40 +2,34 @@ package com.equipo.backend.model;
 
 
 import jakarta.persistence.*;
-
+import lombok.Data;
 @Entity
 @Table(name = "question_config")
+@Data
 public class QuestionConfig {
     
     @Id
-    private Long id_question;
+    private Long id;
+
+    private String typeName;
 
     @OneToOne
     @MapsId
-    @JoinColumn(name = "id_question")
+    @JoinColumn(name = "id")
     private Question question;
-
-    private String typeName;
 
     @Column(columnDefinition = "nvarchar(max)")
     private String attributes;
 
 
 
+
     public Long getId() {
-        return this.id_question;
+        return this.id;
     }
 
     public void setId(Long id) {
-        this.id_question = id;
-    }
-
-    public Question getQuestion() {
-        return this.question;
-    }
-
-    public void setQuestion(Question question) {
-        this.question = question;
+        this.id = id;
     }
 
     public String getTypeName() {
@@ -46,6 +40,14 @@ public class QuestionConfig {
         this.typeName = typeName;
     }
 
+    public Question getQuestion() {
+        return this.question;
+    }
+
+    public void setQuestion(Question question) {
+        this.question = question;
+    }
+
     public String getAttributes() {
         return this.attributes;
     }
@@ -53,5 +55,17 @@ public class QuestionConfig {
     public void setAttributes(String attributes) {
         this.attributes = attributes;
     }
+
+
+    public QuestionConfig() {
+    }
+
+    public QuestionConfig(Long id, String typeName, Question question, String attributes) {
+        this.id = id;
+        this.typeName = typeName;
+        this.question = question;
+        this.attributes = attributes;
+    }
+
 
 }

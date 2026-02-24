@@ -21,9 +21,10 @@ import lombok.Data;
 public class Survey {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_survey;
+    private Long id;
 
     private int numQuestions;
+    private int numUsers;
     private String name;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
@@ -58,6 +59,110 @@ public class Survey {
     public void setCreationDate(Timestamp timestamp) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'setCreationDate'");
+    }
+
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public int getNumQuestions() {
+        return this.numQuestions;
+    }
+
+    public void setNumQuestions(int numQuestions) {
+        this.numQuestions = numQuestions;
+    }
+
+    public int getNumUsers() {
+        return this.numUsers;
+    }
+
+    public void setNumUsers(int numUsers) {
+        this.numUsers = numUsers;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public LocalDateTime getCreationDate() {
+        return this.creationDate;
+    }
+
+
+    public LocalDateTime getLaunchDate() {
+        return this.launchDate;
+    }
+
+    public void setLaunchDate(LocalDateTime launchDate) {
+        this.launchDate = launchDate;
+    }
+
+    public LocalDateTime getCloseDate() {
+        return this.closeDate;
+    }
+
+    public void setCloseDate(LocalDateTime closeDate) {
+        this.closeDate = closeDate;
+    }
+
+    public List<Question> getQuestionList() {
+        return this.questionList;
+    }
+
+    public void setQuestionList(List<Question> questionList) {
+        this.questionList = questionList;
+    }
+
+    public Pago getPago() {
+        return this.pago;
+    }
+
+    public void setPago(Pago pago) {
+        this.pago = pago;
+    }
+
+    public PagoPanelista getPagoPanelista() {
+        return this.pagoPanelista;
+    }
+
+    public void setPagoPanelista(PagoPanelista pagoPanelista) {
+        this.pagoPanelista = pagoPanelista;
+    }
+
+    public List<Genere> getGenereList() {
+        return this.genereList;
+    }
+
+    public void setGenereList(List<Genere> genereList) {
+        this.genereList = genereList;
+    }
+
+    public Survey() {
+    }
+
+
+    public Survey(Long id, int numQuestions, int numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, Pago pago, PagoPanelista pagoPanelista, List<Genere> genereList) {
+        this.id = id;
+        this.numQuestions = numQuestions;
+        this.numUsers = numUsers;
+        this.name = name;
+        this.creationDate = creationDate;
+        this.launchDate = launchDate;
+        this.closeDate = closeDate;
+        this.questionList = questionList;
+        this.pago = pago;
+        this.pagoPanelista = pagoPanelista;
+        this.genereList = genereList;
     }
 
 }

@@ -11,29 +11,41 @@ import lombok.Data;
 @Table(name = "game")
 @Data
 public class Game {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_game;
+    private Long id;
 
+    private int id_game_steam;
     private String title;
+    private int price;
     private byte isEarlyAcces;
+    private String url_image;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
     @nullable private List<Genere> genereList = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
-    @nullable private List<Logro> logros;
+    @nullable private List<Category> categoryList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @nullable private List<Logro> logrosList = new ArrayList<>();
 
 
-
-
-    public Long getId_game() {
-        return this.id_game;
+    public Long getId() {
+        return this.id;
     }
 
-    public void setId_game(Long id_game) {
-        this.id_game = id_game;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public int getId_game_steam() {
+        return this.id_game_steam;
+    }
+
+    public void setId_game_steam(int id_game_steam) {
+        this.id_game_steam = id_game_steam;
     }
 
     public String getTitle() {
@@ -44,8 +56,12 @@ public class Game {
         this.title = title;
     }
 
-    public byte isIsEarlyAcces() {
-        return this.isEarlyAcces;
+    public int getPrice() {
+        return this.price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
     }
 
     public byte getIsEarlyAcces() {
@@ -56,6 +72,14 @@ public class Game {
         this.isEarlyAcces = isEarlyAcces;
     }
 
+    public String getUrl_image() {
+        return this.url_image;
+    }
+
+    public void setUrl_image(String url_image) {
+        this.url_image = url_image;
+    }
+
     public List<Genere> getGenereList() {
         return this.genereList;
     }
@@ -64,24 +88,43 @@ public class Game {
         this.genereList = genereList;
     }
 
-
-    public List<Logro> getLogros() {
-        return this.logros;
+    public List<Category> getCategoryList() {
+        return this.categoryList;
     }
 
-    public void setLogros(List<Logro> logros) {
-        this.logros = logros;
+    public void setCategoryList(List<Category> categoryList) {
+        this.categoryList = categoryList;
     }
 
-    public Game(){}
+    public List<Logro> getLogrosList() {
+        return this.logrosList;
+    }
 
-    public Game(Long id_game, String title, byte isEarlyAcces, List<Genere> genereList, List<Logro> logros) {
-        this.id_game = id_game;
+    public void setLogrosList(List<Logro> logrosList) {
+        this.logrosList = logrosList;
+    }
+
+
+
+    public Game() {
+    }
+
+
+
+    public Game(Long id, int id_game_steam, String title, int price, byte isEarlyAcces, String url_image, List<Genere> genereList, List<Category> categoryList, List<Logro> logrosList) {
+        this.id = id;
+        this.id_game_steam = id_game_steam;
         this.title = title;
+        this.price = price;
         this.isEarlyAcces = isEarlyAcces;
+        this.url_image = url_image;
         this.genereList = genereList;
-        this.logros = logros;
+        this.categoryList = categoryList;
+        this.logrosList = logrosList;
     }
 
+
+
+   
 
 }
