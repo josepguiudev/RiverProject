@@ -25,6 +25,7 @@ export default function AdminScreen({ navigation }: any) {
                 <View style={[styles.cajaPrincipal, globalStyles.borde, globalStyles.filas]}>
                     <View style={[globalStyles.borde2, styles.contenedorFila, globalStyles.alineadoPersonalHorizontal]}>
                         <CustomInputCard title='Extraer Users' value={1}/>
+                        <CustomInputCard title='Extraer Juegos' value={2}/>
                     </View>
                     <View style={[globalStyles.borde2, styles.contenedorFila]}>
                         
