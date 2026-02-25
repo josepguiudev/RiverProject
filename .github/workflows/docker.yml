@@ -20,3 +20,4 @@ jobs:
 
       - name: Push image
         run: docker push josepguiusilles/devops-qr-code-backend:latest
+        
