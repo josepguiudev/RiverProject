@@ -6,22 +6,15 @@ on:
       - conex-api-steam
 
 jobs:
-  build:
+  publish_images:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Descargar código
-        uses: actions/checkout@v3
+      - name: checkout
+        uses: actions/checkout@v4
 
-      - name: Login en Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.L_DOC }}
-          password: ${{ secrets.P_DOC }}
+      - name: build image
+        run: docker build -t josepguiusilles/devops-qr-code-backend:latest
 
-      - name: Construir y subir imagen
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: josepguiusilles/hello-world:latest
+      - name: push image to docker hub
+        run: |
+          docker login -u josepguiusilles -p ${{ secrets.P_DOC }} 
