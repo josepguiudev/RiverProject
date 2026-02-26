@@ -78,16 +78,48 @@ const CustomInputCard = ({ title, value}: Props) => {
 
     const buscarPeticion = async () => {
         console.log("clic")
-        if (!selectedOption) {
-        console.log("No se ha seleccionado ninguna opción");
+        if (!selectedOption || !inputUserId) {
+        Alert.alert("Error", "Selecciona una consulta e introduce un ID");
         return;
         }
 
-    console.log("ID Query:", selectedOption.id);
-    console.log("Query seleccionada:", selectedOption.value);
-    console.log("Descripción:", selectedOption.label);
-    console.log("Descripción:", Constants.expoConfig?.extra?.STEAM_API_KEY);
-    console.log("ID Usuario:", inputUserId);
+        console.log("ID Query:", selectedOption.id);
+        console.log("Query seleccionada:", selectedOption.value);
+        console.log("Descripción:", selectedOption.label);
+        console.log("Descripción:", Constants.expoConfig?.extra?.STEAM_API_KEY);
+        console.log("ID Usuario:", inputUserId);
+
+        try{
+            if(selectedOption.value === strings.GetPlayerSummaries){
+                console.log(`${strings.parte1Desktop}${strings.parte2MappingIntroducido}${strings.parametroSteamApiKey}${Constants.expoConfig?.extra?.STEAM_API_KEY}${strings.conjugacion}${strings.parametroSteamId}${inputUserId}`);
+                const response = await fetch(
+                `${strings.parte1Desktop}${strings.parte2MappingIntroducido}${strings.parametroSteamApiKey}${Constants.expoConfig?.extra?.STEAM_API_KEY}${strings.conjugacion}${strings.parametroSteamId}${inputUserId}`
+                );
+                if (!response.ok) {
+                    throw new Error("Error al llamar al backend");
+                }
+
+                const data = await response.json();
+                console.log("Respuesta Steam:", data.response.players);
+                Alert.alert("OK", "Usuario obtenido correctamente");
+            }else if (selectedOption.value === strings.GetFriendList){
+                console.log(`${strings.parte1Desktop}${strings.parte21MappingIntroducido}${strings.parametroSteamApiKey}${Constants.expoConfig?.extra?.STEAM_API_KEY}${strings.conjugacion}${strings.parametroSteamId}${inputUserId}`);
+                const response = await fetch(
+                `${strings.parte1Desktop}${strings.parte21MappingIntroducido}${strings.parametroSteamApiKey}${Constants.expoConfig?.extra?.STEAM_API_KEY}${strings.conjugacion}${strings.parametroSteamId}${inputUserId}`
+                );
+                if (!response.ok) {
+                    throw new Error("Error al llamar al backend");
+                }
+
+                const data = await response.json();
+                console.log("Respuesta Steam:", data.response.players);
+                Alert.alert("OK", "Usuario obtenido correctamente");
+            }
+            
+        }catch(error){
+            console.error(error);
+            Alert.alert("Error", "No se pudo obtener el usuario");
+        }
     }
 
     const buscarPeticion2 = async () => {

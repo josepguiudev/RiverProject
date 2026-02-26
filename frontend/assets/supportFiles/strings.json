@@ -36,19 +36,25 @@
     "badLogin": "Login incorrecto",
 
     "______comentario5_______": "URLS DE STEAM",
+
+    "parte1Desktop": "http://localhost:8080/api/users/",
+    "parte2MappingIntroducido": "userfromsteam?",
+    "parte21MappingIntroducido": "friendslist?",
+    "parametroSteamApiKey": "steamApiKey=",
+    "conjugacion": "&",
+    "parametroSteamId": "steamId=",
+
+    "GetPlayerSummaries": "GetPlayerSummaries/v2/",
+    "GetFriendList": "GetFriendList/v1/",
+
+
+
+
     "urlApiSteam": "https://api.steampowered.com/ISteamUser/",
-
     "obtenerUsuario": "Obtener usuario por id",
-    "urlPlayer": "GetPlayerSummaries/v2/",
-
-    "urlRangeplayers": "GetPlayerSummaries/v2/",
-
     "obtenerAmigosUsuario": "Obtener los amigos del usuario por id",
-    "urlFriendsPlayer": "GetFriendList/v1/",
-
     "obtenerUsuariosJuegoCount": "Conteo de usuarios por id de juego",
     "urlCountUserGame": "GetNumberOfCurrentPlayers/v1/",
-
     "urlSteamStoreGame": "https://store.steampowered.com/api/appdetails?appids={appid}&l=spanish",
     "idPlayerJoako": "76561199167008828"
 }
