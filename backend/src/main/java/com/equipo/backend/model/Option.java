@@ -1,12 +1,15 @@
 package com.equipo.backend.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "question_options")
+@Table(name = "options")
 @Data
 public class Option {
 
@@ -17,9 +20,15 @@ public class Option {
     private String textOpcion; 
 
     @ManyToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "id_question")
     @JsonBackReference
     private Question question;
+
+    @OneToMany(mappedBy = "options", cascade = CascadeType.ALL)
+    private List<PreguntaOpcion> preguntaOption = new ArrayList<>();
+
+    @OneToOne(mappedBy = "options", cascade = CascadeType.ALL)
+    private List<OpcionRespuesta> opcionRespuesta = new ArrayList<>();
 
 
     public Long getId() {

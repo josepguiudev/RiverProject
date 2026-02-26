@@ -1,14 +1,8 @@
 package com.equipo.backend.model;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import java.util.*;
 
-import java.util.Date;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import lombok.Data;
 
@@ -37,6 +31,13 @@ public class User {
     @nullable private String urlImgUsuario;
     @nullable private Byte banned;
     @nullable private Byte id_rol;
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserGame> userGamesList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserSurveys> userSurveyList = new ArrayList<>();
 
     public Long getId() {
         return this.id;

@@ -22,14 +22,27 @@ public class Game {
     private byte isEarlyAcces;
     private String url_image;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
-    @nullable private List<Genere> genereList = new ArrayList<>();
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "game_genere",
+        joinColumns = @JoinColumn(name = "id_game"),
+        inverseJoinColumns = @JoinColumn(name = "id_genere")
+    )
+    private List<Genere> generesList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "game_category",
+        joinColumns = @JoinColumn(name = "id_game"),
+        inverseJoinColumns = @JoinColumn(name = "id_category")
+    )
     @nullable private List<Category> categoryList = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
     @nullable private List<Logro> logrosList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserGame> userGames = new ArrayList<>();
 
 
     public Long getId() {
@@ -80,14 +93,23 @@ public class Game {
         this.url_image = url_image;
     }
 
-    public List<Genere> getGenereList() {
-        return this.genereList;
+
+    public List<Genere> getGeneresList() {
+        return this.generesList;
     }
 
-    public void setGenereList(List<Genere> genereList) {
-        this.genereList = genereList;
+    public void setGeneresList(List<Genere> generesList) {
+        this.generesList = generesList;
     }
 
+    public List<UserGame> getUserGames() {
+        return this.userGames;
+    }
+
+    public void setUserGames(List<UserGame> userGames) {
+        this.userGames = userGames;
+    }
+    
     public List<Category> getCategoryList() {
         return this.categoryList;
     }
@@ -118,7 +140,7 @@ public class Game {
         this.price = price;
         this.isEarlyAcces = isEarlyAcces;
         this.url_image = url_image;
-        this.genereList = genereList;
+        this.generesList = genereList;
         this.categoryList = categoryList;
         this.logrosList = logrosList;
     }

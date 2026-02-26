@@ -1,4 +1,7 @@
 package com.equipo.backend.model;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,15 +15,17 @@ public class Respuesta {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "id_option")
     private Option option;
 
     @ManyToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "id_user")
     private User user;
 
     private String valueRespuesta;
 
+    @OneToOne(mappedBy = "respuesta", cascade = CascadeType.ALL)
+    private List<OpcionRespuesta> opcionRespuesta = new ArrayList<>();
 
     public Long getId() {
         return this.id;

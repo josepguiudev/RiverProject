@@ -16,7 +16,7 @@ public class PagoPanelista {
     private double cantidadPago;
 
     @OneToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "id_survey")
     private Survey survey;
 
 

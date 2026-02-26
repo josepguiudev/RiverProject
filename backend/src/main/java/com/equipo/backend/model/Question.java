@@ -26,8 +26,10 @@ public class Question {
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private List<Option> option;
+    private List<Option> option = new ArrayList<>();
 
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    private List<PreguntaOpcion> preguntaOption = new ArrayList<>();
 
     public Long getId() {
         return this.id;

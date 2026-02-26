@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -48,8 +49,30 @@ public class Survey {
     @JoinColumn(name = "id_pago_panelista", nullable = true)
     private PagoPanelista pagoPanelista;
 
-    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "survey_genere",
+        joinColumns = @JoinColumn(name = "id_survey"),
+        inverseJoinColumns = @JoinColumn(name = "id_genere")
+    )
     private List<Genere> genereList = new ArrayList<>();
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "survey_category",
+        joinColumns = @JoinColumn(name = "id_survey"),
+        inverseJoinColumns = @JoinColumn(name = "id_category")
+    )
+    private List<Category> categoryList = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "id_client")
+    @JsonBackReference
+    private Client client;
+
+    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserSurveys> userSurveysList = new ArrayList<>();
+
 
     public void setCreationDate(LocalDateTime timestamp) {
         // TODO Auto-generated method stub

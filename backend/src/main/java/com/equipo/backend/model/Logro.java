@@ -14,7 +14,7 @@ public class Logro {
     private String textLogro;
 
     @ManyToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "id_game")
     private Game game;
 
     public String getTextLogro() {

@@ -13,8 +13,12 @@ public class UserGame {
     private Long id;
 
 
-    @OneToMany(mappedBy = "Game", cascade = CascadeType.ALL)
-    @JoinColumn(name = "id", nullable = true)
+    @ManyToOne
+    @JoinColumn(name = "id_user")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "id_game")
     private Game game;
 
     private float numHoursGame;
@@ -41,6 +45,14 @@ public class UserGame {
         this.numHoursGame = numHoursGame;
     }
 
+
+    public User getUser() {
+        return this.user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public UserGame() {
     }

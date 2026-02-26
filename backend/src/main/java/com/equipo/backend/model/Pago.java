@@ -19,7 +19,7 @@ public class Pago {
         private byte isEnquestaPagada;
         
         @OneToOne
-        @JoinColumn(name = "id")
+        @JoinColumn(name = "id_survey")
         private Survey survey;
 
 
