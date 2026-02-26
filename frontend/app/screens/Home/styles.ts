@@ -1,5 +1,4 @@
 import { StyleSheet, Platform } from 'react-native';
-import { wp, hp, fontScale } from '@/app/utils/device';
 
 export default StyleSheet.create({
     borde: {
@@ -17,44 +16,50 @@ export default StyleSheet.create({
         borderColor: 'orange',
         borderStyle: 'solid',
     },
+    container: {
+        flex: 1,
+    },
+    containerDesktop: {
+        padding: 40,
+    },
     cajaHome: {
-        width: wp(90),
-        height: hp(95),
+        width: '90%',
+        height: '95%',
+    },
+    cajaHomeDesktop: {
+        width: '70%',
+        maxHeight: '90%',
     },
     cajaEncuestas: {
-        width: wp(90),
-        height: hp(23),
+        width: '100%',
+        height: 180,
         backgroundColor: '#0e0d0df1',
-        borderRadius: wp(5),
+        borderRadius: 20,
+        marginBottom: 15,
+    },
+    cajaEncuestasTablet: {
+        width: '48%', // Dos columnas en tablet si se usara flex-wrap
     },
     cajaTextoEncuestas: {
-        width: wp(100),
-        height: hp(4),
-        paddingLeft: wp(2),
+        width: '100%',
+        height: 40,
+        paddingLeft: 10,
         display: 'flex',
         flexDirection: 'row',
+        alignItems: 'center',
     },
     cajaComponentesEncuestas: {
-        width: wp(100),
-        height: hp(19),
-    },
-    width98: {
-        width: wp(98),
-    },
-    width2: {
-        width: wp(2),
-    },
-    margin1: {
-        margin: wp(1),
-    },
-    justify1: {
-        justifyContent: 'space-between',
+        width: '100%',
+        height: 140,
     },
     tittleTextSurvey: {
         color: '#fff',
-        fontSize: fontScale(12),
+        fontSize: 12,
         fontWeight: 'bold',
         textAlign: 'left',
         fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed',
     },
+    tittleTextSurveyDesktop: {
+        fontSize: 16,
+    }
 });

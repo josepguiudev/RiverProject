@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { wp, hp, fontScale } from "@/app/utils/device";
+import { useLayout } from "@/app/utils/useLayout";
 
 /**
  * Propiedades del componente {@link EncuestaCard}.
@@ -10,10 +10,6 @@ interface EncuestaCardProps {
    * Título principal de la encuesta.
    */
   name: string;
-  /**
-   * Descripción breve o detallada del contenido de la encuesta.
-   */
-  // descripcion: string;
   /**
    * El pago asociado a la encuesta, si aplica.
    * Puede ser nulo si no hay pago definido.
@@ -27,43 +23,58 @@ interface EncuestaCardProps {
  * @remarks
  * Este componente utiliza `React.memo` para optimizar el re-renderizado.
  *
- * @example
- * ```tsx
- * <EncuestaCard
- *   name="Encuesta de Satisfacción"
- *   pago={50}
- * />
- * ```
- *
  * @returns Un elemento React que representa la tarjeta de la encuesta.
  */
 function EncuestaCard({ name, pago }: EncuestaCardProps) {
-  console.log("Renderizando:", name);
+  const { isDesktopView, isTabletView } = useLayout();
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>{name}</Text>
-      <Text style={styles.pago}>Pago: ${pago}</Text>
+    <View style={[
+      styles.card,
+      (isTabletView || isDesktopView) && styles.cardLarge
+    ]}>
+      <Text style={[
+        styles.title,
+        isDesktopView && styles.titleDesktop
+      ]}>{name}</Text>
+      <Text style={[
+        styles.pago,
+        isDesktopView && styles.pagoDesktop
+      ]}>Pago: ${pago}</Text>
     </View>
   );
 }
 
-export default memo(EncuestaCard); //Memo permite evitar que si cambiamos solo un componente hijo tras el randerizado solo se actualice ese específico y no se rendericen los demás.
+export default memo(EncuestaCard);
 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    padding: wp(4),
-    borderRadius: wp(2),
-    marginVertical: hp(1),
+    padding: 16,
+    borderRadius: 8,
+    marginVertical: 8,
     elevation: 3,
+    width: '100%',
+  },
+  cardLarge: {
+    padding: 24,
+    borderRadius: 12,
   },
   title: {
-    fontSize: fontScale(18),
+    fontSize: 18,
     fontWeight: "bold",
+    color: '#333',
+  },
+  titleDesktop: {
+    fontSize: 22,
   },
   pago: {
-    fontSize: fontScale(14),
+    fontSize: 14,
     fontWeight: "600",
+    color: '#666',
+    marginTop: 4,
   },
+  pagoDesktop: {
+    fontSize: 16,
+  }
 });

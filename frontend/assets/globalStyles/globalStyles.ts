@@ -1,55 +1,49 @@
 import { StyleSheet } from 'react-native';
-import { wp, hp } from '@/app/utils/device';
 
 export default StyleSheet.create({
     padre: {
         backgroundColor: '#000000',
     },
     cajaMenu: {
-        width: wp(100),
-        height: hp(5),
+        width: '100%',
+        height: 60, // Altura estándar para menús/headers
     },
     tamanoCajaPadre: {
         width: '100%',
         height: '100%',
     },
     alineadoPersonal: {
-        display: 'flex',
-        flexWrap: 'wrap',
+        flex: 1,
         alignItems: 'center',
-        alignContent: 'center', // Verticalmente
         justifyContent: "center",
     },
     alineadoPersonalVertical: {
-        display: 'flex',
-        flexDirection: 'row', // Asegura el eje horizontal
-        alignItems: 'center', // Centra verticalmente
-        justifyContent: 'flex-start', // Alinea al inicio (izquierda) horizontalmente
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
     },
     alineadoPersonalHorizontal: {
-        display: 'flex',
-        flexDirection: 'column',    // eje principal vertical
-        alignItems: 'center',       // eje cruzado horizontal → centra horizontalmente
-        justifyContent: 'flex-start' // eje principal vertical → alinea arriba
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'flex-start'
     },
     borde: {
-        borderWidth: 1,         // El "1px"
-        borderColor: 'red',     // El "red"
-        borderStyle: 'solid',   // Opcional (es el valor por defecto)
+        borderWidth: 1,
+        borderColor: 'red',
+        borderStyle: 'solid',
     },
     borde2: {
-        borderWidth: 1,         // El "1px"
-        borderColor: 'blue',     // El "red"
-        borderStyle: 'solid',   // Opcional (es el valor por defecto)
+        borderWidth: 1,
+        borderColor: 'blue',
+        borderStyle: 'solid',
     },
     borde3: {
-        borderWidth: 1,         // El "1px"
-        borderColor: 'orange',     // El "red"
-        borderStyle: 'solid',   // Opcional (es el valor por defecto)
+        borderWidth: 1,
+        borderColor: 'orange',
+        borderStyle: 'solid',
     },
     filas: {
-        display: 'flex',
-        flexDirection: 'row', // Asegura el eje horizontal
+        flexDirection: 'row',
         justifyContent: 'space-between'
     }
 });
