@@ -9,5 +9,10 @@ export default StyleSheet.create({
         width: "33%",
         height: "100%",
         borderRadius: 20
+    },
+    contenedorFila2:{
+        width: "22%",
+        height: "100%",
+        borderRadius: 20
     }
 })

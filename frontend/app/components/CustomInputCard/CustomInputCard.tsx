@@ -30,6 +30,7 @@ type SteamQuery = {
 const CustomInputCard = ({ title, value}: Props) => {
     const [queries, setQueries] = useState<SteamQuery[]>([]);
     const [queries2, setQueries2] = useState<SteamQuery[]>([]);
+    const [queries3, setQueries3] = useState<SteamQuery[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedOption, setSelectedOption] = useState<Option | null>(null);
     const [inputUserId, setInputUserId] = useState("");
@@ -72,8 +73,29 @@ const CustomInputCard = ({ title, value}: Props) => {
             }
         };
 
-        cargarQueries();
-        cargarQueriesType2();
+        const cargarQueriesType3 = async () => {
+            try {
+                const response = await fetch("http://localhost:8080/api/queries/bytype3"); 
+                if (!response.ok) {
+                    throw new Error("Error al obtener queries");
+                }
+                const data: SteamQuery[] = await response.json();
+                setQueries3(data);
+            } catch (error) {
+                console.error(error);
+                Alert.alert("Error", "No se pudieron cargar las consultas");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if(value === 1){
+            cargarQueries();
+        }else if(value === 2){
+            cargarQueriesType2();
+        }else if(value === 3){
+            cargarQueriesType3();
+        }
     }, []);
 
     const buscarPeticion = async () => {
@@ -168,7 +190,7 @@ const CustomInputCard = ({ title, value}: Props) => {
     switch (value) {
         case 1: 
             content = (
-                <View style={[styles.cardSize, styles.back]}>
+                <View style={[styles.cardSize, styles.back,, {marginTop: "1%"}]}>
                     <View style={[styles.contenedorWritter]}>
                         <View style={[styles.textWrapper]}>
                             <TypeWriter 
@@ -208,7 +230,7 @@ const CustomInputCard = ({ title, value}: Props) => {
             break;
         case 2:
             content = (
-                <View style={[styles.cardSize, styles.back]}>
+                <View style={[styles.cardSize, styles.back, {marginTop: "1%"}]}>
                     <View style={[styles.contenedorWritter]}>
                         <View style={[styles.textWrapper]}>
                             <TypeWriter 
@@ -236,6 +258,46 @@ const CustomInputCard = ({ title, value}: Props) => {
                         </View>
                         <View style={[styles.contenedorInterno2]}>
                             <CustomInputText placeholder="Inserta el id del juego" isAdmin={true} onChangeText={setInputUserId}/>
+                        </View>
+                    </View>
+
+                    <View style={[styles.contenedorTerciario, globalStyles.alineadoPersonal]}>
+                        <CustomButton title="Buscar" onPress={buscarPeticion2} isAdmin={true}  />
+                    </View>
+
+                </View>
+            );
+            break;
+            case 3:
+            content = (
+                <View style={[styles.cardSize, styles.back, {marginTop: "1%"}]}>
+                    <View style={[styles.contenedorWritter]}>
+                        <View style={[styles.textWrapper]}>
+                            <TypeWriter 
+                                typing={1}  
+                                maxDelay={50}
+                                style={styles.mainText}
+                            >
+                                {title}
+                            </TypeWriter>
+                        </View>
+                    </View>
+
+                    <View style={[styles.contenedorSecundario, globalStyles.alineadoPersonalHorizontal]}>
+                        <View style={[styles.contenedorInterno]}>
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#FFFFFF" />
+                            ) : (
+                                <CustomDropdown label="Seleccione una consulta" options={queries3.map(q => ({
+                                    id: q.id,
+                                    label: q.description,   //  LO QUE SE MUESTRA
+                                    value: q.query          //  LO QUE REALMENTE USAS
+                                }))} 
+                                onSelect={item => setSelectedOption(item)}/>
+                            )}
+                        </View>
+                        <View style={[styles.contenedorInterno2]}>
+                            <CustomInputText placeholder="Inserta el id del jugador" isAdmin={true} onChangeText={setInputUserId}/>
                         </View>
                     </View>
 

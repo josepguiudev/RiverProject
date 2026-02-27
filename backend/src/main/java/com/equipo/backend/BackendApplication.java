@@ -55,8 +55,18 @@ public class BackendApplication {
 				q5.setType(2);
 				q5.setDescription("Coletilla español");
 
+				UserSteamQueries q6 = new UserSteamQueries();
+				q6.setQuery("https://api.steampowered.com/IPlayerService/");
+				q6.setType(0);
+				q6.setDescription("Extraer juegos de biblioteca de usuario");
+
+				UserSteamQueries q7 = new UserSteamQueries();
+				q7.setQuery("GetOwnedGames/v1");
+				q7.setType(3);
+				q7.setDescription("Extraer juegos de biblioteca de usuario");
+
 				// Guardamos todos
-				repository.saveAll(List.of(q0, q1, q2, q3, q4, q5));
+				repository.saveAll(List.of(q0, q1, q2, q3, q4, q5, q6, q7));
 
 				System.out.println("--- Datos de user_steam_queries insertados con éxito ---");
 			};

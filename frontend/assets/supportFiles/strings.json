@@ -47,7 +47,7 @@
     "GetPlayerSummaries": "GetPlayerSummaries/v2/",
     "GetFriendList": "GetFriendList/v1/",
 
-
+    "GetOwnedGames": "GetOwnedGames/v1/",
 
 
     "urlApiSteam": "https://api.steampowered.com/ISteamUser/",
