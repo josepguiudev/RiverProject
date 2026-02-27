@@ -65,7 +65,7 @@ public class UserController {
                     .host("api.steampowered.com")
                     .path("/ISteamUser/GetFriendList/v1/")
                     .queryParam("key", steamApiKey)
-                    .queryParam("steamids", steamId)
+                    .queryParam("steamid", steamId)
                     .build())
                 .retrieve()
                 .bodyToMono(Object.class)

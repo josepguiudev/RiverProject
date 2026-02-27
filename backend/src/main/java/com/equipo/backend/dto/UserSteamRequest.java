@@ -1,73 +1,78 @@
-package com.equipo.backend.model;
+package com.equipo.backend.dto;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Entity
-@Table(name = "user_steam")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-
-public class UserSteam {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class UserSteamRequest {
+    @JsonProperty("steamid")
     private String steamid;
+
+    @JsonProperty("communityvisibilitystate")
     private Long communityvisibilitystate;
+
+    @JsonProperty("profilestate")
     private Long profilestate;
+
+    @JsonProperty("personaname")
     private String personaname;
+
+    @JsonProperty("profileurl")
     private String profileurl;
+
+    @JsonProperty("avatar")
     private String avatar;
+
+    @JsonProperty("avatarmedium")
     private String avatarmedium;
+
+    @JsonProperty("avatarfull")
     private String avatarfull;
+
+    @JsonProperty("avatarhash")
     private String avatarhash;
+
+    @JsonProperty("lastlogoff")
     private Long lastlogoff;
+
+    @JsonProperty("personastate")
     private Long personastate;
+
+    @JsonProperty("realname")
     private String realname;
+
+    @JsonProperty("primaryclanid")
     private String primaryclanid;
+
+    @JsonProperty("timecreated")
     private Long timecreated;
+
+    @JsonProperty("personastateflags")
     private Long personastateflags;
 
-    public Long getId() {
-        return this.id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getIdSteam() {
+    public String getSteamid() {
         return this.steamid;
     }
-    public void setIdSteam(String steamid) {
+    public void setSteamid(String steamid) {
         this.steamid = steamid;
     }
 
-    public Long getCommunityVisibilityState() {
+    public Long getCommunityvisibilitystate() {
         return this.communityvisibilitystate;
     }
-    public void setCommunityVisibilityState(Long communityvisibilitystate) {
+    public void setCommunityvisibilitystate(Long communityvisibilitystate) {
         this.communityvisibilitystate = communityvisibilitystate;
     }
 
-    public Long getProfileState() {
+    public Long getProfilestate() {
         return this.profilestate;
     }
-    public void setProfileState(Long profilestate) {
+    public void setProfilestate(Long profilestate) {
         this.profilestate = profilestate;
     }
 
-    public String getPersonaName() {
+    public String getPersonaname() {
         return this.personaname;
     }
-    public void setPersonaName(String personaname) {
+    public void setPersonaname(String personaname) {
         this.personaname = personaname;
     }
 
@@ -146,10 +151,5 @@ public class UserSteam {
     }
     public void setPersonaStateFlags(Long personastateflags) {
         this.personastateflags = personastateflags;
-    }
-
-    @Override
-    public String toString(){
-        return "User Steam [id=" + id + "]";
     }
 }

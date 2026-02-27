@@ -112,7 +112,34 @@ const CustomInputCard = ({ title, value}: Props) => {
                 }
 
                 const data = await response.json();
-                console.log("Respuesta Steam:", data.response.players);
+                console.log("Respuesta Steam:", data.friendslist.friends);
+
+                for (const friend of data.friendslist.friends) {
+                    try {
+                        const friendResponse = await fetch(
+                            `${strings.parte1Desktop}${strings.parte2MappingIntroducido}${strings.parametroSteamApiKey}${Constants.expoConfig?.extra?.STEAM_API_KEY}${strings.conjugacion}${strings.parametroSteamId}${friend.steamid}`
+                        );
+
+                        const friendData = await friendResponse.json();
+                        const player = friendData.response.players[0];
+
+                        console.log(player.personaname);
+
+                        const postResponse = await fetch("http://localhost:8080/api/usersteam/registerusersteam", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(player),
+                            credentials: 'omit'
+                        });
+
+                        if (!postResponse.ok) {
+                            console.error("Error registrando jugador:", player.personaname);
+                        }
+                    } catch (err) {
+                        console.error("Error procesando friend:", friend.steamid, err);
+                    }
+                }
+
                 Alert.alert("OK", "Usuario obtenido correctamente");
             }
             
@@ -129,11 +156,11 @@ const CustomInputCard = ({ title, value}: Props) => {
         return;
         }
 
-    console.log("ID Query:", selectedOption.id);
-    console.log("Query seleccionada:", selectedOption.value);
-    console.log("Descripción:", selectedOption.label);
-    console.log("Descripción:", Constants.expoConfig?.extra?.STEAM_API_KEY);
-    console.log("ID Usuario:", inputUserId);
+        console.log("ID Query:", selectedOption.id);
+        console.log("Query seleccionada:", selectedOption.value);
+        console.log("Descripción:", selectedOption.label);
+        console.log("Descripción:", Constants.expoConfig?.extra?.STEAM_API_KEY);
+        console.log("ID Usuario:", inputUserId);
     }
 
     let content; 
