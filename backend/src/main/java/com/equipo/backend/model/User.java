@@ -30,6 +30,7 @@ public class User {
     private String password;
     @nullable private String urlImgUsuario;
     @nullable private Byte banned;
+    @nullable private Byte id_rol;
 
 
 
@@ -166,6 +167,14 @@ public class User {
 
     public void setBonoTotal(BonoTotal bonoTotal) {
         this.bonoTotal = bonoTotal;
+    }
+
+    public Byte getId_rol() {
+        return this.id_rol;
+    }
+
+    public void setId_rol(Byte id_rol) {
+        this.id_rol = id_rol;
     }
 
 
