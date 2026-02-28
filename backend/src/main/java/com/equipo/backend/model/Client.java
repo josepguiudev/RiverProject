@@ -19,7 +19,7 @@ public class Client {
     private String cuentaBancaria;
     private String urlImagen;
 
-    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
     @nullable private List<Survey> surveyList = new ArrayList<>();
 
 

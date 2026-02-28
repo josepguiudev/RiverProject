@@ -25,7 +25,7 @@ public class Respuesta {
     private String valueRespuesta;
 
     @OneToOne(mappedBy = "respuesta", cascade = CascadeType.ALL)
-    private List<OpcionRespuesta> opcionRespuesta = new ArrayList<>();
+    private OpcionRespuesta opcionRespuesta;
 
     public Long getId() {
         return this.id;

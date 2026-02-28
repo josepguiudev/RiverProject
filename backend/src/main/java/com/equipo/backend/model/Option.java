@@ -24,11 +24,11 @@ public class Option {
     @JsonBackReference
     private Question question;
 
-    @OneToMany(mappedBy = "options", cascade = CascadeType.ALL)
-    private List<PreguntaOpcion> preguntaOption = new ArrayList<>();
+    @OneToMany(mappedBy = "option", cascade = CascadeType.ALL)
+    private List<PreguntaOpcion> preguntaOpciones = new ArrayList<>();
 
-    @OneToOne(mappedBy = "options", cascade = CascadeType.ALL)
-    private List<OpcionRespuesta> opcionRespuesta = new ArrayList<>();
+    @OneToOne(mappedBy = "option", cascade = CascadeType.ALL)
+    private OpcionRespuesta opcionRespuesta;
 
 
     public Long getId() {

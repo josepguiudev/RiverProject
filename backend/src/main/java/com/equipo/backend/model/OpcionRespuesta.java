@@ -13,8 +13,8 @@ public class OpcionRespuesta {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "id_opcion")
-    private Option opcion;
+    @JoinColumn(name = "id_option")
+    private Option option;
 
     @OneToOne
     @JoinColumn(name = "id_respuesta")
@@ -30,11 +30,11 @@ public class OpcionRespuesta {
     }
 
     public Option getOpcion() {
-        return this.opcion;
+        return this.option;
     }
 
     public void setOpcion(Option opcion) {
-        this.opcion = opcion;
+        this.option = opcion;
     }
 
     public Respuesta getRespuesta() {
@@ -51,7 +51,7 @@ public class OpcionRespuesta {
 
     public OpcionRespuesta(Long id, Option opcion, Respuesta respuesta) {
         this.id = id;
-        this.opcion = opcion;
+        this.option = opcion;
         this.respuesta = respuesta;
     }
 

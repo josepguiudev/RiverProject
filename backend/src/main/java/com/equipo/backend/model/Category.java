@@ -17,10 +17,10 @@ public class Category {
 
     private String description;
     
-    @ManyToMany(mappedBy = "category")
+    @ManyToMany(mappedBy = "categoryList")
     private List<Game> gamesList = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "category")
+    @ManyToMany(mappedBy = "categoryList")
     private List<Survey> surveyList = new ArrayList<>();
 
 

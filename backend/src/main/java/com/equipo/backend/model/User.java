@@ -30,14 +30,18 @@ public class User {
     private String password;
     @nullable private String urlImgUsuario;
     @nullable private Byte banned;
-    @nullable private Byte id_rol;
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserGame> userGamesList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserSurveys> userSurveyList = new ArrayList<>();
+
+    @OneToOne
+    private BonoTotal bonoTotal; 
+
 
     public Long getId() {
         return this.id;
@@ -124,12 +128,6 @@ public class User {
         this.email = email;
     }
     
-    public Byte getId_rol() {
-        return this.id_rol;
-    }
-    public void setId_rol(Byte id_rol) {
-        this.id_rol = id_rol;
-    }
 
     public String getPassword() {
         return this.password;
@@ -138,12 +136,45 @@ public class User {
         this.password = password;
     }
 
+    public Byte getBanned() {
+        return this.banned;
+    }
+
+    public void setBanned(Byte banned) {
+        this.banned = banned;
+    }
+
+    public List<UserGame> getUserGamesList() {
+        return this.userGamesList;
+    }
+
+    public void setUserGamesList(List<UserGame> userGamesList) {
+        this.userGamesList = userGamesList;
+    }
+
+    public List<UserSurveys> getUserSurveyList() {
+        return this.userSurveyList;
+    }
+
+    public void setUserSurveyList(List<UserSurveys> userSurveyList) {
+        this.userSurveyList = userSurveyList;
+    }
+
+    public BonoTotal getBonoTotal() {
+        return this.bonoTotal;
+    }
+
+    public void setBonoTotal(BonoTotal bonoTotal) {
+        this.bonoTotal = bonoTotal;
+    }
+
 
     public User() {
     }
 
 
-    public User(Long id, String name, String apellido1, String apellido2, String email, Byte genero, Byte edad, String localizacion, String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned, Byte id_rol) {
+
+    public User(Long id, String name, String apellido1, String apellido2, String email, Byte genero, Byte edad, String localizacion, String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned, List<UserGame> userGamesList, List<UserSurveys> userSurveyList, BonoTotal bonoTotal) {
         this.id = id;
         this.name = name;
         this.apellido1 = apellido1;
@@ -158,8 +189,12 @@ public class User {
         this.password = password;
         this.urlImgUsuario = urlImgUsuario;
         this.banned = banned;
-        this.id_rol = id_rol;
+        this.userGamesList = userGamesList;
+        this.userSurveyList = userSurveyList;
+        this.bonoTotal = bonoTotal;
     }
+   
+
 
 
 

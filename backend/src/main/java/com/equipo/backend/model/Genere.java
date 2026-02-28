@@ -17,10 +17,10 @@ public class Genere {
 
     private String nombreGenero;
 
-    @ManyToMany(mappedBy = "generes")
+    @ManyToMany(mappedBy = "genereList")
     private List<Game> gamesList = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "generes")
+    @ManyToMany(mappedBy = "genereList")
     private List<Survey> surveyList = new ArrayList<>();
 
 

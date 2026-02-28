@@ -21,7 +21,7 @@ public class PreguntaOpcion {
 
     @ManyToOne
     @JoinColumn(name = "id_opcion")
-    private Option opcion;
+    private Option option;
 
 
 
@@ -42,11 +42,11 @@ public class PreguntaOpcion {
     }
 
     public Option getOpcion() {
-        return this.opcion;
+        return this.option;
     }
 
     public void setOpcion(Option opcion) {
-        this.opcion = opcion;
+        this.option = opcion;
     }
 
 
@@ -57,7 +57,7 @@ public class PreguntaOpcion {
     public PreguntaOpcion(Long id, Question question, Option opcion) {
         this.id = id;
         this.question = question;
-        this.opcion = opcion;
+        this.option = opcion;
     }
 
 

@@ -28,7 +28,7 @@ public class Game {
         joinColumns = @JoinColumn(name = "id_game"),
         inverseJoinColumns = @JoinColumn(name = "id_genere")
     )
-    private List<Genere> generesList = new ArrayList<>();
+    private List<Genere> genereList = new ArrayList<>();
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -95,11 +95,11 @@ public class Game {
 
 
     public List<Genere> getGeneresList() {
-        return this.generesList;
+        return this.genereList;
     }
 
     public void setGeneresList(List<Genere> generesList) {
-        this.generesList = generesList;
+        this.genereList = generesList;
     }
 
     public List<UserGame> getUserGames() {
@@ -140,7 +140,7 @@ public class Game {
         this.price = price;
         this.isEarlyAcces = isEarlyAcces;
         this.url_image = url_image;
-        this.generesList = genereList;
+        this.genereList = genereList;
         this.categoryList = categoryList;
         this.logrosList = logrosList;
     }
