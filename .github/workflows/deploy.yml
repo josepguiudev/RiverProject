@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: push image to docker hub
+      - name: push to ftp
         run: echo "Se hace el push al server"
 
       - name: Deploy to FTP server
