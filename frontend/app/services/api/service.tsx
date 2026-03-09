@@ -1,8 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { API_CONFIG } from '../../config/api.config';
-import { Survey } from '../../types/formsSurvey.types';
+import { EncuestaParcialDTO, EncuestaRespuestaDTO, Survey } from '../../types/formsSurvey.types';
 
-// Configurar axios con valores por defecto desde tu archivo de configuración
 const apiClient = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
@@ -11,47 +10,43 @@ const apiClient = axios.create({
   },
 });
 
-/**
- * Servicio para manejar todas las llamadas al API de Encuestas
- */
 export class FormApiService {
+  static savePartial(arg0: { idPregunta: number; idOpcion: number; valor: string; isRespondida: boolean; }, arg1: number, surveyId: any) {
+    throw new Error('Method not implemented.');
+  }
   
   /**
-   * Enviar una nueva plantilla de encuesta al backend
-   * Mapea los datos del Frontend a la @Entity de Java
+   * Obtener todas las encuestas (Antes: /api/formSurvey/responses)
+   */
+static async getAllResponses(): Promise<Survey[]> {
+    try {
+        const response = await apiClient.get<Survey[]>("/api/surveys/all"); 
+        return response.data;
+    } catch (error) {
+        throw this.handleError(error);
+    }
+}
+
+  /**
+   * Enviar una nueva plantilla (Arregla el error de 'payload')
    */
   static async submitForm(formData: Survey): Promise<Survey> {
     try {
-      // Transformamos el objeto para que coincida con Survey.java y Question.java
+      // DEFINICIÓN DE PAYLOAD (Esto resuelve el error ts(2304))
       const payload = {
         name: formData.name, 
-        numQuestions: formData.questionList.length,
-        
-        // Mapeo de la lista de preguntas
-        questionList: formData.questionList.map(q => ({
-          text_question: q.text_question, // Coincide con la columna SQL y el campo Java
-          type_name: q.type_name,         // SHORT_TEXT, NUMERIC, SINGLE_CHOICE, etc.
-          
-          // Opciones de respuesta (si las hay)
+        numQuestions: formData.questionList ? formData.questionList.length : 0,
+        questionList: formData.questionList ? formData.questionList.map(q => ({
+          text_question: q.textQuestion,
+          type_name: q.typeName,
           options: q.options ? q.options.map(opt => ({
-            text_opcion: opt.text_opcion // Coincide con QuestionOption.java
+            text_opcion: opt.textOpcion
           })) : []
-        })),
-
-        // Campos adicionales de la entidad Survey
-        genereList: [], // Puedes mapear géneros si los tienes en el formulario
-        pago: null, 
-        pagoPanelista: null,
-        creationDate: new Date().toISOString() // LocalDateTime en Java acepta este formato
+        })) : [],
+        creationDate: new Date().toISOString()
       };
 
-      console.log("🚀 Enviando Payload a Spring Boot:", JSON.stringify(payload, null, 2));
-
-      const response = await apiClient.post<Survey>(
-        "/api/formSurvey/submit", 
-        payload
-      );
-      
+      const response = await apiClient.post<Survey>("/api/surveys/submit", payload);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -59,12 +54,13 @@ export class FormApiService {
   }
 
   /**
-   * Obtener todas las encuestas guardadas en la base de datos
+   * Cargar respuestas parciales
    */
-  static async getAllResponses(): Promise<Survey[]> {
+  static async getPartialResponse(idSurvey: number, idUser: number): Promise<EncuestaParcialDTO> {
     try {
-      const response = await apiClient.get<Survey[]>(
-        "/api/formSurvey/responses"
+      // Enviamos el idUser como query param (?idUser=1)
+      const response = await apiClient.get<EncuestaParcialDTO>(
+        `/api/surveys/${idSurvey}/responses?idUser=${idUser}`
       );
       return response.data;
     } catch (error) {
@@ -73,37 +69,35 @@ export class FormApiService {
   }
 
   /**
-   * Probar si el servidor está arriba
+   * Guardar respuestas de usuario
+   */
+  static async saveAnswers(data: EncuestaRespuestaDTO, isCompleted: boolean): Promise<any> {
+    try {
+      const response = await apiClient.post(`/api/surveys/responses/save?completada=${isCompleted}`, data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Test de conexión
    */
   static async testConnection(): Promise<string> {
     try {
-      const response = await apiClient.get<string>(
-        "/api/formSurvey/test"
-      );
+      const response = await apiClient.get<string>("/api/surveys/test");
       return response.data;
     } catch (error) {
       throw this.handleError(error);
     }
   }
 
-  /**
-   * Manejo centralizado de errores con Axios
-   */
+
   private static handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
-      
       if (axiosError.response) {
-        // El servidor respondió pero con un código de error (400, 404, 500)
-        console.error("Data error:", axiosError.response.data);
-        return new Error(
-          `Error del servidor: ${axiosError.response.status} - ${axiosError.response.statusText}`
-        );
-      } else if (axiosError.request) {
-        // No hubo respuesta (servidor apagado o IP incorrecta)
-        return new Error(
-          'No se pudo conectar al servidor. Revisa si el Backend está corriendo o la IP en api.config.'
-        );
+        return new Error(`Error del servidor: ${axiosError.response.status} - ${axiosError.response.statusText}`);
       }
     }
     return new Error('Error inesperado al comunicarse con el servidor');

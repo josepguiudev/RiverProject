@@ -1,111 +1,164 @@
 USE [river_db]
 GO
 
-SET NOCOUNT ON;
-
-PRINT '--- INICIANDO LIMPIEZA PROFUNDA ---';
-
--- 1. Desactivar restricciones
-EXEC sp_MSforeachtable "ALTER TABLE ? NOCHECK CONSTRAINT ALL";
-
--- 2. Limpiar tablas principales
-DELETE FROM [dbo].[respuesta];
-DELETE FROM [dbo].[question_options];
+-- 0. LIMPIEZA DE DATOS (Opcional, para empezar de cero en orden inverso por las FK)
+DELETE FROM [dbo].[user_survey];
 DELETE FROM [dbo].[question_config];
+DELETE FROM [dbo].[opcion_respuesta];
+DELETE FROM [dbo].[respuesta];
+DELETE FROM [dbo].[options];
 DELETE FROM [dbo].[question];
+DELETE FROM [dbo].[survey_category];
 DELETE FROM [dbo].[survey];
+DELETE FROM [dbo].[client];
 DELETE FROM [dbo].[users];
-
--- 3. Resetear identidades
-EXEC sp_MSforeachtable "IF OBJECTPROPERTY(OBJECT_ID('?'), 'TableHasIdentity') = 1 DBCC CHECKIDENT ('?', RESEED, 0)";
-
--- 4. Reactivar restricciones
-EXEC sp_MSforeachtable "ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL";
-
-PRINT '--- CREANDO USUARIO CON ID 10 ---';
-
--- Insertamos el usuario activando IDENTITY_INSERT para forzar el ID 10
-SET IDENTITY_INSERT [dbo].[users] ON;
-INSERT INTO [dbo].[users] ([id], [name], [apellido1], [email], [password], [edad], [genero], [id_rol])
-VALUES (10, 'Moha', 'Gallego', 'moha@river.com', 'pass123', 25, 1, 1);
-SET IDENTITY_INSERT [dbo].[users] OFF;
-
-PRINT '--- CARGANDO 5 ENCUESTAS COMPLETAS ---';
-
--- ==========================================================
--- 1. TERRARIA 1.4.5 (10 Preguntas)
--- ==========================================================
-INSERT INTO [dbo].[survey] ([name], [num_questions], [creation_date], [launch_date])
-VALUES ('Terraria 1.4.5: Labor of Love & Dead Cells', 10, GETDATE(), GETDATE());
-DECLARE @ID_T BIGINT = SCOPE_IDENTITY();
-
-INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@ID_T, '¿Qué opinas del crossover con Dead Cells?');
-DECLARE @QT1 BIGINT = SCOPE_IDENTITY();
-INSERT INTO [dbo].[question_options] (id_question, text_opcion) VALUES (@QT1, 'Excelente'), (@QT1, 'Normal'), (@QT1, 'Malo');
-
-INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@ID_T, '¿Cuántas horas has jugado en esta versión?');
-INSERT INTO [dbo].[question_config] (id_question, type_name) VALUES (SCOPE_IDENTITY(), 'NUMERIC');
-
-INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@ID_T, '¿Cuál es tu arma favorita del nuevo parche?');
-INSERT INTO [dbo].[question_config] (id_question, type_name) VALUES (SCOPE_IDENTITY(), 'SHORT_TEXT');
-
-INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@ID_T, '¿Has probado la semilla secreta "Legendary"?');
-DECLARE @QT4 BIGINT = SCOPE_IDENTITY();
-INSERT INTO [dbo].[question_options] (id_question, text_opcion) VALUES (@QT4, 'Sí, es una locura'), (@QT4, 'No, me da miedo');
-
-INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@ID_T, '¿Qué bioma necesita más retoques?');
-INSERT INTO [dbo].[question_config] (id_question, type_name) VALUES (SCOPE_IDENTITY(), 'SHORT_TEXT');
-
--- Rellenar hasta 10
-INSERT INTO [dbo].[question] (id_survey, text_question) SELECT TOP 5 @ID_T, 'Pregunta adicional Terraria' FROM sys.objects;
-
--- ==========================================================
--- 2. JUGADOR HARDCORE (15 Preguntas)
--- ==========================================================
-INSERT INTO [dbo].[survey] ([name], [num_questions], [creation_date])
-VALUES ('Perfil: Jugador Hardcore y Competitivo', 15, GETDATE());
-DECLARE @ID_H BIGINT = SCOPE_IDENTITY();
-DECLARE @i INT = 1;
-WHILE @i <= 15
-BEGIN
-    INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@ID_H, CONCAT('Pregunta técnica #', @i));
-    DECLARE @lastQ BIGINT = SCOPE_IDENTITY();
-    IF @i % 3 = 0 INSERT INTO [dbo].[question_config] (id_question, type_name) VALUES (@lastQ, 'NUMERIC');
-    ELSE IF @i % 3 = 1 INSERT INTO [dbo].[question_options] (id_question, text_opcion) VALUES (@lastQ, 'Opción A'), (@lastQ, 'Opción B');
-    ELSE INSERT INTO [dbo].[question_config] (id_question, type_name) VALUES (@lastQ, 'SHORT_TEXT');
-    SET @i = @i + 1;
-END
-
--- ==========================================================
--- 3. RPG Y MUNDO ABIERTO (7 Preguntas)
--- ==========================================================
-INSERT INTO [dbo].[survey] ([name], [num_questions], [creation_date])
-VALUES ('Futuro de los RPG y Mundos Abiertos', 7, GETDATE());
-DECLARE @ID_R BIGINT = SCOPE_IDENTITY();
-INSERT INTO [dbo].[question] (id_survey, text_question) SELECT TOP 7 @ID_R, 'Cuestión sobre RPG' FROM sys.objects;
-
--- ==========================================================
--- 4. MONETIZACIÓN (6 Preguntas)
--- ==========================================================
-INSERT INTO [dbo].[survey] ([name], [num_questions], [creation_date])
-VALUES ('Opinión: Pases de Batalla y Skins', 6, GETDATE());
-DECLARE @ID_M BIGINT = SCOPE_IDENTITY();
-INSERT INTO [dbo].[question] (id_survey, text_question) SELECT TOP 6 @ID_M, 'Cuestión sobre monetización' FROM sys.objects;
-
--- ==========================================================
--- 5. HARDWARE (5 Preguntas)
--- ==========================================================
-INSERT INTO [dbo].[survey] ([name], [num_questions], [creation_date])
-VALUES ('Hardware: PC vs Consolas 2026', 5, GETDATE());
-DECLARE @ID_HW BIGINT = SCOPE_IDENTITY();
-INSERT INTO [dbo].[question] (id_survey, text_question) SELECT TOP 5 @ID_HW, 'Cuestión sobre Hardware' FROM sys.objects;
-
-PRINT '--- INSERTANDO RESPUESTAS DE PRUEBA (Usuario 10) ---';
-
-INSERT INTO [dbo].[respuesta] (id_user, id_option, value_respuesta) VALUES 
-(10, @QT1, 'Excelente'),
-(10, NULL, '500'),
-(10, NULL, 'Hacha-pico de Dead Cells');
-
-PRINT '--- PROCESO FINALIZADO CON ÉXITO ---';
+DELETE FROM [dbo].[category];
+DELETE FROM [dbo].[genere];
 GO
+
+-- 1. CLIENTES
+INSERT INTO [dbo].[client] (nombre, cuenta_bancaria, url_imagen) VALUES 
+('Re-Logic Studios', 'US-TERRA-999', 'https://terraria.org/logo.png'),
+('Valve Corporation', 'US-STEAM-888', 'https://valve.com/logo.png'),
+('Square Enix', 'JP-SQUARE-777', 'https://square.com/logo.png');
+
+DECLARE @IdReLogic bigint = (SELECT id FROM client WHERE nombre = 'Re-Logic Studios');
+DECLARE @IdValve bigint = (SELECT id FROM client WHERE nombre = 'Valve Corporation');
+DECLARE @IdSquare bigint = (SELECT id FROM client WHERE nombre = 'Square Enix');
+
+-- 2. USUARIOS
+INSERT INTO [dbo].[users] (name, email, password, edad, genero, id_rol, localizacion) VALUES 
+('Alex Gamer', 'alex@pro.com', 'pass123', 25, 1, 2, 'Barcelona'),
+('Maria Terraria', 'maria@build.com', 'pass123', 30, 2, 2, 'Madrid'),
+('Admin River', 'admin@river.com', 'admin123', 35, 1, 1, 'Valencia');
+
+DECLARE @IdAlex bigint = (SELECT id FROM users WHERE email = 'alex@pro.com');
+
+-- 3. CATEGORÍAS Y GÉNEROS
+INSERT INTO [dbo].[category] (description) VALUES ('Aventura'), ('Sandbox'), ('Competitivo'), ('RPG');
+INSERT INTO [dbo].[genere] (nombre_genero) VALUES ('Acción'), ('Supervivencia'), ('Estrategia'), ('Multijugador');
+
+-- ============================================================================
+-- ENCUESTA 1: TERRARIA (EXTENSA Y PROFUNDA + DLC)
+-- ============================================================================
+INSERT INTO [dbo].[survey] (name, num_questions, num_users, creation_date, id_client)
+VALUES ('Terraria: Mastery & Future DLC', 7, 0, GETDATE(), @IdReLogic);
+DECLARE @S1 bigint = SCOPE_IDENTITY();
+
+-- Q1: Única
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S1, '¿En qué dificultad sueles completar tus mundos principales?');
+DECLARE @Q1_1 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[options] (id_question, text_opcion) VALUES (@Q1_1, 'Clásico'), (@Q1_1, 'Experto'), (@Q1_1, 'Maestro'), (@Q1_1, 'Journey');
+INSERT INTO [dbo].[question_config] (id, type_name, attributes) VALUES (@Q1_1, 'RADIO', '{"required": true}');
+
+-- Q2: Múltiple
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S1, '¿Qué eventos consideras más desafiantes?');
+DECLARE @Q1_2 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[options] (id_question, text_opcion) VALUES (@Q1_2, 'Eclipse Solar'), (@Q1_2, 'Invasión Marciana'), (@Q1_2, 'Luna Gélida'), (@Q1_2, 'Ejército del Antiguo');
+INSERT INTO [dbo].[question_config] (id, type_name, attributes) VALUES (@Q1_2, 'CHECKBOX', '{"min": 1}');
+
+-- Q3: Numérica
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S1, '¿Cuántos "Moon Lords" has derrotado en total?');
+DECLARE @Q1_3 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[question_config] (id, type_name, attributes) VALUES (@Q1_3, 'NUMBER', '{"min": 0}');
+
+-- Q4: Única (DLC)
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S1, '¿Comprarías una expansión de pago (DLC) con nuevos biomas?');
+DECLARE @Q1_4 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[options] (id_question, text_opcion) VALUES (@Q1_4, 'Sí'), (@Q1_4, 'Solo si es muy grande'), (@Q1_4, 'No, prefiero updates gratis');
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q1_4, 'RADIO');
+
+-- Q5: Múltiple (Mods)
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S1, '¿Qué mods te gustaría ver integrados oficialmente?');
+DECLARE @Q1_5 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[options] (id_question, text_opcion) VALUES (@Q1_5, 'Calamity'), (@Q1_5, 'Thorium'), (@Q1_5, 'Spirit'), (@Q1_5, 'Ninguno');
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q1_5, 'CHECKBOX');
+
+-- Q6: Texto
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S1, 'Si pudieras añadir un jefe en un DLC, ¿cómo sería?');
+DECLARE @Q1_6 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q1_6, 'TEXT');
+
+-- Q7: Escala
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S1, 'Del 1 al 10, ¿qué nota das al soporte post-lanzamiento?');
+DECLARE @Q1_7 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[question_config] (id, type_name, attributes) VALUES (@Q1_7, 'NUMBER', '{"min": 1, "max": 10}');
+
+-- ============================================================================
+-- ENCUESTA 2: COMPETITIVO (VALVE)
+-- ============================================================================
+INSERT INTO [dbo].[survey] (name, num_questions, num_users, creation_date, id_client)
+VALUES ('CS2 & Dota 2: Meta Competitivo', 3, 0, GETDATE(), @IdValve);
+DECLARE @S2 bigint = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S2, '¿Qué juego juegas más?');
+DECLARE @Q2_1 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[options] (id_question, text_opcion) VALUES (@Q2_1, 'Counter-Strike 2'), (@Q2_1, 'Dota 2');
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q2_1, 'RADIO');
+
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S2, 'Gasto mensual en skins (Euros)');
+DECLARE @Q2_2 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q2_2, 'NUMBER');
+
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S2, '¿Qué mejorarías del sistema antitrampas?');
+DECLARE @Q2_3 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q2_3, 'TEXT');
+
+-- ============================================================================
+-- ENCUESTA 3: HARDWARE (VALVE/STEAM DECK)
+-- ============================================================================
+INSERT INTO [dbo].[survey] (name, num_questions, num_users, creation_date, id_client)
+VALUES ('Steam Deck & Portabilidad', 2, 0, GETDATE(), @IdValve);
+DECLARE @S3 bigint = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S3, '¿Tienes una Steam Deck?');
+DECLARE @Q3_1 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[options] (id_question, text_opcion) VALUES (@Q3_1, 'Sí'), (@Q3_1, 'No, pero la quiero'), (@Q3_1, 'No me interesa');
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q3_1, 'RADIO');
+
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S3, '¿Qué periféricos usas más?');
+DECLARE @Q3_2 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[options] (id_question, text_opcion) VALUES (@Q3_2, 'Dock'), (@Q3_2, 'Mando BT'), (@Q3_2, 'Funda rígida');
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q3_2, 'CHECKBOX');
+
+-- ============================================================================
+-- ENCUESTA 4: JRPGS (SQUARE ENIX)
+-- ============================================================================
+INSERT INTO [dbo].[survey] (name, num_questions, num_users, creation_date, id_client)
+VALUES ('Final Fantasy: Turnos vs Acción', 2, 0, GETDATE(), @IdSquare);
+DECLARE @S4 bigint = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S4, '¿Qué sistema de combate prefieres?');
+DECLARE @Q4_1 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[options] (id_question, text_opcion) VALUES (@Q4_1, 'Clásico por turnos'), (@Q4_1, 'Acción en tiempo real');
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q4_1, 'RADIO');
+
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S4, 'Dinos tu Final Fantasy favorito');
+DECLARE @Q4_2 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q4_2, 'TEXT');
+
+-- ============================================================================
+-- ENCUESTA 5: TENDENCIAS (VALVE)
+-- ============================================================================
+INSERT INTO [dbo].[survey] (name, num_questions, num_users, creation_date, id_client)
+VALUES ('Tendencias: Early Access', 2, 0, GETDATE(), @IdValve);
+DECLARE @S5 bigint = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S5, '¿Sueles comprar juegos en Early Access?');
+DECLARE @Q5_1 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[options] (id_question, text_opcion) VALUES (@Q5_1, 'Frecuentemente'), (@Q5_1, 'Rara vez'), (@Q5_1, 'Nunca');
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q5_1, 'RADIO');
+
+INSERT INTO [dbo].[question] (id_survey, text_question) VALUES (@S5, '¿Cuántos juegos tienes en tu lista de deseados?');
+DECLARE @Q5_2 bigint = SCOPE_IDENTITY();
+INSERT INTO [dbo].[question_config] (id, type_name) VALUES (@Q5_2, 'NUMBER');
+
+-- ============================================================================
+-- 4. RELACIÓN USUARIO-ENCUESTA (Pendientes para Alex)
+-- ============================================================================
+INSERT INTO [dbo].[user_survey] (id_user, id_survey, is_respondida) VALUES 
+(@IdAlex, @S1, 0), -- Terraria
+(@IdAlex, @S2, 0), -- Competitivo
+(@IdAlex, @S4, 0); -- RPGs
+
+PRINT '### Datos insertados con éxito ###';

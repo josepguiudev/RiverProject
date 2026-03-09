@@ -2,6 +2,8 @@ package com.equipo.backend.model;
 
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,10 +19,12 @@ public class PreguntaOpcion {
 
     @ManyToOne
     @JoinColumn(name = "id_question")
+    @JsonBackReference
     private Question question;
 
     @ManyToOne
     @JoinColumn(name = "id_opcion")
+    @JsonBackReference
     private Option option;
 
 

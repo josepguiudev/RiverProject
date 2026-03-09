@@ -7,6 +7,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import RegisterScreen from './screens/Auth/RegisterScreen';
 import SurveyCreatorScreen from './screens/SurveyCreatorScreen';
+import TakeSurveyScreen from './screens/TakeSurveyScreen';
+import SurveyListScreen from './screens/SurveyListScreen';
 import HomeScreen from './screens/Home/HomeScreen';
 
 import LoginScreen from './screens/Auth/LoginScreen';
@@ -31,12 +33,14 @@ function App() {
   // Si no, devolvemos tu navegación normal  
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="SuerveyCreator" screenOptions={{headerShown: false}}>
+      <Stack.Navigator initialRouteName="SurveyList" screenOptions={{headerShown: false}}>
         <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}}/>                   
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Admin" component={AdminScreen} />
-        <Stack.Screen name="SuerveyCreator" component={SurveyCreatorScreen} />     
+        <Stack.Screen name="SuerveyCreator" component={SurveyCreatorScreen} /> 
+        <Stack.Screen name="SurveyList" component={SurveyListScreen} /> 
+        <Stack.Screen name="SuerveyAnswers" component={TakeSurveyScreen} /> 
       </Stack.Navigator>
     </NavigationContainer>
   );

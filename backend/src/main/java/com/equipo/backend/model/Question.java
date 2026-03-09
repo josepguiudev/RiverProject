@@ -4,6 +4,7 @@ package com.equipo.backend.model;
 import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
@@ -29,6 +30,7 @@ public class Question {
     private List<Option> option = new ArrayList<>();
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @JsonIgnore 
     private List<PreguntaOpcion> preguntaOption = new ArrayList<>();
 
     public Long getId() {

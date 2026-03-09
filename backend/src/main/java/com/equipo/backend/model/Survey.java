@@ -9,6 +9,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 
@@ -23,9 +24,13 @@ public class Survey {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
+    @JsonProperty("numQuestions")
     private int numQuestions;
+    
     private int numUsers;
+    
+    @JsonProperty("name")
     private String name;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")

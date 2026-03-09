@@ -1,6 +1,8 @@
 package com.equipo.backend.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,10 +19,12 @@ public class UserSurveys {
 
     @ManyToOne
     @JoinColumn(name = "id_user")
+    @JsonIgnoreProperties("userSurveysList")
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "id_survey")
+    @JsonIgnoreProperties("userSurveysList")
     private Survey survey;
 
     private byte isRespondida;

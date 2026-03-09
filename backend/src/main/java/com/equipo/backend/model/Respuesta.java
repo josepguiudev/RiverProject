@@ -1,5 +1,7 @@
 package com.equipo.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -14,6 +16,7 @@ public class Respuesta {
 
     @OneToOne
     @JoinColumn(name = "id_option")
+    @JsonIgnore
     private Option option;
 
     @ManyToOne
@@ -24,6 +27,8 @@ public class Respuesta {
 
     @OneToOne(mappedBy = "respuesta", cascade = CascadeType.ALL)
     private OpcionRespuesta opcionRespuesta;
+
+    private byte isCompletada = 0;
 
     public Long getId() {
         return this.id;
@@ -58,14 +63,33 @@ public class Respuesta {
     }
 
 
+    public OpcionRespuesta getOpcionRespuesta() {
+        return this.opcionRespuesta;
+    }
+
+    public void setOpcionRespuesta(OpcionRespuesta opcionRespuesta) {
+        this.opcionRespuesta = opcionRespuesta;
+    }
+
+    public byte getIs_completada() {
+        return this.isCompletada;
+    }
+
+    public void setIs_completada(byte isCompletada) {
+        this.isCompletada = isCompletada;
+    }
+
     public Respuesta() {
     }
 
-    public Respuesta(Long id, Option option, User user, String valueRespuesta) {
+
+    public Respuesta(Long id, Option option, User user, String valueRespuesta, OpcionRespuesta opcionRespuesta, byte isCompletada) {
         this.id = id;
         this.option = option;
         this.user = user;
         this.valueRespuesta = valueRespuesta;
+        this.opcionRespuesta = opcionRespuesta;
+        this.isCompletada = isCompletada;
     }
 
 

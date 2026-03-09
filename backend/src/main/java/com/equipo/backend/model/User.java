@@ -38,7 +38,7 @@ public class User {
     private List<UserGame> userGamesList = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<UserSurveys> userSurveyList = new ArrayList<>();
+    private List<UserSurveys> userSurveysList = new ArrayList<>();
 
     @OneToOne
     private BonoTotal bonoTotal; 
@@ -153,12 +153,12 @@ public class User {
         this.userGamesList = userGamesList;
     }
 
-    public List<UserSurveys> getUserSurveyList() {
-        return this.userSurveyList;
+    public List<UserSurveys> getUserSurveysList() {
+        return this.userSurveysList;
     }
 
-    public void setUserSurveyList(List<UserSurveys> userSurveyList) {
-        this.userSurveyList = userSurveyList;
+    public void setUserSurveysList(List<UserSurveys> userSurveysList) {
+        this.userSurveysList = userSurveysList;
     }
 
     public BonoTotal getBonoTotal() {
@@ -183,7 +183,9 @@ public class User {
 
 
 
-    public User(Long id, String name, String apellido1, String apellido2, String email, Byte genero, Byte edad, String localizacion, String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned, List<UserGame> userGamesList, List<UserSurveys> userSurveyList, BonoTotal bonoTotal) {
+    public User(Long id, String name, String apellido1, String apellido2, String email, Byte genero, Byte edad, String localizacion, 
+        String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned,
+         List<UserGame> userGamesList, List<UserSurveys> userSurveysList, BonoTotal bonoTotal) {
         this.id = id;
         this.name = name;
         this.apellido1 = apellido1;
@@ -199,7 +201,7 @@ public class User {
         this.urlImgUsuario = urlImgUsuario;
         this.banned = banned;
         this.userGamesList = userGamesList;
-        this.userSurveyList = userSurveyList;
+        this.userSurveysList = userSurveysList;
         this.bonoTotal = bonoTotal;
     }
    

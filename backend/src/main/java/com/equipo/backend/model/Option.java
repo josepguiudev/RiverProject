@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -25,9 +26,11 @@ public class Option {
     private Question question;
 
     @OneToMany(mappedBy = "option", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<PreguntaOpcion> preguntaOpciones = new ArrayList<>();
 
     @OneToOne(mappedBy = "option", cascade = CascadeType.ALL)
+    @JsonIgnore
     private OpcionRespuesta opcionRespuesta;
 
 

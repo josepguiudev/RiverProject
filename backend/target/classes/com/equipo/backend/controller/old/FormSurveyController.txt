@@ -1,6 +1,7 @@
-package com.equipo.backend.controller;
+package com.equipo.backend.controller.old;
 
 import com.equipo.backend.model.Survey;
+import com.equipo.backend.repository.SurveyRepository;
 import com.equipo.backend.service.FormSurveyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 public class FormSurveyController {
     
     private final FormSurveyService formSurveyService;
+
 
     public FormSurveyController(FormSurveyService formSurveyService) {
         this.formSurveyService = formSurveyService;
@@ -53,8 +55,15 @@ public class FormSurveyController {
         }
     }
     
+    // AQUÍ ES DONDE VA EL CÓDIGO:
+    public List<Survey> obtenerTodas() {
+        // .findAll() es un método de JPA que hace un "SELECT * FROM survey"
+        return formSurveyService.findAll(); 
+    }
+
     @GetMapping("/test")
     public ResponseEntity<String> test() {
         return ResponseEntity.ok("Backend de River App funcionando correctamente!");
     }
+
 }

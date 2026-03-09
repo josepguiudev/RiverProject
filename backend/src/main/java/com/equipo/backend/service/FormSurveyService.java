@@ -54,4 +54,9 @@ public class FormSurveyService {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'guardarRespuesta'");
     }
+
+    public List<Survey> findAll() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+    }
 }

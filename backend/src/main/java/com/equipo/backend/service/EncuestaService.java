@@ -1,5 +1,19 @@
 package com.equipo.backend.service;
 
+import com.equipo.backend.dto.EncuestaParcialDTO;
+import com.equipo.backend.dto.EncuestaRespuestaDTO;
+import com.equipo.backend.dto.EncuestaRespuestaDTO.RespuestaDTO;
+import com.equipo.backend.model.Respuesta;
+
 public interface EncuestaService {
+
+
+    void guardarRespuestas(EncuestaRespuestaDTO encuestaRespuestaDTO, boolean completada);
+
+    Respuesta actualizarRespuesta(Long idRespuesta, RespuestaDTO respuestaDTO);
+
+    void guardarRespuestaIndividual(Long idUser, Long idEncuesta, RespuestaDTO respuestaIndividual);
+
+    EncuestaParcialDTO cargarRespuestas(Long idEncuesta, Long idUser);
 
 }
