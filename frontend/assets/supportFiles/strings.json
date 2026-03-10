@@ -53,6 +53,13 @@
     "key": "&apiKey=",
     "GetOwnedGames": "GetOwnedGames/v1/",
 
+    "ulrJpg": "https://steamcdn-a.akamaihd.net/steam/apps/",
+    "ulrJpg2": "/library_600x900_2x.jpg",
+    "icono": "http://media.steampowered.com/steamcommunity/public/images/apps/22370/21d7090bdea8f6685ca730850b7b55acfdb92732.jpg",
+    "icono1": "http://media.steampowered.com/steamcommunity/public/images/apps/",
+    "icono2": "/",
+    "icono3": ".jpg",
+
 
     "urlApiSteam": "https://api.steampowered.com/ISteamUser/",
     "obtenerUsuario": "Obtener usuario por id",
