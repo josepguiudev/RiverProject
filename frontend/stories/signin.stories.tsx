@@ -2,10 +2,9 @@ import React from 'react';
 import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import SignIn from './signin';
+import SignIn from '../app/components/auth/signin/signin';
 
 const Stack = createNativeStackNavigator();
-//ede
 
 export default {
   title: 'Screens/Auth/SignIn',
@@ -15,7 +14,6 @@ export default {
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="SignIn" component={Story} />
-          {/* Mock de la pantalla de registro por si haces click en el link */}
           <Stack.Screen name="Register" component={() => <View />} />
         </Stack.Navigator>
       </NavigationContainer>
@@ -25,8 +23,9 @@ export default {
 
 export const Default = () => <SignIn />;
 
-export const LoadingState = () => {
-    // Aquí podrías forzar un estado si tuvieras props de loading, 
-    // pero por ahora usamos la versión por defecto.
-    return <SignIn />;
-};
+// Historia para ver cómo queda el diseño en pantallas pequeñas
+export const SmallScreen = () => (
+  <View style={{ width: 320, height: '100%', alignSelf: 'center', borderWidth: 1 }}>
+    <SignIn />
+  </View>
+);
