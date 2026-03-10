@@ -10,7 +10,7 @@ export default StyleSheet.create({
         borderRadius: 20,
         margin: '5%'
     },
-    contenedorWritter: {
+        contenedorWritter: {
         alignItems: 'flex-start',
         padding: 5,
     },

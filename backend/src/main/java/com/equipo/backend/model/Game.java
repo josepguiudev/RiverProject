@@ -8,27 +8,36 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "game")
+
 public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_game;
+    private Long appid;                                                                                                                                                                                               
 
     private String title;
     private byte isEarlyAcces;
+    private String iconUrl;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
-    @nullable private List<Genere> genereList = new ArrayList<>();
+    private List<Genere> genereList = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
-    @nullable private List<Logro> logros;
+    private List<Logro> logros = new ArrayList<>();
 
 
     public Long getId_game() {
-        return this.id_game;
+    return this.id_game; 
     }
-
     public void setId_game(Long id_game) {
         this.id_game = id_game;
+    }
+
+    public Long getAppid() {
+        return this.appid;
+    }
+    public void setAppid(Long appid) {
+        this.appid = appid;
     }
 
     public String getTitle() {
@@ -45,6 +54,13 @@ public class Game {
 
     public byte getIsEarlyAcces() {
         return this.isEarlyAcces;
+    }
+
+    public String getIconUrl() {
+        return this.iconUrl;
+    }
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
     }
 
     public void setIsEarlyAcces(byte isEarlyAcces) {

@@ -47,6 +47,10 @@
     "GetPlayerSummaries": "GetPlayerSummaries/v2/",
     "GetFriendList": "GetFriendList/v1/",
 
+    "parte2Desktop": "http://localhost:8080/",
+    "controllerGame": "api/games/",
+    "extraer": "external-extract?steamid=",
+    "key": "&apiKey=",
     "GetOwnedGames": "GetOwnedGames/v1/",
 
 
