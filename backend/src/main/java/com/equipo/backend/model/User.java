@@ -17,20 +17,22 @@ public class User {
 
 
     private String name;
-    @nullable private String apellido1;
-    @nullable private String apellido2;
+    private String apellido1;
+    private String apellido2;
     @Column(unique = true)
     private String email;
-    @nullable private Byte genero;
-    @nullable private Byte edad;
-    @nullable private String localizacion;
-    @nullable private String urlIdStream;
-    @nullable private Date creacionCuentaUsuario;
-    @nullable private Date creacionCuentaSteam;
+    private Byte genero;
+    private Byte edad;
+    private String localizacion;
+    @Column(name = "url_id_stream")
+    private String urlIdStream;
+    private Date creacionCuentaUsuario;
+    private Date creacionCuentaSteam;
     private String password;
-    @nullable private String urlImgUsuario;
-    @nullable private Byte banned;
-    @nullable private Byte id_rol;
+    private String urlImgUsuario;
+    private Byte banned;
+    @Column(name = "id_rol")
+    private Byte id_rol;
 
 
 
@@ -215,4 +217,5 @@ public class User {
                 + getEmail() + ", getId()=" + getId() + ", getName()=" + getName() + ", getPassword()=" + getPassword()
                 + "]";
     }
+    
 }
