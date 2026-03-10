@@ -73,7 +73,7 @@ public class UserSteamRequest {
         return this.personaname;
     }
     public void setPersonaname(String personaname) {
-        this.personaname = personaname;
+        this.personaname = personaname; 
     }
 
     public String getProfileUrl() {
