@@ -14,12 +14,14 @@ public class Game {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id_game;
+    private Long appid;                                                                                                                                                                                               
 
     private int id_game_steam;
     private String title;
     private int price;
     private byte isEarlyAcces;
+    private String iconUrl;
     private String url_image;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -44,21 +46,18 @@ public class Game {
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserGame> userGames = new ArrayList<>();
 
-
-    public Long getId() {
-        return this.id;
+    public Long getId_game() {
+    return this.id_game; 
+    }
+    public void setId_game(Long id_game) {
+        this.id_game = id_game;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Long getAppid() {
+        return this.appid;
     }
-
-    public int getId_game_steam() {
-        return this.id_game_steam;
-    }
-
-    public void setId_game_steam(int id_game_steam) {
-        this.id_game_steam = id_game_steam;
+    public void setAppid(Long appid) {
+        this.appid = appid;
     }
 
     public String getTitle() {
@@ -79,6 +78,13 @@ public class Game {
 
     public byte getIsEarlyAcces() {
         return this.isEarlyAcces;
+    }
+
+    public String getIconUrl() {
+        return this.iconUrl;
+    }
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
     }
 
     public void setIsEarlyAcces(byte isEarlyAcces) {

@@ -46,4 +46,24 @@ public class UserSteamQueriesController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @GetMapping("/bytype2")
+    public ResponseEntity<List<UserSteamQueries>> getType2Responses() {
+        try {
+            List<UserSteamQueries> users = userSteamQueriesService.obtenerQueriesPorTipo(2);
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/bytype3")
+    public ResponseEntity<List<UserSteamQueries>> getType3Responses() {
+        try {
+            List<UserSteamQueries> users = userSteamQueriesService.obtenerQueriesPorTipo(3);
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }
