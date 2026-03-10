@@ -1,66 +1,82 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { 
+  View, Text, TextInput, TouchableOpacity, 
+  ActivityIndicator, KeyboardAvoidingView, 
+  Platform, ScrollView, Modal, Alert 
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { styles } from '../styles';
 
-export default function SignIn() {
+interface SignInProps {
+  isVisible: boolean;
+  onClose: () => void;
+  onSwitchToRegister: () => void;
+  navigation: any; // <--- Agregado para TS
+}
+
+export default function SignIn({ isVisible, onClose, onSwitchToRegister, navigation }: SignInProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigation = useNavigation<any>();
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Ingresa tus credenciales");
+      return;
+    }
+    
     setLoading(true);
-    // Simulación de API
-    setTimeout(() => {
+    try {
+      // 10.0.2.2 es la IP para el emulador de Android
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        await AsyncStorage.setItem("token", data.token);
+        onClose();
+        navigation.replace("Home"); // <--- Navegación directa
+      } else {
+        Alert.alert("Error", data.message || "Credenciales incorrectas");
+      }
+    } catch (error) {
+      Alert.alert("Error de conexión", "No se pudo contactar con el servidor.");
+    } finally {
       setLoading(false);
-      console.log('Login con:', email, password);
-    }, 2000);
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido</Text>
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Correo electrónico"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      <TouchableOpacity 
-        style={[styles.button, loading && { opacity: 0.7 }]} 
-        onPress={handleSignIn}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#FFF" />
-        ) : (
-          <Text style={styles.buttonText}>Iniciar Sesión</Text>
-        )}
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.linkText}>¿No tienes cuenta? Regístrate</Text>
-      </TouchableOpacity>
-    </View>
+    <Modal visible={isVisible} animationType="fade" transparent={true} onRequestClose={onClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.overlayContainer}>
+        <View style={styles.darkBackground}>
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.formCard}>
+              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                <Text style={styles.closeButtonText}>✕</Text>
+              </TouchableOpacity>
+              <View style={styles.headerContainer}>
+                <Text style={styles.title}>River Project</Text>
+                <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+              </View>
+              <Text style={styles.label}>Email</Text>
+              <TextInput style={styles.input} placeholder="tu@correo.com" placeholderTextColor="#546E7A" value={email} onChangeText={setEmail} autoCapitalize="none" />
+              <Text style={styles.label}>Contraseña</Text>
+              <TextInput style={styles.input} placeholder="••••••••" placeholderTextColor="#546E7A" value={password} onChangeText={setPassword} secureTextEntry />
+              <TouchableOpacity style={[styles.button, loading && styles.buttonDisabled]} onPress={handleSignIn} disabled={loading}>
+                {loading ? <ActivityIndicator color="#1D2735" /> : <Text style={styles.buttonText}>Acceder</Text>}
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.footerLink} onPress={onSwitchToRegister}>
+                <Text style={styles.linkText}>¿No tienes cuenta? <Text style={styles.linkTextBold}>Regístrate</Text></Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#FFF' },
-  title: { fontSize: 32, fontWeight: 'bold', marginBottom: 40, textAlign: 'center', color: '#333' },
-  input: { borderWidth: 1, borderColor: '#DDD', padding: 15, borderRadius: 10, marginBottom: 15, fontSize: 16 },
-  button: { backgroundColor: '#4CAF50', padding: 15, borderRadius: 10, alignItems: 'center', marginTop: 10 },
-  buttonText: { color: '#FFF', fontSize: 18, fontWeight: '600' },
-  linkText: { marginTop: 20, color: '#666', textAlign: 'center' }
-});

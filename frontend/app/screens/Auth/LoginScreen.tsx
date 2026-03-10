@@ -23,7 +23,7 @@ export default function LoginScreen({ navigation }: any) {
   
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
+// 10.0.0.2 movil
     const handleLogin = async () => {
         const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
