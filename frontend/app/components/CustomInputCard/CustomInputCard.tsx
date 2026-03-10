@@ -117,7 +117,7 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
                 console.log(`${strings.parte1Desktop}${strings.parte2MappingIntroducido}${strings.parametroSteamApiKey}${Constants.expoConfig?.extra?.STEAM_API_KEY}${strings.conjugacion}${strings.parametroSteamId}${inputUserId}`);
                 const response = await fetch(
                 `${strings.parte1Desktop}${strings.parte2MappingIntroducido}${strings.parametroSteamApiKey}${Constants.expoConfig?.extra?.STEAM_API_KEY}${strings.conjugacion}${strings.parametroSteamId}${inputUserId}`
-                );
+                ); 
                 if (!response.ok) {
                     throw new Error("Error al llamar al backend");
                 }
