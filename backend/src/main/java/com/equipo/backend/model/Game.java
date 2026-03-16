@@ -16,7 +16,6 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_game;
     private Long appid;                                                                                                                                                                                               
-
     private int id_game_steam;
     private String title;
     private int price;
@@ -139,17 +138,22 @@ public class Game {
 
 
 
-    public Game(Long id, int id_game_steam, String title, int price, byte isEarlyAcces, String url_image, List<Genere> genereList, List<Category> categoryList, List<Logro> logrosList) {
-        this.id = id;
+    public Game(Long id_game, Long appid, int id_game_steam, String title, int price, byte isEarlyAcces, String iconUrl, String url_image, List<Genere> genereList, List<Category> categoryList, List<Logro> logrosList, List<UserGame> userGames) {
+        this.id_game = id_game;
+        this.appid = appid;
         this.id_game_steam = id_game_steam;
         this.title = title;
         this.price = price;
         this.isEarlyAcces = isEarlyAcces;
+        this.iconUrl = iconUrl;
         this.url_image = url_image;
         this.genereList = genereList;
         this.categoryList = categoryList;
         this.logrosList = logrosList;
+        this.userGames = userGames;
     }
+
+
 
 
 
