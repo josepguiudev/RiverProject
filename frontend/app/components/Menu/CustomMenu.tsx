@@ -61,7 +61,7 @@ export default function MenuLateral({ visible, onClose }: any) {
         
         {/* Aquí tus opciones de menú */}
         <SteamMenuItem label={strings.adminScreen} onPress={() => navigation.navigate("Admin" as never)}/>
-        <SteamMenuItem label={strings.perfil} />
+        <SteamMenuItem label={strings.perfil} onPress={() => navigation.navigate("Profile" as never)}/>
         <SteamMenuItem label={strings.configuracion} />
         <SteamMenuItem label={strings.cerrarSesion} />
       </Animated.View>
