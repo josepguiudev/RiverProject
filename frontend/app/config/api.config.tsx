@@ -1,18 +1,16 @@
-//CLASE DE PRUEBA PARA PRACTICAR, NO ESSENCIAL
+import { Platform } from 'react-native';
 
-// Configuración de la API
-export const API_CONFIG = {
-  // ⚠️ CAMBIAR POR TU IP LOCAL
-  BASE_URL: 'http://localhost:8080',
-  ENDPOINTS: {
-    SUBMIT_FORM: '/api/formSurvey/submit',
-    GET_RESPONSES: '/api/formSurvey/responses',
-    TEST: '/api/formSurvey/test',
-  },
-  TIMEOUT: 10000, // 10 segundos
+// Detectamos la IP dinámicamente
+const getBaseUrl = () => {
+  if (Platform.OS === 'web') {
+    return 'http://localhost:8080';
+  }
+  // Si usas emulador Android, 10.0.2.2 apunta al localhost de tu PC
+  // Si usas móvil real, aquí deberías poner la IP de tu PC (ej: 192.168.1.15)
+  return Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080';
 };
 
-// Helper para construir URLs completas
-export const getFullUrl = (endpoint: string): string => {
-  return `${API_CONFIG.BASE_URL}${endpoint}`;
+export const API_CONFIG = {
+  BASE_URL: getBaseUrl(),
+  TIMEOUT: 5000,
 };
