@@ -1,40 +1,35 @@
 package com.equipo.backend.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "genere")
+@Data
 public class Genere {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_genere;
+    private Long id;
 
     private String nombreGenero;
 
-    @ManyToOne
-    @JoinColumn(name = "id_game") 
-    private Game game;
+    @ManyToMany(mappedBy = "genereList")
+    private List<Game> gamesList = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "id_survey")
-    private Survey survey;
+    @ManyToMany(mappedBy = "genereList")
+    private List<Survey> surveyList = new ArrayList<>();
 
 
-    public Game getGame() {
-        return game;
+    public Long getId() {
+        return this.id;
     }
 
-    public void setGame(Game game) {
-        this.game = game;
-    }
-
-    public Long getId_genere() {
-        return this.id_genere;
-    }
-
-    public void setId_genere(Long id_genere) {
-        this.id_genere = id_genere;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getNombreGenero() {
@@ -44,6 +39,36 @@ public class Genere {
     public void setNombreGenero(String nombreGenero) {
         this.nombreGenero = nombreGenero;
     }
+
+
+    public List<Game> getGamesList() {
+        return this.gamesList;
+    }
+
+    public void setGamesList(List<Game> gamesList) {
+        this.gamesList = gamesList;
+    }
+
+    public List<Survey> getSurveyList() {
+        return this.surveyList;
+    }
+
+    public void setSurveyList(List<Survey> surveyList) {
+        this.surveyList = surveyList;
+    }
+
+
+    public Genere() {
+    }
+
+
+    public Genere(Long id, String nombreGenero, List<Game> gamesList, List<Survey> surveyList) {
+        this.id = id;
+        this.nombreGenero = nombreGenero;
+        this.gamesList = gamesList;
+        this.surveyList = surveyList;
+    }
+
 
 
 }

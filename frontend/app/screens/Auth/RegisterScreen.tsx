@@ -41,7 +41,8 @@ export default function RegisterScreen({ navigation }: any) {
       }
 
       alert(strings.alertCreaUser);
-      navigation.navigate("Login");
+      //navigation.navigate("Login");
+      navigation.navigate("Login")
     }else{
       alert(strings.alertNotSamePassword);
     }

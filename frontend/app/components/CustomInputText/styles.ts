@@ -31,8 +31,6 @@ export default StyleSheet.create({
   },
   input: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
     color: '#FFFFFF',
   },
 });

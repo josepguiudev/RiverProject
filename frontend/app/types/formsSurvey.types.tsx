@@ -1,58 +1,60 @@
-//CLASE DE PRUEBA PARA PRACTICAR, NO ESSENCIAL
-
-export type QuestionType = "shortAnswer" | "longAnswer" | "multipleChoice" | "checkbox" | "dropdown";
-
-
-export interface Option {
-  id: string;
-  text: string;
-}
-// Define la estructura de una respuesta del formulario
-export interface Survey {
-  id_survey?: number;
-  tempId: string;
-  numQuestions: number;
-  nombre: string;
-  creationDate?: string;
-  launchDate?: string;
-  closeDate?: string;
-  questions: Question[];
-  generes: Generes[];
-
-}
-
-export interface Generes {
-id?: number;
-nombre: string;
-options?: Option[]; // Solo se usa para choice
+export interface QuestionOption {
+  id: number;
+  idOpcion?: number; 
+  textOpcion: string;
+  textoOpcion?: string; 
 }
 
 export interface Question {
-  id?: string | number;
-  tempId: string;
-  type: QuestionType; // Tipos permitidos
-  questionText: string;
-  options?: Option[]; // Solo se usa para choice
+  id: number;
+  idPregunta?: number;
+  textQuestion: string;
+  textoPregunta?: string;
+  typeName: 'SHORT_TEXT' | 'NUMERIC' | 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE';
+  options?: QuestionOption[]; 
+  opcionesDisponibles?: QuestionOption[];
+  idOpcionSeleccionada?: number;
 }
 
-// Define la respuesta del API
-export interface ApiResponse<T> {
-  data: T;
-  status: number;
-  message?: string;
-}
-
-// Solo lo que el usuario ingresa
-export interface FormState {
+export interface Survey {
+  id: number;
+  idEncuesta?: number;
+  name: string;
+  nombreEncuesta?: string;
   numQuestions: number;
-  nombre: string;
-  questions: Question[];
-  generes: Generes[];
+  launchDate?: string; 
+  questionList: Question[];
+  preguntas?: Question[];
+  genereList: Genere[];
+  SurveyReward: number;
+  completada?: boolean;
 }
 
-export interface FormErrors {
-  numQuestions?: number;
-  nombre?: string;
-  questions?: Question[];
-  generes?: Generes[];
+
+export interface GenereOption { textOpcion: string; }
+export interface Genere {
+  genere: string;
+  typeName: 'Global' | 'Shooters' | 'Acción-Aventura' | 'RPGs';
+  options?: GenereOption[]; 
+}
+
+export interface RespuestaDTO {
+  idPregunta: number;   
+  idOpcion?: number;    
+  valor?: string;      
+  isRespondida?: boolean;
+}
+
+export interface EncuestaRespuestaDTO {
+  idEncuesta: number;  
+  idUser: number;       
+  respuestas: RespuestaDTO[];
+}
+
+export interface EncuestaParcialDTO {
+  idEncuesta: number;
+  completada: boolean;
+  respuestas: RespuestaDTO[];
+  nombreEncuesta?: string;
+  preguntas?: Question[]; 
 }
