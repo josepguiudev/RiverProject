@@ -47,10 +47,6 @@ public class Survey {
     private List<Question> questionList = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL) //solo para pruebas borrar cascade luego
-    @JoinColumn(name = "id_pago", nullable = true)
-    private Pago pago = null;
-
-    @OneToOne(cascade = CascadeType.ALL) //solo para pruebas borrar cascade luego
     @JoinColumn(name = "id_pago_panelista", nullable = true)
     private PagoPanelista pagoPanelista;
 
@@ -151,14 +147,6 @@ public class Survey {
         this.questionList = questionList;
     }
 
-    public Pago getPago() {
-        return this.pago;
-    }
-
-    public void setPago(Pago pago) {
-        this.pago = pago;
-    }
-
     public PagoPanelista getPagoPanelista() {
         return this.pagoPanelista;
     }
@@ -179,7 +167,7 @@ public class Survey {
     }
 
 
-    public Survey(Long id, int numQuestions, int numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, Pago pago, PagoPanelista pagoPanelista, List<Genere> genereList) {
+    public Survey(Long id, int numQuestions, int numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList) {
         this.id = id;
         this.numQuestions = numQuestions;
         this.numUsers = numUsers;
@@ -188,7 +176,6 @@ public class Survey {
         this.launchDate = launchDate;
         this.closeDate = closeDate;
         this.questionList = questionList;
-        this.pago = pago;
         this.pagoPanelista = pagoPanelista;
         this.genereList = genereList;
     }
