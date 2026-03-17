@@ -23,7 +23,7 @@ public class BackendApplication {
 		@Bean
 		CommandLineRunner initSteamQueries(UserSteamQueriesRepository repository) {
 			return args -> {
-				System.out.println("--- Insertando datos de user_steam_queries ---");
+				/*System.out.println("--- Insertando datos de user_steam_queries ---");
 
 				UserSteamQueries q0 = new UserSteamQueries();
 				q0.setQuery("https://api.steampowered.com/ISteamUser/");
@@ -68,7 +68,7 @@ public class BackendApplication {
 				// Guardamos todos
 				repository.saveAll(List.of(q0, q1, q2, q3, q4, q5, q6, q7));
 
-				System.out.println("--- Datos de user_steam_queries insertados con éxito ---");
+				System.out.println("--- Datos de user_steam_queries insertados con éxito ---");*/
 			};
 		}
 
@@ -77,7 +77,7 @@ public class BackendApplication {
 		@Bean
 		CommandLineRunner initDatabase(FormSurveyService service) {
 			return args -> {
-				try {
+				/*try {
 					System.out.println("--- Iniciant Test de Base de Dades ---");
 
 					// 1. Creem l'enquesta principal
@@ -131,7 +131,7 @@ public class BackendApplication {
 				} catch (Exception e) {
 					System.err.println("--- ERROR al Test: " + e.getMessage());
 					e.printStackTrace();
-				}
+				}*/
 			};
 		}
 	}

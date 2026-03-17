@@ -5,12 +5,16 @@ import jakarta.persistence.GenerationType;
 
 import java.util.Date;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
-
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
+import lombok.ToString;
 
 @Entity
 @Table(name = "users")
@@ -22,21 +26,27 @@ public class User {
     private Long id;
 
 
-    private String name;
-    @nullable private String apellido1;
-    @nullable private String apellido2;
+    private String name;        
+    private String apellido1;
+    private String apellido2;
     @Column(unique = true)
     private String email;
-    @nullable private Byte genero;
-    @nullable private Byte edad;
-    @nullable private String localizacion;
-    @nullable private String urlIdStream;
-    @nullable private Date creacionCuentaUsuario;
-    @nullable private Date creacionCuentaSteam;
+    private Byte genero;
+    private Byte edad;
+    private String localizacion;
+    private String urlIdStream;
+    private Date creacionCuentaUsuario;
+    private Date creacionCuentaSteam;
     private String password;
-    @nullable private String urlImgUsuario;
-    @nullable private Byte banned;
-    @nullable private Byte id_rol;
+    private String urlImgUsuario;
+    private Byte banned;
+    private Byte id_rol;
+    
+    // RELACIÓN ONE TO ONE
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "steam_perfil_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "FK_USER_STEAM"))
+    @ToString.Exclude // Evita errores de recursión
+    private UserSteam userSteam;
 
     public Long getId() {
         return this.id;
@@ -135,6 +145,14 @@ public class User {
     }
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public UserSteam getUserSteam() {
+        return this.userSteam;
+    }
+
+    public void setUserSteam(UserSteam userSteam) {
+        this.userSteam = userSteam;
     }
 
     @Override

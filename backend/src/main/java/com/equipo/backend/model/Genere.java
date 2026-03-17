@@ -1,5 +1,8 @@
 package com.equipo.backend.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -10,23 +13,22 @@ public class Genere {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_genere;
 
-    private String nombreGenero;
+    @Column(unique = true)
+    private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "id_game") 
-    private Game game;
+    @ManyToMany(mappedBy = "genereList")
+    private List<Game> games = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "id_survey")
     private Survey survey;
 
-
-    public Game getGame() {
-        return game;
+    public List<Game> getGames() {
+        return this.games;
     }
 
-    public void setGame(Game game) {
-        this.game = game;
+    public void setGames(List<Game> games) {
+        this.games = games;
     }
 
     public Long getId_genere() {
@@ -37,12 +39,12 @@ public class Genere {
         this.id_genere = id_genere;
     }
 
-    public String getNombreGenero() {
-        return this.nombreGenero;
+    public String getDescription() {
+        return this.description;
     }
 
-    public void setNombreGenero(String nombreGenero) {
-        this.nombreGenero = nombreGenero;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 

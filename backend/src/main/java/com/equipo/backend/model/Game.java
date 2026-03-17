@@ -19,11 +19,19 @@ public class Game {
     private byte isEarlyAcces;
     private String iconUrl;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(
+        name = "game_generes",                                  // Tabla intermedia
+        joinColumns = @JoinColumn(name = "id_game"),            // FK a la tabla Game
+        inverseJoinColumns = @JoinColumn(name = "id_genere")    // FK a la tabla Genere
+    )
     private List<Genere> genereList = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
     private List<Logro> logros = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "games")
+    private List<UserSteam> userSteamList = new ArrayList<>();
 
 
     public Long getId_game() {
@@ -82,6 +90,14 @@ public class Game {
 
     public void setLogros(List<Logro> logros) {
         this.logros = logros;
+    }
+
+    public List<UserSteam> getUserSteamList() {
+        return this.userSteamList;
+    }
+
+    public void setUserSteamList(List<UserSteam> userSteamList) {
+        this.userSteamList = userSteamList;
     }
 
 

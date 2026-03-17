@@ -22,6 +22,7 @@
     "configuracion": "Configuración",
     "cerrarSesion": "Cerrar Sesión",
     "adminScreen": "Pantalla de Administrador",
+    "usersScreen": "Pantalla de Usuarios",
     "survey": "Tipo encuesta",
     "type0": "0",
     "type1": "1",
@@ -46,6 +47,7 @@
 
     "GetPlayerSummaries": "GetPlayerSummaries/v2/",
     "GetFriendList": "GetFriendList/v1/",
+    "GetGameById":"appdetails?appids=",
 
     "parte2Desktop": "http://localhost:8080/",
     "controllerGame": "api/games/",
