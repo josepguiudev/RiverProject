@@ -22,7 +22,7 @@ public class User {
     @Column(unique = true)
     private String email;
     private Byte genero;
-    private Byte edad;
+    private Integer edad;
     private String localizacion;
     @Column(name = "url_id_stream")
     private String urlIdStream;
@@ -81,10 +81,10 @@ public class User {
         this.genero = genero;
     }
 
-    public Byte getEdad() {
+    public Integer getEdad() {
         return this.edad;
     }
-    public void setEdad(Byte edad) {
+    public void setEdad(Integer edad) {
         this.edad = edad;
     }
 
@@ -185,9 +185,7 @@ public class User {
 
 
 
-    public User(Long id, String name, String apellido1, String apellido2, String email, Byte genero, Byte edad, String localizacion, 
-        String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned,
-         List<UserGame> userGamesList, List<UserSurveys> userSurveysList, BonoTotal bonoTotal) {
+    public User(Long id, String name, String apellido1, String apellido2, String email, Byte genero, Integer edad, String localizacion, String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned, Byte id_rol, List<UserGame> userGamesList, List<UserSurveys> userSurveysList, BonoTotal bonoTotal) {
         this.id = id;
         this.name = name;
         this.apellido1 = apellido1;
@@ -202,11 +200,13 @@ public class User {
         this.password = password;
         this.urlImgUsuario = urlImgUsuario;
         this.banned = banned;
+        this.id_rol = id_rol;
         this.userGamesList = userGamesList;
         this.userSurveysList = userSurveysList;
         this.bonoTotal = bonoTotal;
     }
-   
+
+
 
 
 
