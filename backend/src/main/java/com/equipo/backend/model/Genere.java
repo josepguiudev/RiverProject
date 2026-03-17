@@ -4,14 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "genere")
+@Data
 public class Genere {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_genere;
+    private Long id;
 
     @Column(unique = true)
     private String description;
@@ -19,9 +21,8 @@ public class Genere {
     @ManyToMany(mappedBy = "genereList")
     private List<Game> games = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "id_survey")
-    private Survey survey;
+    @ManyToMany(mappedBy = "genereList")
+    private List<Survey> surveyList = new ArrayList<>();
 
     public List<Game> getGames() {
         return this.games;
@@ -31,12 +32,12 @@ public class Genere {
         this.games = games;
     }
 
-    public Long getId_genere() {
-        return this.id_genere;
+    public String getNombreGenero() {
+        return this.nombreGenero;
     }
 
-    public void setId_genere(Long id_genere) {
-        this.id_genere = id_genere;
+    public void setNombreGenero(String nombreGenero) {
+        this.nombreGenero = nombreGenero;
     }
 
     public String getDescription() {
@@ -46,6 +47,7 @@ public class Genere {
     public void setDescription(String description) {
         this.description = description;
     }
+
 
 
 }

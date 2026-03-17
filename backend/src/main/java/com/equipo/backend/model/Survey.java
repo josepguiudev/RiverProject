@@ -1,10 +1,15 @@
 package com.equipo.backend.model;
 
 
-import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 
@@ -18,35 +23,75 @@ import lombok.Data;
 public class Survey {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_survey;
-
+    private Long id;
+    
+    @JsonProperty("numQuestions")
     private int numQuestions;
+    
+    private int numUsers;
+    
+    @JsonProperty("name")
     private String name;
-    private Timestamp  creationDate;
-    @Column(nullable = true) private Timestamp  launchDate;
-    @Column(nullable = true) private Date closeDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime  creationDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    @Column(nullable = true) private LocalDateTime  launchDate;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    @Column(nullable = true) private LocalDateTime closeDate;
     
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Question> questionList = new ArrayList<>();
-
-    @OneToOne(cascade = CascadeType.ALL) //solo para pruebas borrar cascade luego
-    @JoinColumn(name = "id_pago", nullable = true)
-    private Pago pago = null;
 
     @OneToOne(cascade = CascadeType.ALL) //solo para pruebas borrar cascade luego
     @JoinColumn(name = "id_pago_panelista", nullable = true)
     private PagoPanelista pagoPanelista;
 
-    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "survey_genere",
+        joinColumns = @JoinColumn(name = "id_survey"),
+        inverseJoinColumns = @JoinColumn(name = "id_genere")
+    )
     private List<Genere> genereList = new ArrayList<>();
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "survey_category",
+        joinColumns = @JoinColumn(name = "id_survey"),
+        inverseJoinColumns = @JoinColumn(name = "id_category")
+    )
+    private List<Category> categoryList = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "id_client")
+    @JsonBackReference
+    private Client client;
+
+    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserSurveys> userSurveysList = new ArrayList<>();
+
+
+    public void setCreationDate(LocalDateTime timestamp) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setCreationDate'");
+    }
+
+    public void setCreationDate(Timestamp timestamp) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setCreationDate'");
+    }
 
 
     public Long getId() {
-        return this.id_survey;
+        return this.id;
     }
 
     public void setId(Long id) {
-        this.id_survey = id;
+        this.id = id;
     }
 
     public int getNumQuestions() {
@@ -57,6 +102,14 @@ public class Survey {
         this.numQuestions = numQuestions;
     }
 
+    public int getNumUsers() {
+        return this.numUsers;
+    }
+
+    public void setNumUsers(int numUsers) {
+        this.numUsers = numUsers;
+    }
+
     public String getName() {
         return this.name;
     }
@@ -65,27 +118,24 @@ public class Survey {
         this.name = name;
     }
 
-    public Timestamp getCreationDate() {
+    public LocalDateTime getCreationDate() {
         return this.creationDate;
     }
 
-    public void setCreationDate(Timestamp creationDate) {
-        this.creationDate = creationDate;
-    }
 
-    public Timestamp getLaunchDate() {
+    public LocalDateTime getLaunchDate() {
         return this.launchDate;
     }
 
-    public void setLaunchDate(Timestamp launchDate) {
+    public void setLaunchDate(LocalDateTime launchDate) {
         this.launchDate = launchDate;
     }
 
-    public Date getCloseDate() {
+    public LocalDateTime getCloseDate() {
         return this.closeDate;
     }
 
-    public void setCloseDate(Date closeDate) {
+    public void setCloseDate(LocalDateTime closeDate) {
         this.closeDate = closeDate;
     }
 
@@ -97,29 +147,12 @@ public class Survey {
         this.questionList = questionList;
     }
 
-    public Pago getPago() {
-        return this.pago;
-    }
-
-    public void setPago(Pago pago) {
-        this.pago = pago;
-    }
-
     public PagoPanelista getPagoPanelista() {
         return this.pagoPanelista;
     }
 
     public void setPagoPanelista(PagoPanelista pagoPanelista) {
         this.pagoPanelista = pagoPanelista;
-    }
-
-
-    public Long getId_survey() {
-        return this.id_survey;
-    }
-
-    public void setId_survey(Long id_survey) {
-        this.id_survey = id_survey;
     }
 
     public List<Genere> getGenereList() {
@@ -130,13 +163,21 @@ public class Survey {
         this.genereList = genereList;
     }
 
- 
-     
-    public Survey() {  }
+    public Survey() {
+    }
 
-    Survey(String name, Timestamp  creationDate, ArrayList<Question> questionlist){
+
+    public Survey(Long id, int numQuestions, int numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList) {
+        this.id = id;
+        this.numQuestions = numQuestions;
+        this.numUsers = numUsers;
         this.name = name;
         this.creationDate = creationDate;
-        this.questionList = questionlist;
+        this.launchDate = launchDate;
+        this.closeDate = closeDate;
+        this.questionList = questionList;
+        this.pagoPanelista = pagoPanelista;
+        this.genereList = genereList;
     }
+
 }

@@ -1,9 +1,8 @@
 package com.equipo.backend.model;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import java.util.*;
 
-import java.util.Date;
+import jakarta.persistence.*;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -47,6 +46,18 @@ public class User {
     @JoinColumn(name = "steam_perfil_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "FK_USER_STEAM"))
     @ToString.Exclude // Evita errores de recursión
     private UserSteam userSteam;
+
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserGame> userGamesList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserSurveys> userSurveysList = new ArrayList<>();
+
+    @OneToOne
+    private BonoTotal bonoTotal; 
+
 
     public Long getId() {
         return this.id;
@@ -133,12 +144,6 @@ public class User {
         this.email = email;
     }
     
-    public Byte getId_rol() {
-        return this.id_rol;
-    }
-    public void setId_rol(Byte id_rol) {
-        this.id_rol = id_rol;
-    }
 
     public String getPassword() {
         return this.password;
@@ -146,6 +151,75 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public Byte getBanned() {
+        return this.banned;
+    }
+
+    public void setBanned(Byte banned) {
+        this.banned = banned;
+    }
+
+    public List<UserGame> getUserGamesList() {
+        return this.userGamesList;
+    }
+
+    public void setUserGamesList(List<UserGame> userGamesList) {
+        this.userGamesList = userGamesList;
+    }
+
+    public List<UserSurveys> getUserSurveysList() {
+        return this.userSurveysList;
+    }
+
+    public void setUserSurveysList(List<UserSurveys> userSurveysList) {
+        this.userSurveysList = userSurveysList;
+    }
+
+    public BonoTotal getBonoTotal() {
+        return this.bonoTotal;
+    }
+
+    public void setBonoTotal(BonoTotal bonoTotal) {
+        this.bonoTotal = bonoTotal;
+    }
+
+    public Byte getId_rol() {
+        return this.id_rol;
+    }
+
+    public void setId_rol(Byte id_rol) {
+        this.id_rol = id_rol;
+    }
+
+
+    public User() {
+    }
+
+
+
+    public User(Long id, String name, String apellido1, String apellido2, String email, Byte genero, Byte edad, String localizacion, 
+        String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned,
+         List<UserGame> userGamesList, List<UserSurveys> userSurveysList, BonoTotal bonoTotal) {
+        this.id = id;
+        this.name = name;
+        this.apellido1 = apellido1;
+        this.apellido2 = apellido2;
+        this.email = email;
+        this.genero = genero;
+        this.edad = edad;
+        this.localizacion = localizacion;
+        this.urlIdStream = urlIdStream;
+        this.creacionCuentaUsuario = creacionCuentaUsuario;
+        this.creacionCuentaSteam = creacionCuentaSteam;
+        this.password = password;
+        this.urlImgUsuario = urlImgUsuario;
+        this.banned = banned;
+        this.userGamesList = userGamesList;
+        this.userSurveysList = userSurveysList;
+        this.bonoTotal = bonoTotal;
+    }
+   
 
     public UserSteam getUserSteam() {
         return this.userSteam;
@@ -161,4 +235,5 @@ public class User {
                 + getEmail() + ", getId()=" + getId() + ", getName()=" + getName() + ", getPassword()=" + getPassword()
                 + "]";
     }
+    
 }

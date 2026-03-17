@@ -34,8 +34,8 @@ public class AuthController {
     //Ruta para crear users
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        authService.register(request);
-        return ResponseEntity.ok("Usuario registrado correctamente");
+        LoginResponse response = authService.register(request);
+        return ResponseEntity.ok(response);
     }
 
     //Sistema encriptado poner cualquier cosa en parámetro para ver su encriptacion

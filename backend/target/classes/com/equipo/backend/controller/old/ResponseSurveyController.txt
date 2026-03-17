@@ -1,0 +1,95 @@
+package com.equipo.backend.controller.old;
+
+import com.equipo.backend.dto.EncuestaParcialDTO;
+import com.equipo.backend.dto.EncuestaRespuestaDTO;
+import com.equipo.backend.model.*;
+import com.equipo.backend.service.EncuestaService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/SurveyResponse")
+@CrossOrigin(origins = "*")
+public class ResponseSurveyController {
+    
+// Spring inyectará la implementación automáticamente
+    private final EncuestaService encuestaService;
+
+    // Constructor para la inyección de dependencias
+    public ResponseSurveyController(EncuestaService encuestaService) {
+        this.encuestaService = encuestaService;
+    }
+
+    /**
+     * Guarda las respuestas de la encuesta.
+     * @param encuestaRespuestaDTO DTO con respuestas de la encuesta
+     * @param completada true si la encuesta se marca como completada
+     * URL: POST http://localhost:8080/api/SurveyResponse/save
+     */
+    @PostMapping("/save")
+    public ResponseEntity<?> saveRespuestas(
+        @RequestBody EncuestaRespuestaDTO encuestaRespuestaDTO,
+        @RequestParam(name = "completada", defaultValue = "false") boolean completada) {
+
+        try {
+            encuestaService.guardarRespuestas(encuestaRespuestaDTO, completada);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Respuestas guardadas correctamente",
+                    "completada", completada
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
+    /**
+     * Carga las respuestas parciales de una encuesta
+     * @param idEncuesta id de la encuesta
+     * @return DTO con las respuestas guardadas hasta ahora
+     * URL: POST http://localhost:8080/api/SurveyResponse/idsurvey/respuestas
+     */
+    @GetMapping("/{idEncuesta}/respuestas")
+    public ResponseEntity<?> cargarRespuestas(@PathVariable Long idEncuesta) {
+        try {
+            EncuestaParcialDTO parcialDTO = encuestaService.cargarRespuestas(idEncuesta);
+            return ResponseEntity.ok(parcialDTO);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+     /**
+     * Actualizar una respuesta individual (opcional, útil para respuesta múltiple o encuestas largas)
+     * @param respuestaDTO respuesta individual a actualizar
+     * URL: POST http://localhost:8080/api/SurveyResponse/respuestas/idRespuesta
+     */
+    @PutMapping("/respuestas/{idRespuesta}")
+    public ResponseEntity<?> actualizarRespuesta(
+            @PathVariable Long idRespuesta,
+            @RequestBody EncuestaRespuestaDTO.RespuestaDTO respuestaDTO) {
+
+        try {
+            Respuesta r = encuestaService.actualizarRespuesta(idRespuesta, respuestaDTO);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Respuesta actualizada correctamente",
+                    "idRespuesta", r.getId()
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+
+    // URL: POST http://localhost:8080/api/SurveyResponse/test
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("Backend de River App funcionando correctamente!");
+    }
+}

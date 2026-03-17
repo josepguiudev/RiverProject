@@ -1,15 +1,16 @@
 package com.equipo.backend;
 
-import java.sql.Timestamp;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.*;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import com.equipo.backend.model.*;
+import com.equipo.backend.model.*; 
 import com.equipo.backend.repository.UserSteamQueriesRepository;
 import com.equipo.backend.service.FormSurveyService;
 
@@ -19,7 +20,7 @@ public class BackendApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(BackendApplication.class, args);
 	}
-	
+	/* 
 		@Bean
 		CommandLineRunner initSteamQueries(UserSteamQueriesRepository repository) {
 			return args -> {
@@ -133,5 +134,7 @@ public class BackendApplication {
 					e.printStackTrace();
 				}*/
 			};
+            
 		}
+        */
 	}

@@ -1,0 +1,12 @@
+SELECT 
+    r.id AS respuesta_id,
+    u.name AS usuario,
+    q.text_question AS pregunta,
+    o.text_opcion AS opcion_seleccionada,
+    r.value_respuesta AS texto_escrito,
+    r.is_completada
+FROM respuesta r
+LEFT JOIN users u ON r.id_user = u.id
+LEFT JOIN options o ON r.id_option = o.id
+LEFT JOIN question q ON o.id_question = q.id
+ORDER BY r.id DESC;
