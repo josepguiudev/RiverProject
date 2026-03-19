@@ -8,11 +8,11 @@ interface EncuestaCardProps {
   /**
    * Título principal de la encuesta.
    */
-  titulo: string;
+  name: string;
   /**
    * Descripción breve o detallada del contenido de la encuesta.
    */
-  descripcion: string;
+  // descripcion: string;
   /**
    * El pago asociado a la encuesta, si aplica.
    * Puede ser nulo si no hay pago definido.
@@ -29,21 +29,19 @@ interface EncuestaCardProps {
  * @example
  * ```tsx
  * <EncuestaCard
- *   titulo="Encuesta de Satisfacción"
- *   descripcion="Evalúa nuestro servicio al cliente"
+ *   name="Encuesta de Satisfacción"
  *   pago={50}
  * />
  * ```
  *
  * @returns Un elemento React que representa la tarjeta de la encuesta.
  */
-function EncuestaCard({ titulo, descripcion, pago }: EncuestaCardProps) {
-  console.log("Renderizando:", titulo);
+function EncuestaCard({ name, pago }: EncuestaCardProps) {
+  console.log("Renderizando:", name);
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>{titulo}</Text>
-      <Text style={styles.description}>{descripcion}</Text>
+      <Text style={styles.title}>{name}</Text>
       <Text style={styles.pago}>Pago: ${pago}</Text>
     </View>
   );
@@ -62,11 +60,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "bold",
-  },
-  description: {
-    fontSize: 14,
-    color: "#666",
-    marginVertical: 6,
   },
   pago: {
     fontSize: 14,
