@@ -15,28 +15,77 @@ export default StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
-    // Estilos de Gráfica y Juegos (Sección 2 - Para que el usuario lo haga)
+    // Estilos de Gráfica y Juegos (Sección 2)
     middleSection: {
         flexDirection: 'row',
         marginBottom: 20,
         justifyContent: 'space-between',
-        height: 200,
+        height: 250,
     },
     chartPlaceholder: {
         flex: 1,
         backgroundColor: '#1a1a2e',
         marginRight: 10,
         borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center'
+        padding: 15,
     },
     gamesPlaceholder: {
         flex: 1,
         backgroundColor: '#1a1a2e',
         marginLeft: 10,
         borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center'
+        padding: 15,
+        alignItems: 'center',
+    },
+    sectionTitle: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        textAlign: 'center'
+    },
+    // Estilos de la escalera de juegos (Overlapping)
+    staircaseContainer: {
+        position: 'relative',
+        width: 120, // Ajustar según necesidad
+        height: 180,
+    },
+    gameImage: {
+        width: 100,
+        height: 150,
+        borderRadius: 8,
+        position: 'absolute',
+        borderWidth: 2,
+        borderColor: '#1a1a2e',
+    },
+    game1: {
+        zIndex: 3,
+        top: 0,
+        left: 0,
+    },
+    game2: {
+        zIndex: 2,
+        top: 15,
+        left: 20,
+        opacity: 0.9,
+    },
+    game3: {
+        zIndex: 1,
+        top: 30,
+        left: 40,
+        opacity: 0.8,
+    },
+    // Estilos de géneros
+    genreItem: {
+        backgroundColor: '#162447',
+        padding: 10,
+        borderRadius: 5,
+        marginBottom: 8,
+    },
+    genreText: {
+        color: '#e43f5a',
+        fontWeight: 'bold',
+        textAlign: 'center'
     },
     // Estilos de las Encuestas (Sección 3 - Implementada)
     surveysTitle: {
