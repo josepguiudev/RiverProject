@@ -69,7 +69,7 @@ public class BackendApplication {
 				// Guardamos todos
 				repository.saveAll(List.of(q0, q1, q2, q3, q4, q5, q6, q7));
 
-				System.out.println("--- Datos de user_steam_queries insertados con éxito ---");*/
+				System.out.println("--- Datos de user_steam_queries insertados con éxito ---");
 			};
 		}
 
@@ -132,9 +132,9 @@ public class BackendApplication {
 				} catch (Exception e) {
 					System.err.println("--- ERROR al Test: " + e.getMessage());
 					e.printStackTrace();
-				}*/
+				}
 			};
             
-		}
-        */
+		}*/
+        
 	}
