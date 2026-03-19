@@ -15,6 +15,11 @@ export default StyleSheet.create({
         height: "100%",
         borderRadius: 20
     },
+    contenedorAdminUsers:{
+        width: "22%",
+        height: "100%",
+        borderRadius: 20
+    },
     contenedorVertical:{
         display: "flex",                // En Web es necesario, en Native es por defecto
         flexDirection: "column",
@@ -22,21 +27,22 @@ export default StyleSheet.create({
         alignItems: "center",           // Opcional: centra horizontalmente
     },
     label: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#E5E5E5', // text-neutral-200
+        fontSize: 16,
+        fontWeight: 'bold',
+        fontStyle: 'italic',
+        color: '#e7c921', // text-neutral-200
         marginBottom: 8,
     },
     contenedorUserTittleButton:{
-        width: "80%",
+        width: "100%",
         height: "8%",
         display: "flex",       
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center", 
-        borderWidth: 1,         
-        borderColor: 'yellow',     
-        borderStyle: 'solid',
+        //borderWidth: 1,         
+        //borderColor: 'yellow',     
+        //borderStyle: 'solid',
     },
 
     container: {
