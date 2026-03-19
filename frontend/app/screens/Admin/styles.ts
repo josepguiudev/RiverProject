@@ -1,9 +1,10 @@
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
-    cajaPrincipal:{
-        width: "80%",
-        height: "80%"
+    cajaPrincipal: {
+        width: '80%',
+        height: '80%',
+        flexDirection: 'row',
     },
     contenedorFila:{
         width: "33%",
@@ -38,4 +39,4 @@ export default StyleSheet.create({
         borderColor: 'yellow',     
         borderStyle: 'solid',
     }
-})
+});

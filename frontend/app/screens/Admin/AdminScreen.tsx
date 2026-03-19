@@ -3,10 +3,8 @@ import { View, TouchableOpacity, Text, ScrollView, Alert } from "react-native";
 
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import styles from './styles';
-
 import MenuPrincipal from '@/app/components/Menu/CustomMenu';
 import strings from "../../../assets/supportFiles/strings.json";
-
 import CustomInputCard from '@/app/components/CustomInputCard/CustomInputCard';
 import CustomButton from '@/app/components/CustomButton/CustomButton';
 
@@ -60,7 +58,7 @@ export default function AdminScreen({ navigation }: any) {
         <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre]}>
             {/* 1. HEADER / BOTÓN MENU */}
             <View style={[globalStyles.cajaMenu, globalStyles.borde, globalStyles.alineadoPersonalVertical]}>
-                <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ padding: 20 }}>
+                <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ padding: isDesktopView ? 30 : 20 }}>
                     <Text style={{ color: 'white' }}>{strings.menu}</Text>
                 </TouchableOpacity>
             </View>
@@ -131,13 +129,12 @@ export default function AdminScreen({ navigation }: any) {
                         </View>
                     </View>
                 </View>
-            </View>            
-
+            </View>
 
             {/* 3. MENU AL FINAL (FUERA DE TODO) */}
-            <MenuPrincipal 
-                visible={menuVisible} 
-                onClose={() => setMenuVisible(false)} 
+            <MenuPrincipal
+                visible={menuVisible}
+                onClose={() => setMenuVisible(false)}
             />
         </View>
     );

@@ -7,6 +7,7 @@ import styles from "./styles";
 import TypeWriter from "react-native-typewriter";
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import strings from "../../../assets/supportFiles/strings.json";
+import { useLayout } from "@/app/utils/useLayout";
 
 export default function LoginScreen({ navigation }: any) {
 	const cursorOpacity = React.useRef(new Animated.Value(1)).current;
