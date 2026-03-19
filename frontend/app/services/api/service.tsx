@@ -57,17 +57,18 @@ static async getAllResponses(): Promise<Survey[]> {
    * Cargar respuestas parciales
    */
   static async getPartialResponse(idSurvey: number, idUser: number): Promise<EncuestaParcialDTO> {
-    try {
-      // Enviamos el idUser como query param (?idUser=1)
-      const response = await apiClient.get<EncuestaParcialDTO>(
-        `/api/surveys/${idSurvey}/responses?idUser=${idUser}`
-      );
-      return response.data;
+  try {
+    const response = await apiClient.get<EncuestaParcialDTO>(
+      `/api/surveys/${idSurvey}/responses`, 
+      { 
+        params: { idUser: idUser } // Axios lo convierte automáticamente en ?idUser=1
+      }
+    );
+        return response.data;
     } catch (error) {
-      throw this.handleError(error);
+        throw this.handleError(error);
     }
   }
-
   /**
    * Guardar respuestas de usuario
    */

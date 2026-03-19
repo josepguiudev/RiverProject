@@ -2,20 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { FormApiService } from '../services/api/service';
 import { EncuestaRespuestaDTO } from '../types/formsSurvey.types';
+import { useAuth } from '../screens/Auth/AuthContext'; // Asegúrate de que esta ruta es correcta
 
 const TakeSurveyScreen = ({ route, navigation }: any) => {
   const { surveyId } = route.params;
+  const { user } = useAuth(); // Obtenemos el ID real del usuario logueado
+  
   const [survey, setSurvey] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [respuestasUser, setRespuestasUser] = useState<Record<number, any>>({});
 
   useEffect(() => {
     const loadData = async () => {
+      if (!user?.id) return;
       try {
-        const data = await FormApiService.getPartialResponse(surveyId, 1);
+        setLoading(true);
+        // Carga la encuesta y las respuestas que el usuario ya tenía guardadas
+        const data = await FormApiService.getPartialResponse(surveyId, user.id);
         if (data) {
           setSurvey(data);
           const savedMap: Record<number, any> = {};
+          
+          // Mapeamos lo que viene de Java (EncuestaParcialDTO)
           data.preguntas?.forEach((p: any) => {
             if (p.idOpcionSeleccionada) {
               savedMap[p.idPregunta] = p.idOpcionSeleccionada;
@@ -26,11 +34,14 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
           setRespuestasUser(savedMap);
         }
       } catch (e) {
-        console.error("Error carregar:", e);
-      } finally { setLoading(false); }
+        console.error("Error cargando preguntas:", e);
+        Alert.alert("Error", "No s'ha pogut carregar l'enquesta.");
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
-  }, [surveyId]);
+  }, [surveyId, user?.id]);
 
   const handleSelect = (qId: number, oId: number, isMultiple: boolean) => {
     setRespuestasUser(prev => {
@@ -44,9 +55,11 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
   };
 
   const handleSave = async (isFinal: boolean) => {
+    if (!user?.id) return;
+
     const payload: EncuestaRespuestaDTO = {
       idEncuesta: surveyId,
-      idUser: 1, // <--- Este es el que leerá el Service norrar despues
+      idUser: user.id,
       respuestas: Object.entries(respuestasUser).map(([qId, val]) => ({
         idPregunta: parseInt(qId),
         idOpcion: typeof val === 'number' ? val : undefined,
@@ -64,13 +77,10 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
     }
   };
 
-  if (loading) return <ActivityIndicator size="large" color="#673ab7" style={styles.loader} />;
+  if (loading) return <ActivityIndicator size="large" color="#673ab7" style={{flex: 1}} />;
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      style={{ flex: 1 }}
-    >
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
       <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={styles.headerCard}>
           <View style={styles.accentBar} />
@@ -79,48 +89,40 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
         </View>
 
         {survey?.preguntas?.map((pregunta: any) => {
-          // Lógica de detección: si no hay opciones, es TEXTO.
-          const hasOptions = pregunta.opcionesDisponibles && pregunta.opcionesDisponibles.length > 0;
-          const isMultiple = pregunta.typeName === 'MULTIPLE_CHOICE';
+          const opciones = pregunta.opcionesDisponibles || [];
+          const hasOptions = opciones.length > 0;
 
           return (
             <View key={pregunta.idPregunta} style={styles.questionCard}>
               <Text style={styles.questionTitle}>{pregunta.textoPregunta}</Text>
               
               {hasOptions ? (
-                pregunta.opcionesDisponibles.map((opcio: any) => {
+                opciones.map((opcio: any) => {
                   const resValue = respuestasUser[pregunta.idPregunta];
-                  const selected = isMultiple 
-                    ? Array.isArray(resValue) && resValue.includes(opcio.idOpcion)
-                    : Number(resValue) === Number(opcio.idOpcion);
+                  const selected = Number(resValue) === Number(opcio.idOpcion);
                   
                   return (
                     <TouchableOpacity 
                       key={opcio.idOpcion} 
                       style={styles.optionRow}
-                      onPress={() => handleSelect(pregunta.idPregunta, opcio.idOpcion, isMultiple)}
+                      onPress={() => handleSelect(pregunta.idPregunta, opcio.idOpcion, false)}
                     >
-                      <View style={[
-                        styles.selectionOuter, 
-                        isMultiple ? styles.checkBorder : styles.radioBorder,
-                        selected && styles.selectedBorder
-                      ]}>
-                        {selected && <View style={isMultiple ? styles.checkInner : styles.radioInner} />}
+                      <View style={[styles.radioOuter, selected && styles.selectedBorder]}>
+                        {selected && <View style={styles.radioInner} />}
                       </View>
-                      <Text style={[styles.optionLabel, selected && styles.optionLabelActive]}>
+                      <Text style={[styles.optionLabel, selected && styles.selectedLabel]}>
                         {opcio.textoOpcion}
                       </Text>
                     </TouchableOpacity>
                   );
                 })
               ) : (
-                // SI NO HAY OPCIONES -> RENDERIZAR INPUT DE TEXTO
                 <TextInput
                   style={styles.textInput}
-                  placeholder="Escriu la teva resposta aquí..."
-                  placeholderTextColor="#999"
+                  placeholder="Escriu aquí..."
                   value={String(respuestasUser[pregunta.idPregunta] || "")}
                   onChangeText={(text) => setRespuestasUser(prev => ({ ...prev, [pregunta.idPregunta]: text }))}
+                  multiline
                 />
               )}
             </View>
@@ -128,13 +130,12 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
         })}
       </ScrollView>
 
-      {/* BOTONES FIJOS ABAJO */}
-      <View style={styles.stickyFooter}>
-        <TouchableOpacity style={styles.btnCancel} onPress={() => navigation.goBack()}>
-          <Text style={styles.btnCancelText}>Enrere</Text>
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.btnBack} onPress={() => navigation.goBack()}>
+          <Text style={{color: '#673ab7'}}>Enrere</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.btnSubmit} onPress={() => handleSave(true)}>
-          <Text style={styles.btnSubmitText}>Finalitzar</Text>
+        <TouchableOpacity style={styles.btnSave} onPress={() => handleSave(true)}>
+          <Text style={{color: 'white', fontWeight: 'bold'}}>Finalitzar</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -143,36 +144,22 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0ebf8', padding: 12 },
-  loader: { flex: 1, justifyContent: 'center' },
-  headerCard: { backgroundColor: 'white', borderRadius: 8, marginBottom: 15, overflow: 'hidden', elevation: 2 },
-  accentBar: { height: 10, backgroundColor: '#673ab7' },
-  titleText: { fontSize: 24, padding: 20, paddingBottom: 5, fontWeight: 'bold' },
-  subtitleText: { paddingHorizontal: 20, paddingBottom: 20, color: '#5f6368', fontSize: 13 },
-  questionCard: { backgroundColor: 'white', padding: 20, borderRadius: 8, marginBottom: 12, elevation: 1 },
-  questionTitle: { fontSize: 16, marginBottom: 15, color: '#202124', fontWeight: '600' },
-  optionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
-  selectionOuter: { height: 20, width: 20, borderWidth: 2, borderColor: '#dadce0', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  radioBorder: { borderRadius: 10 },
-  checkBorder: { borderRadius: 4 },
-  selectedBorder: { borderColor: '#673ab7' },
+  headerCard: { backgroundColor: 'white', borderRadius: 8, marginBottom: 15, overflow: 'hidden' },
+  accentBar: { height: 8, backgroundColor: '#673ab7' },
+  titleText: { fontSize: 22, padding: 15, fontWeight: 'bold' },
+  subtitleText: { paddingHorizontal: 15, paddingBottom: 15, color: '#666' },
+  questionCard: { backgroundColor: 'white', padding: 20, borderRadius: 8, marginBottom: 12 },
+  questionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 15 },
+  optionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
+  radioOuter: { height: 20, width: 20, borderRadius: 10, borderWidth: 2, borderColor: '#dadce0', marginRight: 10, justifyContent: 'center', alignItems: 'center' },
   radioInner: { height: 10, width: 10, borderRadius: 5, backgroundColor: '#673ab7' },
-  checkInner: { height: 12, width: 12, borderRadius: 2, backgroundColor: '#673ab7' },
-  optionLabel: { fontSize: 14, color: '#3c4043' },
-  optionLabelActive: { color: '#673ab7', fontWeight: 'bold' },
-  textInput: { borderBottomWidth: 1, borderColor: '#673ab7', paddingVertical: 8, fontSize: 15, color: '#202124' },
-  
-  // Footer Estilo "Sticky"
-  stickyFooter: { 
-    position: 'absolute', bottom: 0, left: 0, right: 0, 
-    backgroundColor: 'white', flexDirection: 'row', 
-    justifyContent: 'space-between', padding: 15, 
-    borderTopWidth: 1, borderTopColor: '#ddd',
-    elevation: 10
-  },
-  btnCancel: { flex: 0.45, padding: 15, alignItems: 'center', borderRadius: 4, borderWidth: 1, borderColor: '#673ab7' },
-  btnCancelText: { color: '#673ab7', fontWeight: 'bold' },
-  btnSubmit: { flex: 0.45, backgroundColor: '#673ab7', padding: 15, borderRadius: 4, alignItems: 'center' },
-  btnSubmitText: { color: 'white', fontWeight: 'bold' }
+  selectedBorder: { borderColor: '#673ab7' },
+  selectedLabel: { color: '#673ab7', fontWeight: 'bold' },
+  optionLabel: { fontSize: 15 },
+  textInput: { borderBottomWidth: 1, borderColor: '#673ab7', padding: 5, minHeight: 40 },
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'white', flexDirection: 'row', padding: 15, justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#eee' },
+  btnBack: { padding: 15, width: '45%', alignItems: 'center', borderRadius: 5, borderWidth: 1, borderColor: '#673ab7' },
+  btnSave: { padding: 15, width: '45%', alignItems: 'center', borderRadius: 5, backgroundColor: '#673ab7' }
 });
 
 export default TakeSurveyScreen;

@@ -2,6 +2,7 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { AuthProvider } from './screens/Auth/AuthContext';
 
 // 1. Importaciones de tus pantallas
 
@@ -10,6 +11,7 @@ import SurveyCreatorScreen from "./screens/SurveyCreatorScreen";
 import TakeSurveyScreen from "./screens/TakeSurveyScreen";
 import SurveyListScreen from "./screens/SurveyListScreen";
 import HomeScreen from "./screens/Home/HomeScreen";
+
 
 import LoginScreen from "./screens/Auth/LoginScreen";
 import Index from "./screens/index";
@@ -56,10 +58,7 @@ function App() {
 					component={SurveyCreatorScreen}
 				/>
 				<Stack.Screen name="SurveyList" component={SurveyListScreen} />
-				<Stack.Screen
-					name="SuerveyAnswers"
-					component={TakeSurveyScreen}
-				/>
+				<Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
 			</Stack.Navigator>
 		</NavigationContainer>
 	);

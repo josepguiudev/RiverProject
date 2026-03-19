@@ -74,6 +74,7 @@ public class Survey {
     private Client client;
 
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<UserSurveys> userSurveysList = new ArrayList<>();
 
 

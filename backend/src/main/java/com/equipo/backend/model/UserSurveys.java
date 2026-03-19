@@ -14,6 +14,7 @@ public class UserSurveys {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "id_user_survey")
     private Long id;
 
 

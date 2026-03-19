@@ -16,8 +16,8 @@ export const SurveyCard = ({ survey, isCompleted, onPress }: Props) => {
       disabled={isCompleted} // Bloquejada si ja està feta
     >
       <View style={styles.content}>
-        <Text style={[styles.title, isCompleted && styles.completedText]}>
-            {survey.name || "Enquesta sense títol"}
+       <Text style={[styles.title, isCompleted && styles.completedText]}>
+        {survey.nombreEncuesta || survey.name || "Enquesta sense títol"}
         </Text>
         <Text style={styles.info}>Preguntes: {survey.numQuestions}</Text>
         {isCompleted && <Text style={styles.status}>✓ Ja realitzada</Text>}

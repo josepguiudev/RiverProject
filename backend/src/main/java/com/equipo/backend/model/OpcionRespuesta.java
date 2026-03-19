@@ -10,6 +10,7 @@ public class OpcionRespuesta {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_opcion_respuesta")
     private Long id;
 
     @OneToOne

@@ -9,13 +9,14 @@ import lombok.Data;
 public class QuestionConfig {
     
     @Id
+    @Column(name = "id_question_config")
     private Long id;
 
     private String typeName;
 
     @OneToOne
     @MapsId
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "id_question")
     private Question question;
 
     @Column(columnDefinition = "nvarchar(max)")

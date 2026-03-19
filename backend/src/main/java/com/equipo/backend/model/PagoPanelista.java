@@ -11,12 +11,13 @@ public class PagoPanelista {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_pago_panelista")
     private Long id;
     private String codigo;
     private double cantidadPago;
 
     @OneToOne
-    @JoinColumn(name = "id_survey")
+    @JoinColumn(name = "id")
     private Survey survey;
 
 

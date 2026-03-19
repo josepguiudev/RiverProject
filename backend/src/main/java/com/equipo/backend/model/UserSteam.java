@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class UserSteam {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_user_steam")
     private Long id;
 
     private String steamid;

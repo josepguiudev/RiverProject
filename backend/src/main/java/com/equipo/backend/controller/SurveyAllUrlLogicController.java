@@ -73,7 +73,7 @@ public class SurveyAllUrlLogicController {
     @GetMapping("/{idEncuesta}/responses")
     public ResponseEntity<EncuestaParcialDTO> cargarRespuestas(
             @PathVariable Long idEncuesta, 
-            @RequestParam Long idUser) {
+            @RequestParam(name = "idUser") Long idUser) { // Especificamos el nombre explícitamente
         return ResponseEntity.ok(encuestaService.cargarRespuestas(idEncuesta, idUser));
     }
 
