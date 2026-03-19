@@ -9,7 +9,8 @@ interface Props extends TextInputProps {
 
 const CustomInputText = ({ label, placeholder, ...props }: Props) => {
   return (
-    <div style={styles.container}>
+    // ¡Cambiado a View! Web lo leerá como div y Android como View nativa. Todos contentos.
+    <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.inputWrapper}>
         <TextInput
@@ -19,7 +20,7 @@ const CustomInputText = ({ label, placeholder, ...props }: Props) => {
           {...props}
         />
       </View>
-    </div>
+    </View>
   );
 };
 

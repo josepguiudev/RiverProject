@@ -1,12 +1,14 @@
 // app/screens/Auth/styles.ts
 import { StyleSheet, Dimensions } from 'react-native';
+// Importamos tus constantes
+import { isAndroid, isWeb } from '../utils/device'; 
 
 const { width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1D2735', // Fondo principal
+    backgroundColor: '#1D2735', 
   },
   mainContainer: {
     flex: 1,
@@ -16,12 +18,12 @@ export const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    maxWidth: 380, // Ancho profesional para que no se estire demasiado
-    backgroundColor: '#263238', // Color "Barra de navegación"
+    // Si es Android, quitamos maxWidth para evitar crasheos de layout. En web lo mantenemos.
+    maxWidth: isAndroid ? undefined : 380, 
+    backgroundColor: '#263238', 
     borderRadius: 35,
     padding: 40,
     alignItems: 'center',
-    // Sombra premium
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.4,
@@ -32,26 +34,10 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 45,
   },
-  logoBox: {
-    width: 85,
-    height: 85,
-    backgroundColor: '#1D2735',
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    borderWidth: 1.5,
-    borderColor: '#64B5F6', // Azul claro de la paleta
-  },
-  logoLetter: {
-    color: '#64B5F6',
-    fontSize: 42,
-    fontWeight: '800',
-  },
   title: {
     fontSize: 30,
     fontWeight: '800',
-    color: '#F0F2F5', // Texto principal
+    color: '#F0F2F5', 
     textAlign: 'center',
     letterSpacing: -0.5,
   },
@@ -66,14 +52,17 @@ export const styles = StyleSheet.create({
   actionSection: {
     width: '100%',
     alignItems: 'center',
-    gap: 14,
+    // Usamos gap solo si NO es Android
+    gap: isAndroid ? undefined : 14, 
   },
   btnPrimary: {
-    backgroundColor: '#8BC34A', // CTA Verde Lima
-    width: '90%', // Tamaño centralizado
+    backgroundColor: '#8BC34A', 
+    width: '90%', 
     paddingVertical: 16,
     borderRadius: 15,
     alignItems: 'center',
+    // Si es Android, como no hay 'gap', le ponemos un margen inferior para separar los botones
+    marginBottom: isAndroid ? 14 : 0,
     shadowColor: '#8BC34A',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -81,7 +70,7 @@ export const styles = StyleSheet.create({
     elevation: 4,
   },
   btnPrimaryText: {
-    color: '#1D2735', // Texto oscuro sobre fondo claro
+    color: '#1D2735', 
     fontSize: 16,
     fontWeight: '800',
   },
@@ -92,7 +81,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#F0F2F5', // Borde con color de texto principal
+    borderColor: '#F0F2F5', 
   },
   btnSecondaryText: {
     color: '#F0F2F5',

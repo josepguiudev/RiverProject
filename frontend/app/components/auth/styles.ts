@@ -1,6 +1,7 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const { width } = Dimensions.get('window');
+const isAndroid = Platform.OS === 'android';
 
 export const styles = StyleSheet.create({
   overlayContainer: {
@@ -9,27 +10,24 @@ export const styles = StyleSheet.create({
   darkBackground: {
     flex: 1,
     backgroundColor: 'rgba(29, 39, 53, 0.96)', 
-    justifyContent: 'center', // Centrado vertical
-    alignItems: 'center',     // Centrado horizontal clave
+    justifyContent: 'center', 
+    alignItems: 'center',    
   },
   scrollContainer: { 
-    // Eliminamos el width fijo y usamos flexGrow para centrar el contenido
     flexGrow: 1, 
     justifyContent: 'center', 
     alignItems: 'center',
     padding: 24,
-    width: width, // Ocupa el ancho de la pantalla para permitir el centrado interno
+    // Eliminamos 'width: width' para evitar conflictos de cálculo nativo
   },
   formCard: {
     backgroundColor: '#263238',
     padding: 30,
     borderRadius: 28,
-    // 1. Centralización profesional:
-    width: '100%',
-    maxWidth: 400, // Evita que en tablets o web se vea gigante
+    // Usamos el ancho de la pantalla directamente con un límite si no es Android
+    width: isAndroid ? width * 0.85 : '100%', 
+    maxWidth: isAndroid ? undefined : 400, 
     alignSelf: 'center', 
-    
-    // Sombras
     elevation: 10,
     shadowColor: '#000',
     shadowOpacity: 0.3,
@@ -86,7 +84,7 @@ export const styles = StyleSheet.create({
     borderRadius: 15, 
     alignItems: 'center', 
     marginTop: 10,
-    width: '100%', // El botón ocupa el ancho de la card
+    width: '100%', 
   },
   buttonDisabled: {
     backgroundColor: '#558B2F',

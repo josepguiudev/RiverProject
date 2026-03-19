@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  StatusBar 
+} from 'react-native';
+// Importamos tus constantes de detección
+import { isWeb, isAndroid } from '../utils/device'; 
 import { styles } from '../screens/stylesIndex';
 import SignIn from '../components/auth/signin/signin';
 import SignUp from '../components/auth/signup/signup';
@@ -8,19 +16,26 @@ const IndexScreen = ({ navigation }: any) => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
+  // Handlers con tiempos ajustados para evitar crasheos en Android nativo
   const openLogin = () => {
     setIsSignUpOpen(false);
-    setTimeout(() => setIsLoginOpen(true), 250);
+    setTimeout(() => setIsLoginOpen(true), isAndroid ? 300 : 10);
   };
 
   const openRegister = () => {
     setIsLoginOpen(false);
-    setTimeout(() => setIsSignUpOpen(true), 250);
+    setTimeout(() => setIsSignUpOpen(true), isAndroid ? 300 : 10);
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
+      {/* Usamos tus constantes para el comportamiento de la barra */}
+      {!isWeb && (
+        <StatusBar 
+          barStyle={isAndroid ? "dark-content" : "light-content"} 
+          backgroundColor={isAndroid ? "#ffffff" : "transparent"}
+        />
+      )}
       
       <View style={styles.mainContainer}>
         <View style={styles.card}>
@@ -47,21 +62,26 @@ const IndexScreen = ({ navigation }: any) => {
         </View>
       </View>
 
-      {/* Modal de Inicio de Sesión */}
-      <SignIn 
-        isVisible={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-        onSwitchToRegister={openRegister}
-        navigation={navigation} 
-      />
+      {/* CLAVE PARA EL ERROR DE ANDROID: 
+          Forzamos booleano con !! y usamos renderizado condicional 
+      */}
+      {isLoginOpen && (
+        <SignIn 
+          isVisible={!!isLoginOpen} 
+          onClose={() => setIsLoginOpen(false)} 
+          onSwitchToRegister={openRegister}
+          navigation={navigation} 
+        />
+      )}
 
-      {/* Modal de Registro */}
-      <SignUp 
-        isVisible={isSignUpOpen} 
-        onClose={() => setIsSignUpOpen(false)} 
-        onSwitchToLogin={openLogin}
-        navigation={navigation} 
-      />
+      {isSignUpOpen && (
+        <SignUp 
+          isVisible={!!isSignUpOpen} 
+          onClose={() => setIsSignUpOpen(false)} 
+          onSwitchToLogin={openLogin}
+          navigation={navigation} 
+        />
+      )}
     </SafeAreaView>
   );
 };

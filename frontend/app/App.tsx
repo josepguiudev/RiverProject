@@ -28,14 +28,22 @@ function App() {
   // Si no, devolvemos tu navegación normal  
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Index" screenOptions={{headerShown: false}}>
-        <Stack.Screen name="Index" component={Index} options={{headerShown: false}}/>
-        <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}}/>                   
+      
+      <Stack.Navigator initialRouteName="Index">
+        <Stack.Screen 
+          name="Index" 
+          component={Index} 
+          options={{headerShown: false}}
+        />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
+
         <Stack.Screen name="SuerveyCreator" component={SurveyCreatorScreen} />     
+        
+        <Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
 export default App;

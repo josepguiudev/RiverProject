@@ -52,7 +52,7 @@ export default function SignIn({ isVisible, onClose, onSwitchToRegister, navigat
 
   return (
     <Modal visible={isVisible} animationType="fade" transparent={true} onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.overlayContainer}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.overlayContainer}>
         <View style={styles.darkBackground}>
           <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.formCard}>

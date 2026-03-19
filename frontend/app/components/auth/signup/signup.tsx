@@ -103,7 +103,7 @@ export default function SignUp({ isVisible, onClose, onSwitchToLogin, navigation
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
         style={styles.overlayContainer}
       >
         <View style={styles.darkBackground}>
