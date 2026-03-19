@@ -25,7 +25,6 @@ public class Survey {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_survey")
-    @JsonIgnore
     private Long id;
     
     @JsonProperty("numQuestions")
@@ -83,10 +82,6 @@ public class Survey {
         throw new UnsupportedOperationException("Unimplemented method 'setCreationDate'");
     }
 
-    public void setCreationDate(Timestamp timestamp) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setCreationDate'");
-    }
 
 
     public Long getId() {
