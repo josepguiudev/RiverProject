@@ -1,5 +1,7 @@
 package com.equipo.backend.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,5 +29,11 @@ public class UserSteamController {
     public ResponseEntity<?> register(@RequestBody UserSteamRequest request) {
         userSteamService.register(request);
         return ResponseEntity.ok("Usuario registrado correctamente");
+    }
+
+    @PostMapping("/register-multiple")
+    public ResponseEntity<?> registerMultiple(@RequestBody List<UserSteamRequest> requests) {
+        userSteamService.registerAll(requests);
+        return ResponseEntity.ok("Usuarios procesados correctamente");
     }
 }

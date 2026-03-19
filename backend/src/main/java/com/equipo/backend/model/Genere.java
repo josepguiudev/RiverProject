@@ -1,40 +1,35 @@
 package com.equipo.backend.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "genere")
+@Data
 public class Genere {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_genere;
+    private Long id;
 
-    private String nombreGenero;
+    @Column(unique = true)
+    private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "id_game") 
-    private Game game;
+    @ManyToMany(mappedBy = "genereList")
+    private List<Game> games = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "id_survey")
-    private Survey survey;
+    @ManyToMany(mappedBy = "genereList")
+    private List<Survey> surveyList = new ArrayList<>();
 
-
-    public Game getGame() {
-        return game;
+    public List<Game> getGames() {
+        return this.games;
     }
 
-    public void setGame(Game game) {
-        this.game = game;
-    }
-
-    public Long getId_genere() {
-        return this.id_genere;
-    }
-
-    public void setId_genere(Long id_genere) {
-        this.id_genere = id_genere;
+    public void setGames(List<Game> games) {
+        this.games = games;
     }
 
     public String getNombreGenero() {
@@ -44,6 +39,15 @@ public class Genere {
     public void setNombreGenero(String nombreGenero) {
         this.nombreGenero = nombreGenero;
     }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
 
 
 }

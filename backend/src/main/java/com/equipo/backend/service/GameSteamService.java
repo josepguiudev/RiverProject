@@ -8,12 +8,35 @@ import org.springframework.stereotype.Service;
 
 import com.equipo.backend.dto.GameSteamRequest;
 import com.equipo.backend.model.Game;
+import com.equipo.backend.model.UserSteam;
 import com.equipo.backend.repository.GameSteamRepository;
+import com.equipo.backend.repository.UserSteamRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class GameSteamService {
     @Autowired
     private GameSteamRepository gameRepository;
+
+    @Autowired
+    private UserSteamRepository userSteamRepository; // <--- inyectar esto para la n:m
+
+    @Transactional
+    public void saveLibraryAndLinkToUser(String steamid, List<GameSteamRequest> requests) {
+        
+        UserSteam user = userSteamRepository.findBySteamid(steamid)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + steamid));
+
+        registerMultipleGames(requests);
+
+        List<Long> appids = requests.stream().map(GameSteamRequest::getAppid).collect(Collectors.toList());
+        List<Game> gamesInDb = gameRepository.findAllByAppidIn(appids);
+
+        //Actualizamos la lista del usuario (JPA escribe en 'user_steam_games')
+        user.setGames(gamesInDb);
+        userSteamRepository.save(user); 
+    }
 
     public Game registerGame(GameSteamRequest request) {
         // Verificar si el juego ya existe para no duplicar

@@ -4,26 +4,46 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 
 @Entity
 @Table(name = "game")
-
+@Data
 public class Game {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_game;
     private Long appid;                                                                                                                                                                                               
-
+    private int id_game_steam;
     private String title;
+    private int price;
     private byte isEarlyAcces;
     private String iconUrl;
+    private String url_image;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(
+        name = "game_generes",                                  // Tabla intermedia
+        joinColumns = @JoinColumn(name = "id_game"),            // FK a la tabla Game
+        inverseJoinColumns = @JoinColumn(name = "id_genere")    // FK a la tabla Genere
+    )
     private List<Genere> genereList = new ArrayList<>();
 
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "game_category",
+        joinColumns = @JoinColumn(name = "id_game"),
+        inverseJoinColumns = @JoinColumn(name = "id_category")
+    )
+    @nullable private List<Category> categoryList = new ArrayList<>();
+
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
-    private List<Logro> logros = new ArrayList<>();
+    @nullable private List<Logro> logrosList = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "games")
+    private List<UserSteam> userSteamList = new ArrayList<>();
 
 
     public Long getId_game() {
@@ -48,8 +68,12 @@ public class Game {
         this.title = title;
     }
 
-    public byte isIsEarlyAcces() {
-        return this.isEarlyAcces;
+    public int getPrice() {
+        return this.price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
     }
 
     public byte getIsEarlyAcces() {
@@ -67,21 +91,45 @@ public class Game {
         this.isEarlyAcces = isEarlyAcces;
     }
 
-    public List<Genere> getGenereList() {
+    public String getUrl_image() {
+        return this.url_image;
+    }
+
+    public void setUrl_image(String url_image) {
+        this.url_image = url_image;
+    }
+
+
+    public List<Genere> getGeneresList() {
         return this.genereList;
     }
 
-    public void setGenereList(List<Genere> genereList) {
-        this.genereList = genereList;
+    public void setGeneresList(List<Genere> generesList) {
+        this.genereList = generesList;
     }
 
-
-    public List<Logro> getLogros() {
-        return this.logros;
+    public List<UserGame> getUserGames() {
+        return this.userGames;
     }
 
-    public void setLogros(List<Logro> logros) {
-        this.logros = logros;
+    public void setUserGames(List<UserGame> userGames) {
+        this.userGames = userGames;
+    }
+    
+    public List<Category> getCategoryList() {
+        return this.categoryList;
+    }
+
+    public void setCategoryList(List<Category> categoryList) {
+        this.categoryList = categoryList;
+    }
+
+    public List<UserSteam> getUserSteamList() {
+        return this.userSteamList;
+    }
+
+    public void setUserSteamList(List<UserSteam> userSteamList) {
+        this.userSteamList = userSteamList;
     }
 
 

@@ -53,14 +53,23 @@ public class GameSteamController {
                 ));
     }
 
+    @SuppressWarnings("unchecked")
     @PostMapping("/save-steam-library")
-    public ResponseEntity<?> saveSteamLibrary(@RequestBody List<java.util.Map<String, Object>> steamGames) {
+    public ResponseEntity<?> saveSteamLibrary(@RequestBody java.util.Map<String, Object> payload) {
         try {
-            // 1. Convertimos el JSON crudo de Steam a tu lista de DTOs (GameSteamRequest)
+            //Extraemos el steamid del mapa 
+            String steamid = (String) payload.get("steamid");
+
+            //Extraemos la lista de juegos del mapa raíz (haciendo el cast)
+            List<java.util.Map<String, Object>> steamGames = (List<java.util.Map<String, Object>>) payload.get("games");
+
+            if (steamGames == null) {
+                throw new Exception("La lista de juegos 'games' no puede estar vacía");
+            }
+            //Convertimos el JSON crudo a tus DTOs
             List<GameSteamRequest> requests = steamGames.stream()
                 .map(game -> {
                     GameSteamRequest dto = new GameSteamRequest();
-                    // Steam devuelve los IDs como Integer/Long, nos aseguramos de pasarlos a Long
                     dto.setAppid(Long.valueOf(game.get("appid").toString()));
                     dto.setName((String) game.get("name"));
                     dto.setImg_icon_url((String) game.get("img_icon_url"));
@@ -68,16 +77,13 @@ public class GameSteamController {
                 })
                 .collect(Collectors.toList());
 
-            // 2. Llamamos al servicio con la variable 'requests' ya definida
-            List<Game> guardados = gameService.registerMultipleGames(requests);
+            //Llamamos al nuevo método del servicio que vincula al usuario
+            gameService.saveLibraryAndLinkToUser(steamid, requests);
             
-            if (guardados.isEmpty()) {
-                return ResponseEntity.ok("Todos los juegos ya estaban registrados en la base de datos.");
-            }
-            
-            return ResponseEntity.ok("Se han guardado " + guardados.size() + " juegos nuevos correctamente.");
+            return ResponseEntity.ok("Biblioteca sincronizada correctamente para el usuario " + steamid);
             
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("Error al procesar la biblioteca: " + e.getMessage());
         }
     }
