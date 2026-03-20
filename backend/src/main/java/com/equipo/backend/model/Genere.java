@@ -19,10 +19,6 @@ public class Genere {
     @ManyToMany(mappedBy = "genereList")
     private List<Game> games = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "id_survey")
-    private Survey survey;
-
     public List<Game> getGames() {
         return this.games;
     }

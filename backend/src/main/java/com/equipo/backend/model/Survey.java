@@ -37,9 +37,6 @@ public class Survey {
     @JoinColumn(name = "id_pago_panelista", nullable = true)
     private PagoPanelista pagoPanelista;
 
-    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
-    private List<Genere> genereList = new ArrayList<>();
-
 
     public Long getId() {
         return this.id_survey;
@@ -121,15 +118,6 @@ public class Survey {
     public void setId_survey(Long id_survey) {
         this.id_survey = id_survey;
     }
-
-    public List<Genere> getGenereList() {
-        return this.genereList;
-    }
-
-    public void setGenereList(List<Genere> genereList) {
-        this.genereList = genereList;
-    }
-
  
      
     public Survey() {  }
