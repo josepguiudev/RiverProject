@@ -107,4 +107,9 @@ public class UserSteamService {
         userSteamRepository.delete(userSteam);
     }
 
+    public UserSteam getBySteamId(String steamid) {
+    return userSteamRepository.findBySteamid(steamid)
+        .orElseThrow(() -> new RuntimeException("Usuario no encontrado con steamid"));
+}
+
 }

@@ -3,10 +3,18 @@ package com.equipo.backend.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import jakarta.persistence.*;
 
 
 @Entity
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.PropertyGenerator.class,
+    property = "id_game"
+)
 @Table(name = "game")
 
 public class Game {
@@ -31,6 +39,7 @@ public class Game {
     private List<Logro> logros = new ArrayList<>();
 
     @ManyToMany(mappedBy = "games")
+    //@JsonBackReference //-> lado “hijo” que será ignorado durante la serialización
     private List<UserSteam> userSteamList = new ArrayList<>();
 
 
