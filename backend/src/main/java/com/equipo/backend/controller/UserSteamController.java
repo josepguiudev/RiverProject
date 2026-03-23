@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,6 +19,7 @@ import com.equipo.backend.repository.UserSteamRepository;
 import com.equipo.backend.service.UserSteamService;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -50,29 +53,34 @@ public class UserSteamController {
     @Autowired
     private UserSteamRepository userSteamRepository;
     @GetMapping("/allUsers") //-> Necesitamos crear en el servicio los métodos de extracción de los usuarios
-    public List<UserSteamFrontDTO> getAllUsers() {
-        List<UserSteam> users = userSteamRepository.findAll();
+    public ResponseEntity<Page<UserSteamFrontDTO>> getAllUsers(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+            
+        Page<UserSteam> usersPage = userSteamRepository.findAll(PageRequest.of(page, size));
 
-        return users.stream().map(user -> {
-            UserSteamFrontDTO dto = new UserSteamFrontDTO();
-            dto.setId(user.getId());
-            dto.setPersonaName(user.getPersonaName());
-            dto.setSteamId(user.getSteamId());
-            dto.setAvatar(user.getAvatar());
-            dto.setProfileUrl(user.getProfileUrl());
+        Page<UserSteamFrontDTO> dtoPage = usersPage.map(user -> {
+        UserSteamFrontDTO dto = new UserSteamFrontDTO();
+        dto.setId(user.getId());
+        dto.setPersonaName(user.getPersonaName());
+        dto.setSteamId(user.getSteamId());
+        dto.setAvatar(user.getAvatar());
+        dto.setProfileUrl(user.getProfileUrl());
 
-            List<GameSteamFrontDTO> games = user.getGames().stream().map(game -> {
-                GameSteamFrontDTO g = new GameSteamFrontDTO();
-                g.setId_game(game.getId_game());
-                g.setAppid(game.getAppid());
-                g.setTitle(game.getTitle());
-                g.setIconUrl(game.getIconUrl());
-                return g;
-            }).collect(Collectors.toList());
-
-            dto.setGames(games);
-            return dto;
+        List<GameSteamFrontDTO> games = user.getGames().stream().map(game -> {
+            GameSteamFrontDTO g = new GameSteamFrontDTO();
+            g.setId_game(game.getId_game());
+            g.setAppid(game.getAppid());
+            g.setTitle(game.getTitle());
+            g.setIconUrl(game.getIconUrl());
+            return g;
         }).collect(Collectors.toList());
+
+        dto.setGames(games);
+        return dto;
+    });
+
+    return ResponseEntity.ok(dtoPage);
     }
     /*public ResponseEntity<List<UserSteam>> getAll() {
         List<UserSteam> users = userSteamService.getAll();

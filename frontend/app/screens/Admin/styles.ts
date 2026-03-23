@@ -64,4 +64,19 @@ export default StyleSheet.create({
     contentContainer: {
         padding: 20,
     },
+    card: {
+        backgroundColor: '#222',
+        margin: 8,
+        borderRadius: 8,
+        padding: 10
+    },
+    cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    avatar: { width: 50, height: 50, borderRadius: 25, marginRight: 10 },
+    personaName: { color: 'white', fontSize: 16, fontWeight: 'bold' },
+    threeDots: { color: 'white', fontSize: 20 },
+    gamesContainer: { marginTop: 10 },
+    gameItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
+    gameIcon: { width: 30, height: 30, marginRight: 10 },
+    gameTitle: { color: 'white', fontSize: 14 },
+    showGames: { color: '#00f', marginTop: 5 }
 })
