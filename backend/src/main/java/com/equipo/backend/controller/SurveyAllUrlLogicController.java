@@ -34,12 +34,30 @@ public class SurveyAllUrlLogicController {
         return ResponseEntity.ok(formSurveyService.obtenerTodas());
     }
 
-    @PostMapping("/submit")
+@PostMapping("/submit")
     public ResponseEntity<?> submitForm(@RequestBody Survey encuesta) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(formSurveyService.guardarEncuesta(encuesta));
+            // 1. Validación preventiva: El nombre es lo mínimo necesario
+            if (encuesta.getName() == null || encuesta.getName().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "El nombre de la encuesta es obligatorio"));
+            }
+
+            // 2. Llamada al servicio (que ya tiene la lógica de vinculación de hijos)
+            Survey guardada = formSurveyService.guardarEncuesta(encuesta);
+
+            // 3. Retornar 201 Created con el objeto ya persistido (incluyendo IDs de DB)
+            return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
+
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+            // IMPORTANTE: Esto te permite ver en tu consola de Java qué falló exactamente
+            e.printStackTrace(); 
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "error", "Error al guardar la encuesta",
+                    "details", e.getMessage()
+                ));
         }
     }
 

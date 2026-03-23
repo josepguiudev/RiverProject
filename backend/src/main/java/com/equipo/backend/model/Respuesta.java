@@ -22,6 +22,7 @@ public class Respuesta {
 
     @ManyToOne
     @JoinColumn(name = "id_user")
+    @JsonIgnore
     private User user;
 
     private String valueRespuesta;
@@ -29,7 +30,7 @@ public class Respuesta {
     @OneToOne(mappedBy = "respuesta", cascade = CascadeType.ALL)
     private OpcionRespuesta opcionRespuesta;
 
-    private byte isCompletada = 0;
+    private Byte isCompletada = 0;
 
     public Long getId() {
         return this.id;

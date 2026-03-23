@@ -28,9 +28,9 @@ public class Survey {
     private Long id;
     
     @JsonProperty("numQuestions")
-    private int numQuestions;
+    private Integer numQuestions;
     
-    private int numUsers;
+    private Integer numUsers;
     
     @JsonProperty("name")
     private String name;

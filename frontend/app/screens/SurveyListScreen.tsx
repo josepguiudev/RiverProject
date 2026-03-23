@@ -1,63 +1,66 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, FlatList, Text, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, FlatList, Text, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { SurveyCard } from '../components/QuestionCard/SurveyCard';
 import { FormApiService } from '../services/api/service';
 import { Survey } from '../types/formsSurvey.types';
+import styles from './stylesGlobal';
+import { ResponsiveLayout } from '../components/ResponsiveLayout';
+import { useAuth } from "../screens/Auth/AuthContext";
 
 const SurveyListScreen = ({ navigation }: any) => {
-  const [surveys, setSurveys] = useState<Survey[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+    const { user, loading: authLoading } = useAuth();
+    const [surveys, setSurveys] = useState<Survey[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-  const loadSurveys = async () => {
-    try {
-      // Llamada al endpoint /api/surveys/all
-      const data = await FormApiService.getAllResponses();
-      setSurveys(data);
-    } catch (e) {
-      console.error("Error list:", e);
-      Alert.alert("Error", "No s'han pogut carregar les enquestes.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+    const loadSurveys = async () => {
+        if (!user?.id) return;
+        try {
+            const data = await FormApiService.getAllResponses();
+            setSurveys(data);
+        } catch (e) {
+            Alert.alert("Error", "No se pudieron cargar las encuestas.");
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            if (!authLoading && user?.id) loadSurveys();
+        }, [user, authLoading])
+    );
+
+    if (authLoading || (loading && !refreshing)) {
+        return (
+            <View style={styles.alineadoPersonal}>
+                <ActivityIndicator size="large" color="#5b55c0" />
+            </View>
+        );
     }
-  };
 
-  useEffect(() => {
-    loadSurveys();
-  }, []);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadSurveys();
-  }, []);
-
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" color="#673ab7" />;
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Explorar Enquestes</Text>
-      <FlatList
-        data={surveys}
-        keyExtractor={(item) => (item.id || item.idEncuesta || Math.random()).toString()}
-        renderItem={({ item }) => (
-          <SurveyCard 
-            survey={item}
-            isCompleted={item.completada || false} 
-            onPress={() => navigation.navigate('TakeSurvey', { surveyId: item.id || item.idEncuesta })}
-          />
-        )}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListEmptyComponent={<Text style={styles.empty}>No hi ha enquestes disponibles.</Text>}
-      />
-    </View>
-  );
+    return (
+        <ResponsiveLayout>
+            <Text style={[styles.tituloHero, { marginBottom: 30 }]}>Encuestas</Text>
+            <FlatList
+                data={surveys}
+                keyExtractor={(item) => (item.id || Math.random()).toString()}
+                renderItem={({ item }) => (
+                    <SurveyCard 
+                        survey={item}
+                        isCompleted={item.completada || false} 
+                        onPress={() => navigation.navigate('TakeSurvey', { surveyId: item.id })}
+                        style={item.completada ? { opacity: 0.5 } : null}
+                    />
+                )}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadSurveys(); }} tintColor="#5b55c0" />
+                }
+            />
+        </ResponsiveLayout>
+    );
 };
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0ebf8', padding: 15 },
-  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#202124' },
-  empty: { textAlign: 'center', marginTop: 50, color: '#666' }
-});
 
 export default SurveyListScreen;

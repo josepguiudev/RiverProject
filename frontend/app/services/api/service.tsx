@@ -30,21 +30,31 @@ static async getAllResponses(): Promise<Survey[]> {
   /**
    * Enviar una nueva plantilla (Arregla el error de 'payload')
    */
+  /**
+   * Enviar una nueva plantilla
+   */
   static async submitForm(formData: Survey): Promise<Survey> {
     try {
-      // DEFINICIÓN DE PAYLOAD (Esto resuelve el error ts(2304))
+      // Ajustamos el payload para que coincida EXACTAMENTE con los nombres en Java
       const payload = {
         name: formData.name, 
-        numQuestions: formData.questionList ? formData.questionList.length : 0,
-        questionList: formData.questionList ? formData.questionList.map(q => ({
-          text_question: q.textQuestion,
-          type_name: q.typeName,
-          options: q.options ? q.options.map(opt => ({
-            text_opcion: opt.textOpcion
+        numQuestions: formData.numQuestions,
+        numUsers: formData.numUsers || 0, // <--- Enviamos el 0 que hablamos
+        SurveyReward: formData.SurveyReward || 0,
+        genereList: formData.genereList || [],
+        // Mapeo con nombres correctos (CamelCase)
+        questionList: formData.questionList.map(q => ({
+          textQuestion: q.textQuestion, // ANTES: text_question (ERROR)
+          typeName: q.typeName,         // ANTES: type_name (ERROR)
+          // IMPORTANTE: En tu Question.java la lista se llama 'option'
+          option: q.option ? q.option.map(opt => ({
+            textOpcion: opt.textOpcion  // ANTES: text_opcion (ERROR)
           })) : []
-        })) : [],
+        })),
         creationDate: new Date().toISOString()
       };
+
+      console.log("JSON FINAL ENVIADO A JAVA:", JSON.stringify(payload, null, 2));
 
       const response = await apiClient.post<Survey>("/api/surveys/submit", payload);
       return response.data;

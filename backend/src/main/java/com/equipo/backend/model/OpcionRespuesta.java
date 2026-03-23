@@ -1,5 +1,7 @@
 package com.equipo.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,6 +21,7 @@ public class OpcionRespuesta {
 
     @OneToOne
     @JoinColumn(name = "id_respuesta")
+    @JsonIgnore
     private Respuesta respuesta;
 
 

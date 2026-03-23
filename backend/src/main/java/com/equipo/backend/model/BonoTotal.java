@@ -14,7 +14,7 @@ public class BonoTotal {
     @Column(name = "id_bono_total")
     private Long id;
 
-    private int cantidadTotal;
+    private Integer cantidadTotal;
 
     @OneToOne(mappedBy = "bonoTotal")
     @JoinColumn(name = "id_user") 

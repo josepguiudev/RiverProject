@@ -28,7 +28,7 @@ public class UserSurveys {
     @JsonIgnoreProperties("userSurveysList")
     private Survey survey;
 
-    private byte isRespondida;
+    private Byte isRespondida;
 
 
 

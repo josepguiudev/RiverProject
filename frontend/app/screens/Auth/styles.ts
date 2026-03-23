@@ -51,12 +51,6 @@ export default StyleSheet.create({
     noJustify: {
         justifyContent: 'flex-start'
     },
-    alineadoPersonal: {
-        flex: 1,
-        alignItems: 'center',
-        alignContent: 'center', // Verticalmente
-        justifyContent: "center",
-    },
     containerFoto: {
         width: 80,
         height: '100%',
@@ -105,6 +99,27 @@ export default StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    alineadoPersonal: {
+        flex: 1,
+        backgroundColor: '#0e0d0df1',
+        alignItems: 'center',
+        justifyContent: "center",
+        width: '100%',
+        ...Platform.select({
+            web: { 
+                // Forzamos el tipo a 'any' para que acepte 'vh' en la web
+                minHeight: '100vh' as any 
+            },
+            default: { 
+                minHeight: '100%' as any
+            }
+        })
+    },
+    darkBackground: {
+        flex: 1,
+        width: '100%',
+        backgroundColor: '#0e0d0df1',
     },
     tituloHero: {
         fontSize: 60,

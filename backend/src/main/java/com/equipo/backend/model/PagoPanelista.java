@@ -14,7 +14,7 @@ public class PagoPanelista {
     @Column(name = "id_pago_panelista")
     private Long id;
     private String codigo;
-    private double cantidadPago;
+    private Double cantidadPago;
 
     @OneToOne
     @JoinColumn(name = "id")
