@@ -100,16 +100,17 @@ public class UserSteamController {
         return ResponseEntity.ok(user);
     }
     
-    @PutMapping("/up-by-bd-id/{id}")
-    public ResponseEntity<UserSteam> update(@PathVariable Long id, @RequestBody UserSteamRequest request) {
-        UserSteam updated = userSteamService.update(id, request);
-        return ResponseEntity.ok(updated);
+    @Autowired
+    private UserSteamService service;
+
+    @PutMapping("/{id}")
+    public UserSteam update(@PathVariable Long id, @RequestBody UserSteam user) {
+        return service.update(id, user);
     }
 
-    @DeleteMapping("/del-by-bd-id/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        userSteamService.delete(id);
-        return ResponseEntity.ok("Usuario eliminado correctamente");
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 
 }

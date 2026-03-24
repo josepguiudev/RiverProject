@@ -65,18 +65,146 @@ export default StyleSheet.create({
         padding: 20,
     },
     card: {
-        backgroundColor: '#222',
-        margin: 8,
-        borderRadius: 8,
-        padding: 10
+        backgroundColor: '#fff',
+        borderRadius: 15,
+        padding: 15,
+        marginVertical: 8,
+        marginHorizontal: 10,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
     },
-    cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    avatar: { width: 50, height: 50, borderRadius: 25, marginRight: 10 },
-    personaName: { color: 'white', fontSize: 16, fontWeight: 'bold' },
-    threeDots: { color: 'white', fontSize: 20 },
-    gamesContainer: { marginTop: 10 },
-    gameItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
-    gameIcon: { width: 30, height: 30, marginRight: 10 },
-    gameTitle: { color: 'white', fontSize: 14 },
-    showGames: { color: '#00f', marginTop: 5 }
+
+    cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+
+    avatar: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginRight: 10,
+    },
+
+    personaName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+
+    steamId: {
+        fontSize: 12,
+        color: '#666',
+    },
+
+    threeDots: {
+        fontSize: 20,
+        paddingHorizontal: 10,
+    },
+
+    showGames: {
+        marginTop: 10,
+        color: '#007bff',
+        fontWeight: 'bold',
+    },
+
+    gamesScroll: {
+        maxHeight: 150, // 🔥 IMPORTANTE → scroll interno
+        marginTop: 10,
+    },
+
+    gameItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 8,
+        borderBottomWidth: 0.5,
+        borderColor: '#ccc',
+    },
+
+    gameIcon: {
+        width: 30,
+        height: 30,
+        marginRight: 10,
+    },
+
+    gameTitle: {
+        fontSize: 14,
+        flexShrink: 1,
+    },
+    paginationContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 10,
+        backgroundColor: '#fff',
+    },
+
+    pageButton: {
+        backgroundColor: '#007bff',
+        padding: 10,
+        borderRadius: 8,
+        marginHorizontal: 10,
+    },
+
+    disabled: {
+        backgroundColor: '#ccc',
+    },
+
+    pageText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+
+    pageIndicator: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+
+    modalBackground: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContainer: {
+        width: '90%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        marginBottom: 10,
+        padding: 8,
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
+    },
+    saveButton: {
+        backgroundColor: '#28a745',
+        padding: 10,
+        borderRadius: 5,
+    },
+    deleteButton: {
+        backgroundColor: '#dc3545',
+        padding: 10,
+        borderRadius: 5,
+    },
+    cancelButton: {
+        backgroundColor: '#6c757d',
+        padding: 10,
+        borderRadius: 5,
+    },
 })
