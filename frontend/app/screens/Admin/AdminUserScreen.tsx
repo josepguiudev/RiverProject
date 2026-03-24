@@ -162,14 +162,6 @@ export default function AdminUserScreen({ navigation }: any) {
         }
     };
 
-    const handleUserOptions = (user: UserBD) => {
-        Alert.alert("Usuario", user.personaName, [
-            { text: "Editar", onPress: () => updateUser(user) },
-            { text: "Eliminar", onPress: () => deleteUser(user.id) },
-            { text: "Cancelar", style: "cancel" }
-        ]);
-    };
-
     const deleteGame = async (id: number) => {
         try {
             await fetch(`http://localhost:8080/api/game/${id}`, {
@@ -196,14 +188,6 @@ export default function AdminUserScreen({ navigation }: any) {
         } catch {
             Alert.alert("Error");
         }
-    };
-
-    const handleGameOptions = (game: Game) => {
-        Alert.alert("Juego", game.title, [
-            { text: "Editar", onPress: () => updateGame(game) },
-            { text: "Eliminar", onPress: () => deleteGame(game.id_game) },
-            { text: "Cancelar", style: "cancel" }
-        ]);
     };
 
     return (
@@ -336,7 +320,6 @@ export default function AdminUserScreen({ navigation }: any) {
                                 </View>
                             </>
                         )}
-
                     </View>
                 </View>
             </Modal>
