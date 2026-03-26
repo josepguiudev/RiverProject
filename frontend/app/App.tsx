@@ -37,7 +37,7 @@ function App() {
   // Si no, devolvemos tu navegación normal  
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Index" screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName="Profile" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Index" component={Index} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Register" component={RegisterScreen} />
