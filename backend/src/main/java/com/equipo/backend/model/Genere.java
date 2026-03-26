@@ -21,9 +21,6 @@ public class Genere {
     @ManyToMany(mappedBy = "genereList")
     private List<Game> games = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "genereList")
-    private List<Survey> surveyList = new ArrayList<>();
-
     public List<Game> getGames() {
         return this.games;
     }

@@ -17,6 +17,8 @@ import Index from './screens/index';
 import AdminScreen from './screens/Admin/AdminScreen';
 import ProfileScreen from './screens/Profile/ProfileScreen';
 
+import AdminUserScreen from './screens/Admin/AdminUserScreen';
+
 // 2. INTERRUPTOR DIRECTO
 // Cambia a true para ver Storybook, false para la App normal
 //const SHOW_STORYBOOK = false;
@@ -45,6 +47,7 @@ function App() {
         <Stack.Screen name="SuerveyCreator" component={SurveyCreatorScreen} />
         <Stack.Screen name="SurveyList" component={SurveyListScreen} />
         <Stack.Screen name="SuerveyAnswers" component={TakeSurveyScreen} />
+        <Stack.Screen name="Admin Users" component={AdminUserScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
