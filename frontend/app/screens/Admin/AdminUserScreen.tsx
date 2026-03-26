@@ -219,7 +219,7 @@ export default function AdminUserScreen({ navigation }: any) {
                             disabled={page === 0}
                             style={[styles.pageButton, page === 0 && styles.disabled]}
                         >
-                            <Text style={styles.pageText}>Anterior</Text>
+                            <Text style={styles.pageText}>Anterior</Text> 
                         </TouchableOpacity>
 
                         <Text style={styles.pageIndicator}>Página {page + 1}</Text>
