@@ -5,6 +5,7 @@ import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 
 @Entity
@@ -37,13 +38,18 @@ public class Game {
         joinColumns = @JoinColumn(name = "id_game"),
         inverseJoinColumns = @JoinColumn(name = "id_category")
     )
+    @ToString.Exclude
     @nullable private List<Category> categoryList = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @ToString.Exclude
     @nullable private List<Logro> logrosList = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<UserGame> userGames = new ArrayList<>();
+
+
 
     public Long getId_game() {
     return this.id_game; 

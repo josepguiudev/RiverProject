@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { API_CONFIG } from '../../config/api.config';
-import { EncuestaParcialDTO, EncuestaRespuestaDTO, Survey } from '../../types/formsSurvey.types';
+import { EncuestaParcialDTO, EncuestaRespuestaDTO, Survey, UserSurveyRel } from '../../types/formsSurvey.types';
+
 
 const apiClient = axios.create({
   baseURL: API_CONFIG.BASE_URL,
@@ -11,21 +12,32 @@ const apiClient = axios.create({
 });
 
 export class FormApiService {
-  static savePartial(arg0: { idPregunta: number; idOpcion: number; valor: string; isRespondida: boolean; }, arg1: number, surveyId: any) {
-    throw new Error('Method not implemented.');
-  }
   
   /**
-   * Obtener todas las encuestas (Antes: /api/formSurvey/responses)
+   * Obtener encuestas personalizadas para un usuario (con estado de respuesta)
+   * Nuevo endpoint: /api/surveys/user/{userId}
    */
-static async getAllResponses(): Promise<Survey[]> {
+    static async getUserSurveys(userId: number): Promise<UserSurveyRel[]> {
+        try {
+            // Llamada al nuevo endpoint en el Controller: @GetMapping("/user/{userId}")
+            const response = await apiClient.get<UserSurveyRel[]>(`/api/surveys/user/${userId}`); 
+            return response.data;
+        } catch (error) {
+            throw this.handleError(error);
+        }
+    }
+
+  /** * Mantenemos el anterior por si lo usas en el panel de administrador, 
+   * pero para el usuario usaremos el de arriba.
+   */
+  static async getAllResponses(): Promise<Survey[]> {
     try {
         const response = await apiClient.get<Survey[]>("/api/surveys/all"); 
         return response.data;
     } catch (error) {
         throw this.handleError(error);
     }
-}
+  }
 
   /**
    * Enviar una nueva plantilla (Arregla el error de 'payload')

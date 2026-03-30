@@ -3,7 +3,10 @@ package com.equipo.backend.controller;
 
 import com.equipo.backend.dto.EncuestaParcialDTO;
 import com.equipo.backend.dto.EncuestaRespuestaDTO;
+import com.equipo.backend.dto.SurveySummaryDTO;
 import com.equipo.backend.model.Survey;
+import com.equipo.backend.model.UserSurveys;
+import com.equipo.backend.repository.UserSurveysRepository;
 import com.equipo.backend.model.Respuesta;
 import com.equipo.backend.service.EncuestaService;
 import com.equipo.backend.service.FormSurveyService;
@@ -19,14 +22,18 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class SurveyAllUrlLogicController {
 
-    private final FormSurveyService formSurveyService;
+private final FormSurveyService formSurveyService;
     private final EncuestaService encuestaService;
+    private final UserSurveysRepository userSurveysRepository;
 
-    public SurveyAllUrlLogicController(FormSurveyService formSurveyService, EncuestaService encuestaService) {
+    // CORRECCIÓN: Cambiamos UserSurveys por UserSurveysRepository en los parámetros
+    public SurveyAllUrlLogicController(FormSurveyService formSurveyService, 
+                                       EncuestaService encuestaService, 
+                                       UserSurveysRepository userSurveysRepository) {
         this.formSurveyService = formSurveyService;
         this.encuestaService = encuestaService;
+        this.userSurveysRepository = userSurveysRepository; 
     }
-
     // --- MÉTODOS DE PLANTILLAS (FormSurvey) ---
 
     @GetMapping("/all")
@@ -99,4 +106,11 @@ public class SurveyAllUrlLogicController {
     public ResponseEntity<String> test() {
         return ResponseEntity.ok("Backend de River App funcionando correctamente!");
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<SurveySummaryDTO>> getSurveysByUser(@PathVariable Long userId) {
+        // El Service ahora usa findByUserIdWithSurvey internamente
+        return ResponseEntity.ok(encuestaService.obtenerResumenEncuestasPorUsuario(userId));
+    }
 }
+

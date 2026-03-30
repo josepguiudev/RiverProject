@@ -1,8 +1,11 @@
 package com.equipo.backend.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 @Entity
 @Table(name = "pago_panlista")
@@ -16,8 +19,9 @@ public class PagoPanelista {
     private String codigo;
     private Double cantidadPago;
 
-    @OneToOne
-    @JoinColumn(name = "id")
+    @OneToOne(mappedBy = "pagoPanelista")
+    @JsonIgnore
+    @ToString.Exclude
     private Survey survey;
 
 

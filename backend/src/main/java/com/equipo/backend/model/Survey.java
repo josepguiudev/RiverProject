@@ -9,12 +9,14 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 
 import lombok.Data;
+import lombok.ToString;
 
 
 @Entity
@@ -46,10 +48,12 @@ public class Survey {
     
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
     @JsonManagedReference
+    @ToString.Exclude
     private List<Question> questionList = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL) //solo para pruebas borrar cascade luego
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_pago_panelista", nullable = true)
+    @JsonManagedReference
     private PagoPanelista pagoPanelista;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -58,6 +62,7 @@ public class Survey {
         joinColumns = @JoinColumn(name = "id_survey"),
         inverseJoinColumns = @JoinColumn(name = "id_genere")
     )
+    @ToString.Exclude
     private List<Genere> genereList = new ArrayList<>();
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -66,15 +71,17 @@ public class Survey {
         joinColumns = @JoinColumn(name = "id_survey"),
         inverseJoinColumns = @JoinColumn(name = "id_category")
     )
+    @ToString.Exclude
     private List<Category> categoryList = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_client")
-    @JsonBackReference
+    @JsonIgnoreProperties("surveys")
     private Client client;
 
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
+    @ToString.Exclude
     private List<UserSurveys> userSurveysList = new ArrayList<>();
 
 

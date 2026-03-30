@@ -3,8 +3,11 @@ package com.equipo.backend.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 @Entity
 @Table(name = "category")
@@ -19,9 +22,12 @@ public class Category {
     private String description;
     
     @ManyToMany(mappedBy = "categoryList")
+    @ToString.Exclude
     private List<Game> gamesList = new ArrayList<>();
 
     @ManyToMany(mappedBy = "categoryList")
+    @ToString.Exclude
+    @JsonIgnore
     private List<Survey> surveyList = new ArrayList<>();
 
 

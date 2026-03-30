@@ -12,8 +12,8 @@ interface Props {
   onUpdateQuestion: (text: string) => void;
   onRemoveQuestion: () => void;
   onUpdateType: (type: Question['typeName']) => void;
-  onAddOption?: () => void;
-  onUpdateOption?: (text: string, oIndex: number) => void;
+  onAddOption: () => void;
+  onUpdateOption: (text: string, oIndex: number) => void;
 }
 
 export const QuestionCard = ({
@@ -27,6 +27,7 @@ export const QuestionCard = ({
 }: Props) => {
 
   const renderQuestionByType = () => {
+    // IMPORTANTE: Aquí es donde ocurre la magia del cambio visual
     switch (question.typeName) {
       case 'SHORT_TEXT':
         return <ShortTextQuestion question={question} />;
@@ -36,16 +37,16 @@ export const QuestionCard = ({
         return (
           <SingleChoiceQuestion 
             question={question} 
-            onAddOption={onAddOption!} 
-            onUpdateOption={onUpdateOption!} 
+            onAddOption={onAddOption} 
+            onUpdateOption={onUpdateOption} 
           />
         );
       case 'MULTIPLE_CHOICE':
         return (
           <MultipleChoiceQuestion 
             question={question} 
-            onAddOption={onAddOption!} 
-            onUpdateOption={onUpdateOption!} 
+            onAddOption={onAddOption} 
+            onUpdateOption={onUpdateOption} 
           />
         );
       default:
@@ -62,9 +63,8 @@ export const QuestionCard = ({
         </TouchableOpacity>
       </View>
 
-      {/* Este es el ÚNICO TextInput para el enunciado */}
       <TextInput 
-        placeholder="Escribe el enunciado de la pregunta..." 
+        placeholder="Escribe el enunciado..." 
         placeholderTextColor="#555"
         style={styles.input} 
         value={question.textQuestion} 
@@ -75,19 +75,14 @@ export const QuestionCard = ({
         {renderQuestionByType()}
       </View>
 
-      <Text style={[styles.label, { fontSize: 10, marginBottom: 8, color: '#444' }]}>
-        TIPO DE RESPUESTA
-      </Text>
+      <Text style={styles.typeLabel}>TIPO DE RESPUESTA</Text>
       
       <View style={styles.typeButtons}>
         {['SHORT_TEXT', 'NUMERIC', 'SINGLE_CHOICE', 'MULTIPLE_CHOICE'].map(type => (
           <TouchableOpacity 
             key={type} 
             onPress={() => onUpdateType(type as Question['typeName'])} 
-            style={[
-                styles.typeBtn, 
-                question.typeName === type && styles.typeBtnActive
-            ]}
+            style={[styles.typeBtn, question.typeName === type && styles.typeBtnActive]}
           >
             <Text style={styles.typeBtnText}>{type.replace('_', ' ')}</Text>
           </TouchableOpacity>
@@ -98,40 +93,14 @@ export const QuestionCard = ({
 };
 
 const styles = StyleSheet.create({
-  card: { 
-    padding: 20, 
-    backgroundColor: '#1a1a1a', 
-    marginBottom: 20, 
-    borderRadius: 15, 
-    borderWidth: 1, 
-    borderColor: 'rgba(255,255,255,0.1)' 
-  },
-  header: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    marginBottom: 15 
-  },
-  label: { fontWeight: 'bold', fontSize: 14, color: '#64B5F6' },
-  remove: { color: '#F44336', fontWeight: 'bold', fontSize: 12 },
-  input: { 
-    backgroundColor: '#0e0d0d', 
-    color: '#FFFFFF', 
-    borderRadius: 8, 
-    padding: 12, 
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#333',
-    fontSize: 16,
-  },
+  card: { padding: 20, backgroundColor: '#1a1a1a', marginBottom: 20, borderRadius: 15 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  label: { fontWeight: 'bold', color: '#64B5F6' },
+  remove: { color: '#F44336', fontSize: 12 },
+  input: { backgroundColor: '#0e0d0d', color: '#FFF', borderRadius: 8, padding: 12, marginBottom: 15 },
+  typeLabel: { fontSize: 10, color: '#444', marginBottom: 8, fontWeight: 'bold' },
   typeButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  typeBtn: { 
-    backgroundColor: '#222', 
-    paddingVertical: 8, 
-    paddingHorizontal: 12, 
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#333'
-  },
+  typeBtn: { backgroundColor: '#222', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#333' },
   typeBtnActive: { backgroundColor: '#5b55c0', borderColor: '#7c74ff' },
   typeBtnText: { color: 'white', fontSize: 9, fontWeight: '800' }
 });

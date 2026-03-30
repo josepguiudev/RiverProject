@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 @Entity
 @Table(name = "question")
@@ -28,11 +29,18 @@ public class Question {
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
     @JsonManagedReference
+    @ToString.Exclude
     private List<Option> option = new ArrayList<>();
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
-    @JsonIgnore 
+    @JsonIgnore
+    @ToString.Exclude
     private List<PreguntaOpcion> preguntaOption = new ArrayList<>();
+
+
+    @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private QuestionConfig config;
 
     public Long getId() {
         return this.id;
@@ -66,6 +74,22 @@ public class Question {
         this.option = option;
     }
 
+
+    public List<PreguntaOpcion> getPreguntaOption() {
+        return this.preguntaOption;
+    }
+
+    public void setPreguntaOption(List<PreguntaOpcion> preguntaOption) {
+        this.preguntaOption = preguntaOption;
+    }
+
+    public QuestionConfig getConfig() {
+        return this.config;
+    }
+
+    public void setConfig(QuestionConfig config) {
+        this.config = config;
+    }
 
     public Question() {
     }

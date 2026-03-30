@@ -159,27 +159,62 @@ export default StyleSheet.create({
         borderColor: colors.textMain,
     },
 
-    // --- ENCUESTAS (SURVEY LIST) ---
-    cajaEncuestas: {
+   // --- ENCUESTAS (SURVEY LIST) ---
+    contenedorListado: {
         width: '100%',
-        backgroundColor: '#1a1a1a', // Un gris casi negro para resaltar sobre el fondo
-        borderRadius: 15,
-        marginBottom: 15,
-        borderWidth: 1,
-        borderColor: 'rgba(91, 85, 192, 0.3)', // Borde sutil azul Aceternity
-        padding: 15,
+        maxWidth: 1000,           // Limita el ancho en monitores para que no se vea infinito
+        alignSelf: 'center',      // Centra el listado en el monitor
+        paddingHorizontal: 20,
+        marginTop: 20,
     },
+
+    cajaEncuestas: {
+        backgroundColor: '#161616', 
+        borderRadius: 16,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(91, 85, 192, 0.2)', 
+        padding: 35,              // Mucho más aire interno para monitores
+        width: '100%',
+        // Efecto de elevación sutil para que no parezca plano en PC
+        ...Platform.select({
+            web: {
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+            }
+        })
+    },
+
+    cajaEncuestasCompletada: {
+        backgroundColor: '#0a0a0a', 
+        borderColor: 'rgba(40, 167, 69, 0.3)',
+        opacity: 0.8,
+    },
+
     tittleTextSurvey: {
         color: colors.white,
-        fontSize: 14,
+        fontSize: 20,             // Texto más grande para monitor
         fontWeight: 'bold',
+        letterSpacing: 0.5,
     },
+
     tittleTextSurveyDesktop: {
-        fontSize: 18,
+        fontSize: 24,             // Aún más grande en modo desktop real
+    },
+
+    textoEstado: {               // Nueva clase para los textos de "Pendiente/Completada"
+        fontSize: 15,
+        marginTop: 8,
+        letterSpacing: 0.3,
     },
 
     // --- BORDES DE DEPURACIÓN (Debug) ---
     borde: { borderWidth: 1, borderColor: 'red' },
     borde2: { borderWidth: 1, borderColor: 'green' },
     borde3: { borderWidth: 1, borderColor: 'orange' },
+
+
+
+
 });

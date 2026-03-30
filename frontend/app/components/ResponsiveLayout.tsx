@@ -3,7 +3,13 @@ import { ScrollView, View, KeyboardAvoidingView, Platform } from 'react-native';
 import { useLayout } from '../utils/useLayout';
 import styles from '../screens/stylesGlobal'; 
 
-export const ResponsiveLayout = ({ children }: { children: React.ReactNode }) => {
+// Añadimos la prop 'fullWidth'
+interface Props {
+    children: React.ReactNode;
+    fullWidth?: boolean; 
+}
+
+export const ResponsiveLayout = ({ children, fullWidth = false }: Props) => {
     const { isDesktopView } = useLayout();
 
     return (
@@ -18,7 +24,11 @@ export const ResponsiveLayout = ({ children }: { children: React.ReactNode }) =>
                         isDesktopView && { paddingVertical: 40 } 
                     ]}
                 >
-                    <View style={[styles.caja, isDesktopView && styles.cajaDesktop]}>
+                    {/* Si fullWidth es true, usamos un estilo ancho. Si no, el de siempre */}
+                    <View style={[
+                        styles.caja, 
+                        isDesktopView && (fullWidth ? { width: '90%', maxWidth: 1000 } : styles.cajaDesktop)
+                    ]}>
                         {children}
                     </View>
                 </ScrollView>

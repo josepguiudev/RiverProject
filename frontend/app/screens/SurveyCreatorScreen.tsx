@@ -106,7 +106,7 @@ const handleSaveSurvey = async () => {
 };
 
   return (
-    <ResponsiveLayout>
+    <ResponsiveLayout fullWidth={true}>
         <View style={{ width: '100%', marginBottom: 30 }}>
             <Text style={[styles.tituloHero, isDesktopView && styles.tituloHeroDesktop, { textAlign: 'left', fontSize: 32 }]}>
                 Nuevo <Text style={styles.destaqueAzul}>Proyecto</Text>

@@ -3,10 +3,12 @@ package com.equipo.backend.model;
 import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Entity
 @Table(name = "users")
@@ -31,6 +33,7 @@ public class User {
     private String urlIdStream;
     private Date creacionCuentaUsuario;
     private Date creacionCuentaSteam;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private String urlImgUsuario;
     private Byte banned;
@@ -41,13 +44,16 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
+    @ToString.Exclude
     private List<UserGame> userGamesList = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
+    @ToString.Exclude
     private List<UserSurveys> userSurveysList = new ArrayList<>();
 
     @OneToOne
+    @JsonIgnore
     private BonoTotal bonoTotal; 
 
 

@@ -58,11 +58,18 @@ export interface EncuestaRespuestaDTO {
 }
 
 export interface PreguntaCargadaDTO {
-  idPregunta: number;
-  textoPregunta: string; // Coincide con Java pDTO.setTextoPregunta
-  idOpcionSeleccionada?: number;
-  valorRespuesta?: string;
-  opcionesDisponibles: OpcionDisponibleDTO[];
+    idPregunta: number;
+    textoPregunta: string;
+    idOpcionSeleccionada?: number; // Mantenlo por compatibilidad
+    idsOpcionesSeleccionadas: number[]; // <--- AÑADE ESTO (Array de números)
+    valorRespuesta?: string;
+    esMultiple: boolean; // <--- AÑADE ESTO para saber si es Radio o Checkbox
+    opcionesDisponibles: OpcionDisponibleDTO[];
+}
+
+export interface OpcionDisponibleDTO {
+    idOpcion: number;
+    textoOpcion: string;
 }
 
 export interface OpcionDisponibleDTO {
@@ -75,4 +82,17 @@ export interface EncuestaParcialDTO {
   nombreEncuesta: string;
   completada: boolean;
   preguntas: PreguntaCargadaDTO[]; // <--- Usa el nuevo tipo, no Question
+}
+
+export interface UserSurveyRel {
+  id: number;
+  isRespondida: number; 
+  survey: Survey; 
+}
+
+export interface SurveySummaryDTO {
+  id: number;           // ID de la relación user_survey
+  idSurvey: number;     // ID de la encuesta
+  name: string;         // Título
+  isRespondida: boolean; // Estado corregido
 }

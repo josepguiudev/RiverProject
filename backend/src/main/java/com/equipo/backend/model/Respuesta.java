@@ -15,12 +15,12 @@ public class Respuesta {
     @Column(name = "id_respuesta")
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "id_option")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_option",unique = false)
     @JsonIgnore
     private Option option;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_user")
     @JsonIgnore
     private User user;
@@ -28,6 +28,7 @@ public class Respuesta {
     private String valueRespuesta;
 
     @OneToOne(mappedBy = "respuesta", cascade = CascadeType.ALL)
+    @JsonIgnore
     private OpcionRespuesta opcionRespuesta;
 
     private Byte isCompletada = 0;

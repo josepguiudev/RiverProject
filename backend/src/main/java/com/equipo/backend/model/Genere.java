@@ -3,6 +3,8 @@ package com.equipo.backend.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -22,6 +24,7 @@ public class Genere {
     private List<Game> gamesList = new ArrayList<>();
 
     @ManyToMany(mappedBy = "genereList")
+    @JsonIgnore
     private List<Survey> surveyList = new ArrayList<>();
 
 

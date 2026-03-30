@@ -69,7 +69,7 @@ export default function LoginScreen({ navigation }: any) {
     };
 
     return (
-        <ResponsiveLayout>
+        <ResponsiveLayout fullWidth={true}>
             <View style={[styles.row, { marginBottom: 20 }]}>
                 <View style={{ width: 60, height: 60, marginRight: 15 }}>
                     <Image source={require("../../../assets/images/logo.png")} style={styles.logo} />
