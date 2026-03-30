@@ -18,22 +18,22 @@ public class Genere {
     @Column(name = "id_genere")
     private Long id;    
 
-    private String nombreGenero;
+    @Column(unique = true)
+    private String description;
 
     @ManyToMany(mappedBy = "genereList")
-    private List<Game> gamesList = new ArrayList<>();
+    private List<Game> games = new ArrayList<>();
 
     @ManyToMany(mappedBy = "genereList")
     @JsonIgnore
     private List<Survey> surveyList = new ArrayList<>();
 
-
-    public Long getId() {
-        return this.id;
+    public List<Game> getGames() {
+        return this.games;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setGames(List<Game> games) {
+        this.games = games;
     }
 
     public String getNombreGenero() {
@@ -44,33 +44,12 @@ public class Genere {
         this.nombreGenero = nombreGenero;
     }
 
-
-    public List<Game> getGamesList() {
-        return this.gamesList;
+    public String getDescription() {
+        return this.description;
     }
 
-    public void setGamesList(List<Game> gamesList) {
-        this.gamesList = gamesList;
-    }
-
-    public List<Survey> getSurveyList() {
-        return this.surveyList;
-    }
-
-    public void setSurveyList(List<Survey> surveyList) {
-        this.surveyList = surveyList;
-    }
-
-
-    public Genere() {
-    }
-
-
-    public Genere(Long id, String nombreGenero, List<Game> gamesList, List<Survey> surveyList) {
-        this.id = id;
-        this.nombreGenero = nombreGenero;
-        this.gamesList = gamesList;
-        this.surveyList = surveyList;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 

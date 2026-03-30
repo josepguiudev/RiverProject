@@ -24,11 +24,11 @@ public class Game {
     private String iconUrl;
     private String url_image;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(
-        name = "game_genere",
-        joinColumns = @JoinColumn(name = "id_game"),
-        inverseJoinColumns = @JoinColumn(name = "id_genere")
+        name = "game_generes",                                  // Tabla intermedia
+        joinColumns = @JoinColumn(name = "id_game"),            // FK a la tabla Game
+        inverseJoinColumns = @JoinColumn(name = "id_genere")    // FK a la tabla Genere
     )
     private List<Genere> genereList = new ArrayList<>();
 
@@ -129,40 +129,13 @@ public class Game {
         this.categoryList = categoryList;
     }
 
-    public List<Logro> getLogrosList() {
-        return this.logrosList;
+    public List<UserSteam> getUserSteamList() {
+        return this.userSteamList;
     }
 
-    public void setLogrosList(List<Logro> logrosList) {
-        this.logrosList = logrosList;
+    public void setUserSteamList(List<UserSteam> userSteamList) {
+        this.userSteamList = userSteamList;
     }
 
-
-
-    public Game() {
-    }
-
-
-
-    public Game(Long id_game, Long appid, int id_game_steam, String title, int price, byte isEarlyAcces, String iconUrl, String url_image, List<Genere> genereList, List<Category> categoryList, List<Logro> logrosList, List<UserGame> userGames) {
-        this.id_game = id_game;
-        this.appid = appid;
-        this.id_game_steam = id_game_steam;
-        this.title = title;
-        this.price = price;
-        this.isEarlyAcces = isEarlyAcces;
-        this.iconUrl = iconUrl;
-        this.url_image = url_image;
-        this.genereList = genereList;
-        this.categoryList = categoryList;
-        this.logrosList = logrosList;
-        this.userGames = userGames;
-    }
-
-
-
-
-
-   
 
 }

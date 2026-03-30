@@ -35,6 +35,7 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
     const [loading, setLoading] = useState(true);
     const [selectedOption, setSelectedOption] = useState<Option | null>(null);
     const [inputUserId, setInputUserId] = useState("");
+    const [inputGameId, setInputGameId] = useState("");
 
     useEffect(() => {
         const cargarQueries = async () => {
@@ -117,7 +118,7 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
                 console.log(`${strings.parte1Desktop}${strings.parte2MappingIntroducido}${strings.parametroSteamApiKey}${Constants.expoConfig?.extra?.STEAM_API_KEY}${strings.conjugacion}${strings.parametroSteamId}${inputUserId}`);
                 const response = await fetch(
                 `${strings.parte1Desktop}${strings.parte2MappingIntroducido}${strings.parametroSteamApiKey}${Constants.expoConfig?.extra?.STEAM_API_KEY}${strings.conjugacion}${strings.parametroSteamId}${inputUserId}`
-                );
+                ); 
                 if (!response.ok) {
                     throw new Error("Error al llamar al backend");
                 }
@@ -187,6 +188,7 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
 
     const buscarPeticion2 = async () => {
         console.log("clic 2222222222222222222222222222222222")
+        console.log(inputUserId)
         if (!selectedOption) {
         console.log("No se ha seleccionado ninguna opción");
         return;
@@ -218,6 +220,31 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
         console.log("Descripción:", selectedOption.label);
         console.log("Descripción:", Constants.expoConfig?.extra?.STEAM_API_KEY);
         console.log("ID Usuario:", inputUserId);
+    }
+
+    const buscarPeticion3 = async () => {
+        if (!inputGameId) return;
+
+        try {
+            // Llamas a TU backend pasando el id del juego como parámetro
+            const url = `${strings.parte2Desktop}api/generes/external-details?appid=${inputGameId}`;
+            
+            const response = await fetch(url);
+            const data = await response.json();
+
+            // Steam devuelve el JSON con el ID como llave: data["22380"]
+            if (data[inputGameId]?.success) {
+                if (onResultFound) {
+                    onResultFound(data); // Pasas el JSON completo al AdminScreen
+                }
+                Alert.alert("Éxito", "Detalles del juego obtenidos desde el servidor.");
+            } else {
+                Alert.alert("Error", "No se encontró el juego.");
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert("Error", "No se pudo obtener el detalle del juego.");
+        }
     }
 
     let content; 
@@ -292,12 +319,12 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
                             )}
                         </View>
                         <View style={[styles.contenedorInterno2]}>
-                            <CustomInputText placeholder="Inserta el id del juego" isAdmin={true} onChangeText={setInputUserId}/>
+                            <CustomInputText placeholder="Inserta el id del juego" isAdmin={true} onChangeText={setInputGameId}/>
                         </View>
                     </View>
 
                     <View style={[styles.contenedorTerciario, globalStyles.alineadoPersonal]}>
-                        <CustomButton title="Buscar" onPress={buscarPeticion2} isAdmin={true}  />
+                        <CustomButton title="Buscar" onPress={buscarPeticion3} isAdmin={true}  />
                     </View>
 
                 </View>

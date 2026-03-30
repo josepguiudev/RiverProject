@@ -1,6 +1,19 @@
 package com.equipo.backend.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +29,9 @@ public class UserSteam {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_user_steam")
     private Long id;
+
+    @OneToOne(mappedBy = "userSteam")
+    private User user;
 
     private String steamid;
     private Long communityvisibilitystate;
@@ -33,6 +49,14 @@ public class UserSteam {
     private Long timecreated;
     private Long personastateflags;
 
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(
+        name = "user_steam_games",                          // Nombre de la tabla intermedia en la BD
+        joinColumns = @JoinColumn(name = "user_steam_id"),  // FK que apunta a UserSteam
+        inverseJoinColumns = @JoinColumn(name = "id_game")  // FK que apunta a Game
+    )
+    private List<Game> games = new ArrayList<>();
+
     public Long getId() {
         return this.id;
     }
@@ -40,10 +64,10 @@ public class UserSteam {
         this.id = id;
     }
 
-    public String getIdSteam() {
+    public String getSteamId() {
         return this.steamid;
     }
-    public void setIdSteam(String steamid) {
+    public void setSteamId(String steamid) {
         this.steamid = steamid;
     }
 
@@ -143,6 +167,22 @@ public class UserSteam {
     }
     public void setPersonaStateFlags(Long personastateflags) {
         this.personastateflags = personastateflags;
+    }
+
+    public User getUser() {
+        return this.user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public List<Game> getGames() {
+        return this.games;
+    }
+
+    public void setGames(List<Game> games) {
+        this.games = games;
     }
 
     @Override
