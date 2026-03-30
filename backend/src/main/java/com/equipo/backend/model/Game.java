@@ -129,13 +129,48 @@ public class Game {
         this.categoryList = categoryList;
     }
 
-    public List<UserSteam> getUserSteamList() {
-        return this.userSteamList;
+
+    public int getId_game_steam() {
+        return this.id_game_steam;
     }
 
-    public void setUserSteamList(List<UserSteam> userSteamList) {
-        this.userSteamList = userSteamList;
+    public void setId_game_steam(int id_game_steam) {
+        this.id_game_steam = id_game_steam;
     }
 
+    public List<Genere> getGenereList() {
+        return this.genereList;
+    }
+
+    public void setGenereList(List<Genere> genereList) {
+        this.genereList = genereList;
+    }
+
+    public List<Logro> getLogrosList() {
+        return this.logrosList;
+    }
+
+    public void setLogrosList(List<Logro> logrosList) {
+        this.logrosList = logrosList;
+    }
+
+
+    public Game() {
+    }
+
+    public Game(Long id_game, Long appid, int id_game_steam, String title, int price, byte isEarlyAcces, String iconUrl, String url_image, List<Genere> genereList, List<Category> categoryList, List<Logro> logrosList, List<UserGame> userGames) {
+        this.id_game = id_game;
+        this.appid = appid;
+        this.id_game_steam = id_game_steam;
+        this.title = title;
+        this.price = price;
+        this.isEarlyAcces = isEarlyAcces;
+        this.iconUrl = iconUrl;
+        this.url_image = url_image;
+        this.genereList = genereList;
+        this.categoryList = categoryList;
+        this.logrosList = logrosList;
+        this.userGames = userGames;
+    }
 
 }

@@ -28,20 +28,13 @@ public class Genere {
     @JsonIgnore
     private List<Survey> surveyList = new ArrayList<>();
 
-    public List<Game> getGames() {
-        return this.games;
+
+    public Long getId() {
+        return this.id;
     }
 
-    public void setGames(List<Game> games) {
-        this.games = games;
-    }
-
-    public String getNombreGenero() {
-        return this.nombreGenero;
-    }
-
-    public void setNombreGenero(String nombreGenero) {
-        this.nombreGenero = nombreGenero;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getDescription() {
@@ -52,6 +45,33 @@ public class Genere {
         this.description = description;
     }
 
+    public List<Game> getGames() {
+        return this.games;
+    }
+
+    public void setGames(List<Game> games) {
+        this.games = games;
+    }
+
+    public List<Survey> getSurveyList() {
+        return this.surveyList;
+    }
+
+    public void setSurveyList(List<Survey> surveyList) {
+        this.surveyList = surveyList;
+    }
+
+
+    public Genere() {
+    }
+
+
+    public Genere(Long id, String description, List<Game> games, List<Survey> surveyList) {
+        this.id = id;
+        this.description = description;
+        this.games = games;
+        this.surveyList = surveyList;
+    }
 
 
 }

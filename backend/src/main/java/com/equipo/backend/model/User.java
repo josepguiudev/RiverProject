@@ -6,15 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.ToString;
 
@@ -48,8 +39,8 @@ public class User {
     
     // RELACIÓN ONE TO ONE
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "steam_perfil_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "FK_USER_STEAM"))
-    @ToString.Exclude // Evita errores de recursión
+    @JoinColumn(name = "steam_perfil_id", referencedColumnName = "id_user_steam", foreignKey = @ForeignKey(name = "FK_USER_STEAM"))
+    @ToString.Exclude 
     private UserSteam userSteam;
 
 
