@@ -14,7 +14,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.jpa.repository.query.QueryEnhancerSelector;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean;
-import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean__Autowiring8;
+import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean__Autowiring7;
 import org.springframework.data.repository.core.support.RepositoryComposition;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -43,7 +43,7 @@ public class RespuestaRepository__BeanDefinitions {
     beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, "com.equipo.backend.repository.RespuestaRepository");
     beanDefinition.getPropertyValues().addPropertyValue("queryLookupStrategyKey", QueryLookupStrategy.Key.CREATE_IF_NOT_FOUND);
     beanDefinition.getPropertyValues().addPropertyValue("lazyInit", false);
-    beanDefinition.getPropertyValues().addPropertyValue("namedQueries", new RuntimeBeanReference("jpa.named-queries#8"));
+    beanDefinition.getPropertyValues().addPropertyValue("namedQueries", new RuntimeBeanReference("jpa.named-queries#7"));
     beanDefinition.getPropertyValues().addPropertyValue("repositoryFragments", new RuntimeBeanReference("jpa.RespuestaRepository.fragments#0"));
     beanDefinition.getPropertyValues().addPropertyValue("transactionManager", "transactionManager");
     beanDefinition.getPropertyValues().addPropertyValue("entityManager", new RuntimeBeanReference("jpaSharedEM_entityManagerFactory", EntityManager.class));
@@ -59,7 +59,7 @@ public class RespuestaRepository__BeanDefinitions {
       }
     });
     InstanceSupplier<JpaRepositoryFactoryBean> instanceSupplier = getRespuestaRepositoryInstanceSupplier();
-    instanceSupplier = instanceSupplier.andThen(JpaRepositoryFactoryBean__Autowiring8::apply);
+    instanceSupplier = instanceSupplier.andThen(JpaRepositoryFactoryBean__Autowiring7::apply);
     beanDefinition.setInstanceSupplier(instanceSupplier);
     return beanDefinition;
   }

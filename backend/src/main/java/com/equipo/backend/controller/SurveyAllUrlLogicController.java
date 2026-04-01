@@ -41,31 +41,38 @@ private final FormSurveyService formSurveyService;
         return ResponseEntity.ok(formSurveyService.obtenerTodas());
     }
 
-@PostMapping("/submit")
-    public ResponseEntity<?> submitForm(@RequestBody Survey encuesta) {
+    @PostMapping("/submit")
+    public ResponseEntity<?> submitForm(
+            @RequestBody Survey encuesta, 
+            @RequestParam Long idClient) { // <--- Capturamos el ID desde la URL (?idClient=XX)
         try {
-            // 1. Validación preventiva: El nombre es lo mínimo necesario
+            // 1. Validación preventiva
             if (encuesta.getName() == null || encuesta.getName().trim().isEmpty()) {
                 return ResponseEntity.badRequest()
                     .body(Map.of("error", "El nombre de la encuesta es obligatorio"));
             }
 
-            // 2. Llamada al servicio (que ya tiene la lógica de vinculación de hijos)
-            Survey guardada = formSurveyService.guardarEncuesta(encuesta);
+            // 2. Llamada al servicio pasando el ID real del cliente
+            // El servicio que corregimos antes buscará al Cliente en la DB y lo asignará
+            Survey guardada = formSurveyService.guardarEncuesta(encuesta, idClient);
 
-            // 3. Retornar 201 Created con el objeto ya persistido (incluyendo IDs de DB)
+            // 3. Retornar 201 Created
             return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
 
         } catch (Exception e) {
-            // IMPORTANTE: Esto te permite ver en tu consola de Java qué falló exactamente
             e.printStackTrace(); 
-            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of(
                     "error", "Error al guardar la encuesta",
                     "details", e.getMessage()
                 ));
         }
+    }
+    
+    @GetMapping("/my-surveys/{clientId}")
+    public ResponseEntity<List<Survey>> getMySurveys(@PathVariable Long clientId) {
+        List<Survey> encuestas = formSurveyService.obtenerPorCliente(clientId);
+        return ResponseEntity.ok(encuestas);
     }
 
     // --- MÉTODOS DE RESPUESTAS (SurveyResponse) ---

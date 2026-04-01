@@ -100,7 +100,7 @@ public class Survey {
         this.id = id;
     }
 
-    public int getNumQuestions() {
+    public Integer getNumQuestions() {
         return this.numQuestions;
     }
 
@@ -108,7 +108,7 @@ public class Survey {
         this.numQuestions = numQuestions;
     }
 
-    public int getNumUsers() {
+    public Integer getNumUsers() {
         return this.numUsers;
     }
 
@@ -169,11 +169,37 @@ public class Survey {
         this.genereList = genereList;
     }
 
+
+    public List<Category> getCategoryList() {
+        return this.categoryList;
+    }
+
+    public void setCategoryList(List<Category> categoryList) {
+        this.categoryList = categoryList;
+    }
+
+    public Client getClient() {
+        return this.client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public List<UserSurveys> getUserSurveysList() {
+        return this.userSurveysList;
+    }
+
+    public void setUserSurveysList(List<UserSurveys> userSurveysList) {
+        this.userSurveysList = userSurveysList;
+    }
+
+
     public Survey() {
     }
 
 
-    public Survey(Long id, int numQuestions, int numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList) {
+    public Survey(Long id, Integer numQuestions, Integer numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList) {
         this.id = id;
         this.numQuestions = numQuestions;
         this.numUsers = numUsers;

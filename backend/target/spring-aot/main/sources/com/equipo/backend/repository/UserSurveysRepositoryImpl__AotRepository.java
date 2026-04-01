@@ -6,6 +6,7 @@ import jakarta.persistence.Query;
 import java.lang.Long;
 import java.lang.String;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.aot.generate.Generated;
 import org.springframework.data.jpa.repository.aot.AotRepositoryFragmentSupport;
 import org.springframework.data.jpa.repository.query.QueryEnhancerSelector;
@@ -32,6 +33,29 @@ public class UserSurveysRepositoryImpl__AotRepository extends AotRepositoryFragm
    */
   public List<UserSurveys> findByUserId(Long userId) {
     String queryString = "SELECT us FROM UserSurveys us WHERE us.user.id = :userId";
+    Query query = this.entityManager.createQuery(queryString);
+    query.setParameter("userId", userId);
+
+    return (List<UserSurveys>) query.getResultList();
+  }
+
+  /**
+   * AOT generated implementation of {@link UserSurveysRepository#findByUserIdAndSurveyId(java.lang.Long,java.lang.Long)}.
+   */
+  public Optional<UserSurveys> findByUserIdAndSurveyId(Long userId, Long surveyId) {
+    String queryString = "SELECT us FROM UserSurveys us WHERE us.user.id = :userId AND us.survey.id = :surveyId";
+    Query query = this.entityManager.createQuery(queryString);
+    query.setParameter("userId", userId);
+    query.setParameter("surveyId", surveyId);
+
+    return Optional.ofNullable((UserSurveys) convertOne(query.getSingleResultOrNull(), false, UserSurveys.class));
+  }
+
+  /**
+   * AOT generated implementation of {@link UserSurveysRepository#findByUserIdWithSurvey(java.lang.Long)}.
+   */
+  public List<UserSurveys> findByUserIdWithSurvey(Long userId) {
+    String queryString = "SELECT us FROM UserSurveys us JOIN FETCH us.survey WHERE us.user.id = :userId";
     Query query = this.entityManager.createQuery(queryString);
     query.setParameter("userId", userId);
 

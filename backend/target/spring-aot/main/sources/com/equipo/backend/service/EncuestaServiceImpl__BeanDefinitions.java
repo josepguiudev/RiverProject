@@ -5,6 +5,7 @@ import com.equipo.backend.repository.QuestionRepository;
 import com.equipo.backend.repository.RespuestaRepository;
 import com.equipo.backend.repository.SurveyRepository;
 import com.equipo.backend.repository.UserRepository;
+import com.equipo.backend.repository.UserSurveysRepository;
 import org.springframework.aot.generate.Generated;
 import org.springframework.beans.factory.aot.BeanInstanceSupplier;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -20,8 +21,8 @@ public class EncuestaServiceImpl__BeanDefinitions {
    */
   private static BeanInstanceSupplier<EncuestaServiceImpl> getEncuestaServiceImplInstanceSupplier(
       ) {
-    return BeanInstanceSupplier.<EncuestaServiceImpl>forConstructor(SurveyRepository.class, QuestionRepository.class, OptionRepository.class, RespuestaRepository.class, UserRepository.class)
-            .withGenerator((registeredBean, args) -> new EncuestaServiceImpl(args.get(0), args.get(1), args.get(2), args.get(3), args.get(4)));
+    return BeanInstanceSupplier.<EncuestaServiceImpl>forConstructor(SurveyRepository.class, QuestionRepository.class, OptionRepository.class, RespuestaRepository.class, UserRepository.class, UserSurveysRepository.class)
+            .withGenerator((registeredBean, args) -> new EncuestaServiceImpl(args.get(0), args.get(1), args.get(2), args.get(3), args.get(4), args.get(5)));
   }
 
   /**

@@ -29,13 +29,27 @@ public class RespuestaRepositoryImpl__AotRepository extends AotRepositoryFragmen
   }
 
   /**
+   * AOT generated implementation of {@link RespuestaRepository#deleteByUserIdAndOption_Question_Survey_Id(java.lang.Long,java.lang.Long)}.
+   */
+  public void deleteByUserIdAndOption_Question_Survey_Id(Long userId, Long surveyId) {
+    String queryString = "SELECT r FROM Respuesta r LEFT JOIN r.option o LEFT JOIN o.question q LEFT JOIN q.survey s WHERE r.user.id = :userId AND s.id = :surveyId";
+    Query query = this.entityManager.createQuery(queryString);
+    query.setParameter("userId", userId);
+    query.setParameter("surveyId", surveyId);
+
+    List resultList = query.getResultList();
+    resultList.forEach(entityManager::remove);
+    return;
+  }
+
+  /**
    * AOT generated implementation of {@link RespuestaRepository#findByOption_Question_Survey_IdAndUserId(java.lang.Long,java.lang.Long)}.
    */
-  public List<Respuesta> findByOption_Question_Survey_IdAndUserId(Long idSurvey, Long idUser) {
-    String queryString = "SELECT r FROM Respuesta r LEFT JOIN r.option o LEFT JOIN o.question q LEFT JOIN q.survey s WHERE s.id = :idSurvey AND r.user.id = :idUser";
+  public List<Respuesta> findByOption_Question_Survey_IdAndUserId(Long surveyId, Long userId) {
+    String queryString = "SELECT r FROM Respuesta r LEFT JOIN r.option o LEFT JOIN o.question q LEFT JOIN q.survey s WHERE s.id = :surveyId AND r.user.id = :userId";
     Query query = this.entityManager.createQuery(queryString);
-    query.setParameter("idSurvey", idSurvey);
-    query.setParameter("idUser", idUser);
+    query.setParameter("surveyId", surveyId);
+    query.setParameter("userId", userId);
 
     return (List<Respuesta>) query.getResultList();
   }

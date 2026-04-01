@@ -78,6 +78,29 @@
       ]
     },
     {
+      "type": "com.equipo.backend.controller.AuthController2",
+      "methods": [
+        {
+          "name": "handleJsonErrors",
+          "parameterTypes": [
+            "org.springframework.http.converter.HttpMessageNotReadableException"
+          ]
+        },
+        {
+          "name": "login",
+          "parameterTypes": [
+            "com.equipo.backend.dto.LoginRequest"
+          ]
+        },
+        {
+          "name": "register",
+          "parameterTypes": [
+            "com.equipo.backend.dto.RegisterRequest"
+          ]
+        }
+      ]
+    },
+    {
       "type": "com.equipo.backend.controller.GameSteamController",
       "fields": [
         {
@@ -101,7 +124,29 @@
         {
           "name": "saveSteamLibrary",
           "parameterTypes": [
-            "java.util.List"
+            "java.util.Map"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.equipo.backend.controller.GenereController",
+      "fields": [
+        {
+          "name": "genereService"
+        }
+      ],
+      "methods": [
+        {
+          "name": "getExternalDetails",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "saveGameDetails",
+          "parameterTypes": [
+            "java.util.Map"
           ]
         }
       ]
@@ -189,6 +234,12 @@
           "name": "register",
           "parameterTypes": [
             "com.equipo.backend.dto.UserSteamRequest"
+          ]
+        },
+        {
+          "name": "registerMultiple",
+          "parameterTypes": [
+            "java.util.List"
           ]
         }
       ]
@@ -299,11 +350,19 @@
       "allDeclaredConstructors": true,
       "methods": [
         {
+          "name": "getEsMultiple",
+          "parameterTypes": [ ]
+        },
+        {
           "name": "getIdOpcionSeleccionada",
           "parameterTypes": [ ]
         },
         {
           "name": "getIdPregunta",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getIdsOpcionesSeleccionadas",
           "parameterTypes": [ ]
         },
         {
@@ -319,6 +378,12 @@
           "parameterTypes": [ ]
         },
         {
+          "name": "setEsMultiple",
+          "parameterTypes": [
+            "java.lang.Boolean"
+          ]
+        },
+        {
           "name": "setIdOpcionSeleccionada",
           "parameterTypes": [
             "java.lang.Long"
@@ -328,6 +393,12 @@
           "name": "setIdPregunta",
           "parameterTypes": [
             "java.lang.Long"
+          ]
+        },
+        {
+          "name": "setIdsOpcionesSeleccionadas",
+          "parameterTypes": [
+            "java.util.List"
           ]
         },
         {
@@ -542,6 +613,18 @@
       "allDeclaredConstructors": true,
       "methods": [
         {
+          "name": "getApellido1",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getApellido2",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getCuentaBancaria",
+          "parameterTypes": [ ]
+        },
+        {
           "name": "getEdad",
           "parameterTypes": [ ]
         },
@@ -564,6 +647,40 @@
         {
           "name": "getPassword",
           "parameterTypes": [ ]
+        },
+        {
+          "name": "getType",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getUrlIdStream",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getUrlImagen",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getUrlImgUsuario",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "setApellido1",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setApellido2",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setCuentaBancaria",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
         },
         {
           "name": "setEdad",
@@ -597,6 +714,94 @@
         },
         {
           "name": "setPassword",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setType",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setUrlIdStream",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setUrlImagen",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setUrlImgUsuario",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.equipo.backend.dto.SurveySummaryDTO",
+      "allDeclaredFields": true,
+      "allDeclaredConstructors": true,
+      "methods": [
+        {
+          "name": "getId",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getIsRespondida",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getSurvey",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "setId",
+          "parameterTypes": [
+            "java.lang.Long"
+          ]
+        },
+        {
+          "name": "setIsRespondida",
+          "parameterTypes": [
+            "int"
+          ]
+        },
+        {
+          "name": "setSurvey",
+          "parameterTypes": [
+            "com.equipo.backend.dto.SurveySummaryDTO$SurveySimpleDTO"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.equipo.backend.dto.SurveySummaryDTO$SurveySimpleDTO",
+      "allDeclaredFields": true,
+      "allDeclaredConstructors": true,
+      "methods": [
+        {
+          "name": "getId",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getName",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "setId",
+          "parameterTypes": [
+            "java.lang.Long"
+          ]
+        },
+        {
+          "name": "setName",
           "parameterTypes": [
             "java.lang.String"
           ]
@@ -867,6 +1072,11 @@
       "type": "com.equipo.backend.model.Category",
       "allDeclaredFields": true,
       "allDeclaredConstructors": true,
+      "fields": [
+        {
+          "name": "surveyList"
+        }
+      ],
       "methods": [
         {
           "name": "getDescription",
@@ -922,9 +1132,21 @@
       "type": "com.equipo.backend.model.Client",
       "allDeclaredFields": true,
       "allDeclaredConstructors": true,
+      "fields": [
+        {
+          "name": "password"
+        },
+        {
+          "name": "surveyList"
+        }
+      ],
       "methods": [
         {
           "name": "getCuentaBancaria",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getEmail",
           "parameterTypes": [ ]
         },
         {
@@ -933,6 +1155,10 @@
         },
         {
           "name": "getNombre",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getPassword",
           "parameterTypes": [ ]
         },
         {
@@ -950,6 +1176,12 @@
           ]
         },
         {
+          "name": "setEmail",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
           "name": "setId",
           "parameterTypes": [
             "java.lang.Long"
@@ -957,6 +1189,12 @@
         },
         {
           "name": "setNombre",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setPassword",
           "parameterTypes": [
             "java.lang.String"
           ]
@@ -1132,9 +1370,18 @@
       "type": "com.equipo.backend.model.Genere",
       "allDeclaredFields": true,
       "allDeclaredConstructors": true,
+      "fields": [
+        {
+          "name": "surveyList"
+        }
+      ],
       "methods": [
         {
-          "name": "getGamesList",
+          "name": "getDescription",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getGames",
           "parameterTypes": [ ]
         },
         {
@@ -1142,15 +1389,17 @@
           "parameterTypes": [ ]
         },
         {
-          "name": "getNombreGenero",
-          "parameterTypes": [ ]
-        },
-        {
           "name": "getSurveyList",
           "parameterTypes": [ ]
         },
         {
-          "name": "setGamesList",
+          "name": "setDescription",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setGames",
           "parameterTypes": [
             "java.util.List"
           ]
@@ -1159,12 +1408,6 @@
           "name": "setId",
           "parameterTypes": [
             "java.lang.Long"
-          ]
-        },
-        {
-          "name": "setNombreGenero",
-          "parameterTypes": [
-            "java.lang.String"
           ]
         },
         {
@@ -1233,6 +1476,9 @@
       "allDeclaredFields": true,
       "allDeclaredConstructors": true,
       "fields": [
+        {
+          "name": "option"
+        },
         {
           "name": "respuesta"
         }
@@ -1368,6 +1614,11 @@
       "type": "com.equipo.backend.model.PagoPanelista",
       "allDeclaredFields": true,
       "allDeclaredConstructors": true,
+      "fields": [
+        {
+          "name": "survey"
+        }
+      ],
       "methods": [
         {
           "name": "getCantidadPago",
@@ -1488,6 +1739,9 @@
       "allDeclaredConstructors": true,
       "fields": [
         {
+          "name": "config"
+        },
+        {
           "name": "option"
         },
         {
@@ -1498,6 +1752,10 @@
         }
       ],
       "methods": [
+        {
+          "name": "getConfig",
+          "parameterTypes": [ ]
+        },
         {
           "name": "getId",
           "parameterTypes": [ ]
@@ -1517,6 +1775,12 @@
         {
           "name": "getTextQuestion",
           "parameterTypes": [ ]
+        },
+        {
+          "name": "setConfig",
+          "parameterTypes": [
+            "com.equipo.backend.model.QuestionConfig"
+          ]
         },
         {
           "name": "setId",
@@ -1562,6 +1826,11 @@
       "type": "com.equipo.backend.model.QuestionConfig",
       "allDeclaredFields": true,
       "allDeclaredConstructors": true,
+      "fields": [
+        {
+          "name": "question"
+        }
+      ],
       "methods": [
         {
           "name": "getAttributes",
@@ -1572,11 +1841,19 @@
           "parameterTypes": [ ]
         },
         {
+          "name": "getIsMultiple",
+          "parameterTypes": [ ]
+        },
+        {
           "name": "getQuestion",
           "parameterTypes": [ ]
         },
         {
           "name": "getTypeName",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "isIsMultiple",
           "parameterTypes": [ ]
         },
         {
@@ -1589,6 +1866,12 @@
           "name": "setId",
           "parameterTypes": [
             "java.lang.Long"
+          ]
+        },
+        {
+          "name": "setIsMultiple",
+          "parameterTypes": [
+            "java.lang.Boolean"
           ]
         },
         {
@@ -1618,6 +1901,9 @@
       "allDeclaredFields": true,
       "allDeclaredConstructors": true,
       "fields": [
+        {
+          "name": "opcionRespuesta"
+        },
         {
           "name": "option"
         },
@@ -1728,6 +2014,9 @@
         },
         {
           "name": "numQuestions"
+        },
+        {
+          "name": "pagoPanelista"
         },
         {
           "name": "questionList"
@@ -1883,6 +2172,12 @@
       "allDeclaredConstructors": true,
       "fields": [
         {
+          "name": "bonoTotal"
+        },
+        {
+          "name": "password"
+        },
+        {
           "name": "userGamesList"
         },
         {
@@ -1956,6 +2251,10 @@
         },
         {
           "name": "getUserGamesList",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getUserSteam",
           "parameterTypes": [ ]
         },
         {
@@ -2065,6 +2364,12 @@
           ]
         },
         {
+          "name": "setUserSteam",
+          "parameterTypes": [
+            "com.equipo.backend.model.UserSteam"
+          ]
+        },
+        {
           "name": "setUserSurveysList",
           "parameterTypes": [
             "java.util.List"
@@ -2149,7 +2454,19 @@
           "parameterTypes": [ ]
         },
         {
+          "name": "getAvatarfull",
+          "parameterTypes": [ ]
+        },
+        {
           "name": "getAvatarHash",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getAvatarhash",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getAvatarmedium",
           "parameterTypes": [ ]
         },
         {
@@ -2157,7 +2474,15 @@
           "parameterTypes": [ ]
         },
         {
+          "name": "getCommunityvisibilitystate",
+          "parameterTypes": [ ]
+        },
+        {
           "name": "getCommunityVisibilityState",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getGames",
           "parameterTypes": [ ]
         },
         {
@@ -2165,11 +2490,11 @@
           "parameterTypes": [ ]
         },
         {
-          "name": "getIdSteam",
+          "name": "getLastLogOff",
           "parameterTypes": [ ]
         },
         {
-          "name": "getLastLogOff",
+          "name": "getLastlogoff",
           "parameterTypes": [ ]
         },
         {
@@ -2177,7 +2502,15 @@
           "parameterTypes": [ ]
         },
         {
+          "name": "getPersonaname",
+          "parameterTypes": [ ]
+        },
+        {
           "name": "getPersonaState",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getPersonastate",
           "parameterTypes": [ ]
         },
         {
@@ -2185,7 +2518,19 @@
           "parameterTypes": [ ]
         },
         {
+          "name": "getPersonastateflags",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getPrimaryclanid",
+          "parameterTypes": [ ]
+        },
+        {
           "name": "getPrimaryClanId",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getProfilestate",
           "parameterTypes": [ ]
         },
         {
@@ -2193,7 +2538,15 @@
           "parameterTypes": [ ]
         },
         {
+          "name": "getProfileurl",
+          "parameterTypes": [ ]
+        },
+        {
           "name": "getProfileUrl",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getRealname",
           "parameterTypes": [ ]
         },
         {
@@ -2205,7 +2558,19 @@
           "parameterTypes": [ ]
         },
         {
+          "name": "getSteamId",
+          "parameterTypes": [ ]
+        },
+        {
           "name": "getTimeCreated",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getTimecreated",
+          "parameterTypes": [ ]
+        },
+        {
+          "name": "getUser",
           "parameterTypes": [ ]
         },
         {
@@ -2221,7 +2586,25 @@
           ]
         },
         {
+          "name": "setAvatarfull",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setAvatarhash",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
           "name": "setAvatarHash",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setAvatarmedium",
           "parameterTypes": [
             "java.lang.String"
           ]
@@ -2239,15 +2622,27 @@
           ]
         },
         {
+          "name": "setCommunityvisibilitystate",
+          "parameterTypes": [
+            "java.lang.Long"
+          ]
+        },
+        {
+          "name": "setGames",
+          "parameterTypes": [
+            "java.util.List"
+          ]
+        },
+        {
           "name": "setId",
           "parameterTypes": [
             "java.lang.Long"
           ]
         },
         {
-          "name": "setIdSteam",
+          "name": "setLastlogoff",
           "parameterTypes": [
-            "java.lang.String"
+            "java.lang.Long"
           ]
         },
         {
@@ -2263,7 +2658,19 @@
           ]
         },
         {
+          "name": "setPersonaname",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
           "name": "setPersonaState",
+          "parameterTypes": [
+            "java.lang.Long"
+          ]
+        },
+        {
+          "name": "setPersonastate",
           "parameterTypes": [
             "java.lang.Long"
           ]
@@ -2275,7 +2682,19 @@
           ]
         },
         {
+          "name": "setPersonastateflags",
+          "parameterTypes": [
+            "java.lang.Long"
+          ]
+        },
+        {
           "name": "setPrimaryClanId",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setPrimaryclanid",
           "parameterTypes": [
             "java.lang.String"
           ]
@@ -2287,13 +2706,37 @@
           ]
         },
         {
+          "name": "setProfilestate",
+          "parameterTypes": [
+            "java.lang.Long"
+          ]
+        },
+        {
           "name": "setProfileUrl",
           "parameterTypes": [
             "java.lang.String"
           ]
         },
         {
+          "name": "setProfileurl",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setRealname",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
           "name": "setRealName",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setSteamId",
           "parameterTypes": [
             "java.lang.String"
           ]
@@ -2308,6 +2751,18 @@
           "name": "setTimeCreated",
           "parameterTypes": [
             "java.lang.Long"
+          ]
+        },
+        {
+          "name": "setTimecreated",
+          "parameterTypes": [
+            "java.lang.Long"
+          ]
+        },
+        {
+          "name": "setUser",
+          "parameterTypes": [
+            "com.equipo.backend.model.User"
           ]
         }
       ]
@@ -2439,11 +2894,29 @@
       "allDeclaredConstructors": true
     },
     {
+      "type": "com.equipo.backend.repository.ClientRepository",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.equipo.backend.repository.ClientRepositoryImpl__AotRepository",
+      "allDeclaredConstructors": true,
+      "allPublicMethods": true
+    },
+    {
       "type": "com.equipo.backend.repository.GameSteamRepository",
       "allPublicMethods": true
     },
     {
       "type": "com.equipo.backend.repository.GameSteamRepositoryImpl__AotRepository",
+      "allDeclaredConstructors": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.equipo.backend.repository.GenereRepository",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.equipo.backend.repository.GenereRepositoryImpl__AotRepository",
       "allDeclaredConstructors": true,
       "allPublicMethods": true
     },
@@ -2535,6 +3008,9 @@
       "type": "com.equipo.backend.service.AuthService"
     },
     {
+      "type": "com.equipo.backend.service.AuthService2"
+    },
+    {
       "type": "com.equipo.backend.service.EncuestaService",
       "allDeclaredMethods": true
     },
@@ -2570,11 +3046,41 @@
     },
     {
       "type": "com.equipo.backend.service.GameSteamService",
+      "allPublicMethods": true,
+      "allDeclaredMethods": true,
       "fields": [
         {
           "name": "gameRepository"
+        },
+        {
+          "name": "userSteamRepository"
         }
       ]
+    },
+    {
+      "type": "com.equipo.backend.service.GameSteamService$$SpringCGLIB$$0",
+      "allDeclaredFields": true,
+      "allDeclaredConstructors": true,
+      "allDeclaredMethods": true
+    },
+    {
+      "type": "com.equipo.backend.service.GenereService",
+      "allPublicMethods": true,
+      "allDeclaredMethods": true,
+      "fields": [
+        {
+          "name": "gameRepository"
+        },
+        {
+          "name": "genereRepository"
+        }
+      ]
+    },
+    {
+      "type": "com.equipo.backend.service.GenereService$$SpringCGLIB$$0",
+      "allDeclaredFields": true,
+      "allDeclaredConstructors": true,
+      "allDeclaredMethods": true
     },
     {
       "type": "com.equipo.backend.service.UserSteamQueriesService",
@@ -2585,7 +3091,15 @@
       ]
     },
     {
-      "type": "com.equipo.backend.service.UserSteamService"
+      "type": "com.equipo.backend.service.UserSteamService",
+      "allPublicMethods": true,
+      "allDeclaredMethods": true
+    },
+    {
+      "type": "com.equipo.backend.service.UserSteamService$$SpringCGLIB$$0",
+      "allDeclaredFields": true,
+      "allDeclaredConstructors": true,
+      "allDeclaredMethods": true
     },
     {
       "type": "com.fasterxml.jackson.core.Versioned"
@@ -3213,6 +3727,9 @@
     },
     {
       "type": "java.io.Reader"
+    },
+    {
+      "type": "java.lang.Boolean"
     },
     {
       "type": "java.lang.Byte"
@@ -12086,6 +12603,39 @@
     {
       "type": {
         "proxy": [
+          "com.equipo.backend.repository.ClientRepository",
+          "org.springframework.aop.SpringProxy",
+          "org.springframework.aop.framework.Advised",
+          "org.springframework.core.DecoratingProxy"
+        ]
+      }
+    },
+    {
+      "type": {
+        "proxy": [
+          "com.equipo.backend.repository.ClientRepository",
+          "org.springframework.data.repository.Repository",
+          "org.springframework.transaction.interceptor.TransactionalProxy",
+          "org.springframework.aop.framework.Advised",
+          "org.springframework.core.DecoratingProxy"
+        ]
+      }
+    },
+    {
+      "type": {
+        "proxy": [
+          "com.equipo.backend.repository.ClientRepository",
+          "org.springframework.data.repository.Repository",
+          "org.springframework.transaction.interceptor.TransactionalProxy",
+          "org.springframework.aop.framework.Advised",
+          "org.springframework.core.DecoratingProxy",
+          "java.io.Serializable"
+        ]
+      }
+    },
+    {
+      "type": {
+        "proxy": [
           "com.equipo.backend.repository.GameSteamRepository",
           "org.springframework.aop.SpringProxy",
           "org.springframework.aop.framework.Advised",
@@ -12108,6 +12658,39 @@
       "type": {
         "proxy": [
           "com.equipo.backend.repository.GameSteamRepository",
+          "org.springframework.data.repository.Repository",
+          "org.springframework.transaction.interceptor.TransactionalProxy",
+          "org.springframework.aop.framework.Advised",
+          "org.springframework.core.DecoratingProxy",
+          "java.io.Serializable"
+        ]
+      }
+    },
+    {
+      "type": {
+        "proxy": [
+          "com.equipo.backend.repository.GenereRepository",
+          "org.springframework.aop.SpringProxy",
+          "org.springframework.aop.framework.Advised",
+          "org.springframework.core.DecoratingProxy"
+        ]
+      }
+    },
+    {
+      "type": {
+        "proxy": [
+          "com.equipo.backend.repository.GenereRepository",
+          "org.springframework.data.repository.Repository",
+          "org.springframework.transaction.interceptor.TransactionalProxy",
+          "org.springframework.aop.framework.Advised",
+          "org.springframework.core.DecoratingProxy"
+        ]
+      }
+    },
+    {
+      "type": {
+        "proxy": [
+          "com.equipo.backend.repository.GenereRepository",
           "org.springframework.data.repository.Repository",
           "org.springframework.transaction.interceptor.TransactionalProxy",
           "org.springframework.aop.framework.Advised",

@@ -19,7 +19,7 @@ public class RepositoryComposition__BeanDefinitions {
   @Generated
   public static class RepositoryFragments {
     /**
-     * Get the bean instance supplier for 'jpa.OptionRepository.fragments#0'.
+     * Get the bean instance supplier for 'jpa.QuestionRepository.fragments#0'.
      */
     private static BeanInstanceSupplier<RepositoryFragmentsFactoryBean> getFragmentsInstanceSupplier(
         ) {
@@ -40,7 +40,7 @@ public class RepositoryComposition__BeanDefinitions {
     }
 
     /**
-     * Get the bean instance supplier for 'jpa.UserSteamQueriesRepository.fragments#0'.
+     * Get the bean instance supplier for 'jpa.GameSteamRepository.fragments#0'.
      */
     private static BeanInstanceSupplier<RepositoryFragmentsFactoryBean> getFragmentsInstanceSupplier1(
         ) {
@@ -61,7 +61,7 @@ public class RepositoryComposition__BeanDefinitions {
     }
 
     /**
-     * Get the bean instance supplier for 'jpa.UserSurveysRepository.fragments#0'.
+     * Get the bean instance supplier for 'jpa.UserSteamQueriesRepository.fragments#0'.
      */
     private static BeanInstanceSupplier<RepositoryFragmentsFactoryBean> getFragmentsInstanceSupplier2(
         ) {
@@ -82,7 +82,7 @@ public class RepositoryComposition__BeanDefinitions {
     }
 
     /**
-     * Get the bean instance supplier for 'jpa.GameSteamRepository.fragments#0'.
+     * Get the bean instance supplier for 'jpa.UserSurveysRepository.fragments#0'.
      */
     private static BeanInstanceSupplier<RepositoryFragmentsFactoryBean> getFragmentsInstanceSupplier3(
         ) {
@@ -103,7 +103,7 @@ public class RepositoryComposition__BeanDefinitions {
     }
 
     /**
-     * Get the bean instance supplier for 'jpa.QuestionRepository.fragments#0'.
+     * Get the bean instance supplier for 'jpa.UserSteamRepository.fragments#0'.
      */
     private static BeanInstanceSupplier<RepositoryFragmentsFactoryBean> getFragmentsInstanceSupplier4(
         ) {
@@ -124,7 +124,7 @@ public class RepositoryComposition__BeanDefinitions {
     }
 
     /**
-     * Get the bean instance supplier for 'jpa.OptionRespuestaRepository.fragments#0'.
+     * Get the bean instance supplier for 'jpa.ClientRepository.fragments#0'.
      */
     private static BeanInstanceSupplier<RepositoryFragmentsFactoryBean> getFragmentsInstanceSupplier5(
         ) {
@@ -145,7 +145,7 @@ public class RepositoryComposition__BeanDefinitions {
     }
 
     /**
-     * Get the bean instance supplier for 'jpa.SurveyRepository.fragments#0'.
+     * Get the bean instance supplier for 'jpa.GenereRepository.fragments#0'.
      */
     private static BeanInstanceSupplier<RepositoryFragmentsFactoryBean> getFragmentsInstanceSupplier6(
         ) {
@@ -166,7 +166,7 @@ public class RepositoryComposition__BeanDefinitions {
     }
 
     /**
-     * Get the bean instance supplier for 'jpa.UserSteamRepository.fragments#0'.
+     * Get the bean instance supplier for 'jpa.RespuestaRepository.fragments#0'.
      */
     private static BeanInstanceSupplier<RepositoryFragmentsFactoryBean> getFragmentsInstanceSupplier7(
         ) {
@@ -187,7 +187,7 @@ public class RepositoryComposition__BeanDefinitions {
     }
 
     /**
-     * Get the bean instance supplier for 'jpa.RespuestaRepository.fragments#0'.
+     * Get the bean instance supplier for 'jpa.OptionRespuestaRepository.fragments#0'.
      */
     private static BeanInstanceSupplier<RepositoryFragmentsFactoryBean> getFragmentsInstanceSupplier8(
         ) {
@@ -225,6 +225,48 @@ public class RepositoryComposition__BeanDefinitions {
       beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
       beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, Collections.emptyList());
       beanDefinition.setInstanceSupplier(getFragmentsInstanceSupplier9());
+      return beanDefinition;
+    }
+
+    /**
+     * Get the bean instance supplier for 'jpa.OptionRepository.fragments#0'.
+     */
+    private static BeanInstanceSupplier<RepositoryFragmentsFactoryBean> getFragmentsInstanceSupplier10(
+        ) {
+      return BeanInstanceSupplier.<RepositoryFragmentsFactoryBean>forConstructor(List.class)
+              .withGenerator((registeredBean, args) -> new RepositoryFragmentsFactoryBean(args.get(0)));
+    }
+
+    /**
+     * Get the bean definition for 'fragments#0'.
+     */
+    public static BeanDefinition getFragmentsBeanDefinition10() {
+      RootBeanDefinition beanDefinition = new RootBeanDefinition(RepositoryFragmentsFactoryBean.class);
+      beanDefinition.setTargetType(ResolvableType.forClass(RepositoryFragmentsFactoryBean.class));
+      beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+      beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, Collections.emptyList());
+      beanDefinition.setInstanceSupplier(getFragmentsInstanceSupplier10());
+      return beanDefinition;
+    }
+
+    /**
+     * Get the bean instance supplier for 'jpa.SurveyRepository.fragments#0'.
+     */
+    private static BeanInstanceSupplier<RepositoryFragmentsFactoryBean> getFragmentsInstanceSupplier11(
+        ) {
+      return BeanInstanceSupplier.<RepositoryFragmentsFactoryBean>forConstructor(List.class)
+              .withGenerator((registeredBean, args) -> new RepositoryFragmentsFactoryBean(args.get(0)));
+    }
+
+    /**
+     * Get the bean definition for 'fragments#0'.
+     */
+    public static BeanDefinition getFragmentsBeanDefinition11() {
+      RootBeanDefinition beanDefinition = new RootBeanDefinition(RepositoryFragmentsFactoryBean.class);
+      beanDefinition.setTargetType(ResolvableType.forClass(RepositoryFragmentsFactoryBean.class));
+      beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+      beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, Collections.emptyList());
+      beanDefinition.setInstanceSupplier(getFragmentsInstanceSupplier11());
       return beanDefinition;
     }
   }

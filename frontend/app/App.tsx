@@ -11,6 +11,8 @@ import SurveyCreatorScreen from "./screens/SurveyCreatorScreen";
 import TakeSurveyScreen from "./screens/TakeSurveyScreen";
 import SurveyListScreen from "./screens/SurveyListScreen";
 import HomeScreen from "./screens/Home/HomeScreen";
+import ClientDashboard from "./screens/ClientDashboard";
+
 
 
 import LoginScreen from "./screens/Auth/LoginScreen";
@@ -54,10 +56,8 @@ function App() {
 					<Stack.Screen name="Register" component={RegisterScreen} />
 					<Stack.Screen name="Home" component={HomeScreen} />
 					<Stack.Screen name="Admin" component={AdminScreen} />
-					<Stack.Screen
-						name="SuerveyCreator"
-						component={SurveyCreatorScreen}
-					/>
+					<Stack.Screen name="ClientDashboard" component={ClientDashboard} />
+					<Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen}/>
 					<Stack.Screen name="SurveyList" component={SurveyListScreen} />
 					<Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
 				</Stack.Navigator>
