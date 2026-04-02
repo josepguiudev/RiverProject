@@ -23,21 +23,33 @@ public class FormSurveyService {
      * @Transactional asegura que si algo falla con una pregunta, 
      * no se guarde nada (mantiene la DB limpia).
      */
-    @Transactional
+   @Transactional
     public Survey guardarEncuesta(Survey encuesta) {
-       
+        // 1. Manejo de fechas y valores por defecto (Evita errores de tipos primitivos)
         if (encuesta.getCreationDate() == null) {
             encuesta.setCreationDate(LocalDateTime.now());
         }
+        
+        // Aseguramos que los contadores no sean null si los cambiaste a Integer
+        if (encuesta.getNumQuestions() == 0 && encuesta.getQuestionList() != null) {
+            encuesta.setNumQuestions(encuesta.getQuestionList().size());
+        }
 
-        // 2. Vincular preguntas con la encuesta (Relación bidireccional)
-        if (encuesta.getQuestionList() != null && !encuesta.getQuestionList().isEmpty()) {
+        // 2. Vincular Preguntas Y Opciones (Relación bidireccional completa)
+        if (encuesta.getQuestionList() != null) {
             for (Question pregunta : encuesta.getQuestionList()) {
-                pregunta.setSurvey(encuesta); // Esto llena la columna id_survey en SQL
+                pregunta.setSurvey(encuesta); // Vincula Pregunta -> Encuesta
+                
+                // IMPORTANTE: También hay que vincular las opciones de cada pregunta
+                if (pregunta.getOption() != null) {
+                    for (com.equipo.backend.model.Option opcion : pregunta.getOption()) {
+                        opcion.setQuestion(pregunta); // Vincula Opción -> Pregunta
+                    }
+                }
             }
         }
 
-        // 3. Guardar todo en cascada
+        // 3. Guardar todo en cascada (JPA se encarga de los inserts en orden)
         return surveyRepository.save(encuesta);
     }
     

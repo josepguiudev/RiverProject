@@ -4,31 +4,61 @@ import { Question } from '../../types/formsSurvey.types';
 
 interface Props {
   question: Question;
-  onUpdateQuestion: (text: string) => void;
   onAddOption: () => void;
   onUpdateOption: (text: string, oIndex: number) => void;
 }
 
-export const SingleChoiceQuestion = ({ question, onUpdateQuestion, onAddOption, onUpdateOption }: Props) => (
-  <View style={{ marginTop: 10 }}>
+export const MultipleChoiceQuestion = ({ question, onAddOption, onUpdateOption }: Props) => (
+  <View style={styles.container}>
     {question.options?.map((opt, i) => (
-      <TextInput
-        key={i}
-        style={styles.optionInput}
-        placeholder={`Opción ${i + 1}`}
-        value={opt.text_opcion}
-        onChangeText={(text) => onUpdateOption(text, i)}
-      />
+      <View key={i} style={styles.optionRow}>
+        <View style={styles.checkboxSquare} /> 
+        <TextInput
+          style={styles.optionInput}
+          placeholder={`Opción múltiple ${i + 1}...`}
+          placeholderTextColor="#555"
+          value={opt.textOpcion}
+          onChangeText={(text) => onUpdateOption(text, i)}
+        />
+      </View>
     ))}
-    <TouchableOpacity onPress={onAddOption} style={styles.addOption}>
-      <Text style={{ color: '#2196F3' }}>+ Añadir opción</Text>
+    
+    <TouchableOpacity style={styles.addOptionBtn} onPress={onAddOption}>
+      <Text style={styles.addOptionText}>+ Añadir opción múltiple</Text>
     </TouchableOpacity>
   </View>
 );
 
-export const MultipleChoiceQuestion = SingleChoiceQuestion; // Misma lógica que single choice
-
 const styles = StyleSheet.create({
-  optionInput: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 8, marginBottom: 5 },
-  addOption: { marginTop: 5 }
+  container: { marginTop: 10 },
+  optionRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginBottom: 10 
+  },
+  checkboxSquare: {
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+    borderWidth: 2,
+    borderColor: '#5b55c0',
+    marginRight: 10
+  },
+  optionInput: { 
+    flex: 1,
+    borderBottomWidth: 1, 
+    borderColor: '#444', 
+    color: '#FFFFFF', 
+    fontSize: 16,
+    paddingVertical: 5
+  },
+  addOptionBtn: {
+    paddingVertical: 10,
+    marginTop: 5,
+  },
+  addOptionText: {
+    color: '#5b55c0',
+    fontWeight: '600',
+    fontSize: 14
+  }
 });

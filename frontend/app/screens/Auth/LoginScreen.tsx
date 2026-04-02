@@ -1,125 +1,112 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Image, Animated } from "react-native";
+import { View, Text, TouchableOpacity, Image, Animated, Platform, Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import TypeWriter from "react-native-typewriter";
+
 import CustomButton from "@/app/components/CustomButton/CustomButton";
 import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import styles from "./styles";
-import TypeWriter from "react-native-typewriter";
-import globalStyles from "@/assets/globalStyles/globalStyles";
 import strings from "../../../assets/supportFiles/strings.json";
+import styles from "../stylesGlobal";
+import { useLayout } from "@/app/utils/useLayout";
+import { ResponsiveLayout } from "../../components/ResponsiveLayout";
+import { useAuth } from "../Auth/AuthContext"; // Asegúrate de que la ruta sea correcta
 
 export default function LoginScreen({ navigation }: any) {
-	const cursorOpacity = React.useRef(new Animated.Value(1)).current;
+    const { isDesktopView } = useLayout();
+    const { login } = useAuth();
+    const cursorOpacity = React.useRef(new Animated.Value(1)).current;
 
-	// Animación del cursor parpadeante
-	useEffect(() => {
-		Animated.loop(
-			Animated.sequence([
-				Animated.timing(cursorOpacity, {
-					toValue: 0,
-					duration: 500,
-					useNativeDriver: true,
-				}),
-				Animated.timing(cursorOpacity, {
-					toValue: 1,
-					duration: 500,
-					useNativeDriver: true,
-				}),
-			]),
-		).start();
-	});
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	// .0.2 movil
-	const handleLogin = async () => {
-		const res = await fetch("http://localhost:8080/api/auth/login", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ email, password }),
-		});
+    useEffect(() => {
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(cursorOpacity, { toValue: 0, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
+                Animated.timing(cursorOpacity, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
+            ]),
+        ).start();
+    }, []);
 
-		if (!res.ok) {
-			alert(strings.badLogin);
-			return;
-		}
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert("Error", "Por favor, rellena todos los campos");
+            return;
+        }
 
-		const data = await res.json();
-		await AsyncStorage.setItem("token", data.token);
-		navigation.replace("Home");
-	};
+        setIsSubmitting(true);
+        const baseUrl = Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080';
+        
+        try {
+            const response = await fetch(`${baseUrl}/api/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    email: email.trim(), 
+                    password: password 
+                }),
+            });
 
-	return (
-		<View style={[styles.maxWidth, styles.maxHeigth, globalStyles.padre]}>
-			<View style={[styles.contendorLogoTitulos]}>
-				<View style={[styles.containerFoto]}>
-					<Image
-						source={require("../../../assets/images/logo.png")}
-						style={styles.logo}
-					/>
-				</View>
-				<View
-					style={[styles.contenedorWritter, styles.alineadoPersonal]}
-				>
-					<Text style={styles.tituloHero}>
-						{strings.nameMayus}{" "}
-						<TypeWriter typing={1} style={styles.destaqueAzul}>
-							{strings.appMayus}
-						</TypeWriter>
-					</Text>
-				</View>
-			</View>
-			<View style={[styles.contenedorWritter]}>
-				<View style={styles.textWrapper}>
-					<TypeWriter
-						typing={1}
-						maxDelay={50}
-						style={styles.mainText}
-					>
-						{strings.tittle1}{" "}
-						<Text style={styles.blueText}>{strings.tittle2}</Text>
-					</TypeWriter>
+            const data = await response.json();
 
-					{/* El cursor va fuera para que siempre esté al final */}
-					<Animated.View
-						style={[styles.cursor, { opacity: cursorOpacity }]}
-					/>
-				</View>
-			</View>
-			{/* Parte del recuadro del login */}
-			<View
-				style={[
-					styles.alineadoPersonal,
-					styles.maxHeigth,
-					styles.noJustify,
-				]}
-			>
-				<View style={[styles.caja, styles.margen2]}>
-					<CustomInputText
-						label={strings.direccionEmail}
-						placeholder={strings.placeEmail}
-						onChangeText={setEmail}
-					/>
-					<CustomInputText
-						label={strings.contrasenia}
-						placeholder={strings.placePassword}
-						secureTextEntry
-						onChangeText={setPassword}
-					/>
-					<CustomButton title={strings.login} onPress={handleLogin} />
-					<View style={[styles.maxWidth, styles.margen1]}>
-						<TouchableOpacity
-							onPress={() => navigation.navigate("Register")}
-						>
-							<Text
-								style={[styles.texto, styles.alineadoPersonal]}
-							>
-								{strings.noCuenta}
-							</Text>
-						</TouchableOpacity>
-					</View>
-				</View>
-			</View>
-		</View>
-	);
+            if (!response.ok) {
+                // Si el backend lanza error, mostramos el mensaje que viene del ExceptionHandler
+                Alert.alert("Error de acceso", data.error || "Credenciales incorrectas");
+                return;
+            }
+
+            // Guardamos en el contexto (esto activa el ID de usuario en toda la app)
+            await login(data.user, data.token);
+            navigation.replace("SurveyList");
+
+        } catch (error) {
+            console.error("Login Error:", error);
+            Alert.alert("Error de conexión", "No se pudo contactar con el servidor");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <ResponsiveLayout fullWidth={true}>
+            <View style={[styles.row, { marginBottom: 20 }]}>
+                <View style={{ width: 60, height: 60, marginRight: 15 }}>
+                    <Image source={require("../../../assets/images/logo.png")} style={styles.logo} />
+                </View>
+                <Text style={[styles.tituloHero, isDesktopView && styles.tituloHeroDesktop]}>
+                    {strings.nameMayus}{" "}
+                    <TypeWriter typing={1} style={styles.destaqueAzul}>{strings.appMayus}</TypeWriter>
+                </Text>
+            </View>
+
+            <View style={{ width: '100%' }}>
+                <CustomInputText
+                    label={strings.direccionEmail}
+                    placeholder={strings.placeEmail}
+                    onChangeText={setEmail}
+                    value={email}
+                />
+                <CustomInputText
+                    label={strings.contrasenia}
+                    placeholder={strings.placePassword}
+                    secureTextEntry
+                    onChangeText={setPassword}
+                    value={password}
+                />
+                
+                <View style={{ marginTop: 20 }}>
+                    <CustomButton 
+                        title={isSubmitting ? "Cargando..." : strings.login} 
+                        onPress={handleLogin} 
+                        disabled={isSubmitting}
+                    />
+                </View>
+
+                <TouchableOpacity onPress={() => navigation.navigate("Register")} style={{ marginTop: 20 }}>
+                    <Text style={[styles.texto, { textAlign: 'center', color: '#64B5F6' }]}>{strings.noCuenta}</Text>
+                </TouchableOpacity>
+            </View>
+        </ResponsiveLayout>
+    );
 }

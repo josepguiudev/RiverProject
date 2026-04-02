@@ -4,7 +4,7 @@ public class RegisterRequest {
     private String email;
     private String password;
     private String name;
-    private Byte edad;
+    private Integer edad;
     private Byte genero;
     private String localizacion;
 
@@ -12,7 +12,7 @@ public class RegisterRequest {
     public String getEmail() { return this.email; }
     public String getPassword() { return this.password; }
     public String getName() { return this.name; }
-    public Byte getEdad() { return this.edad; }
+    public Integer getEdad() { return this.edad; }
     public Byte getGenero() { return this.genero; }
     public String getLocalizacion() { return this.localizacion; }
 
@@ -21,7 +21,7 @@ public class RegisterRequest {
     public void setPassword(String password) { this.password = password; }
     public void setName(String name) { this.name = name; }
     
-    public void setEdad(Byte edad) { this.edad = edad; }
+    public void setEdad(Integer edad) { this.edad = edad; }
     public void setGenero(Byte genero) { this.genero = genero; }
     public void setLocalizacion(String localizacion) { this.localizacion = localizacion; }
 }

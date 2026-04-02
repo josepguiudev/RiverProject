@@ -10,6 +10,7 @@ import lombok.Data;
 public class UserGame {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_user_game")
     private Long id;
 
 

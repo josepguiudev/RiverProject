@@ -3,7 +3,10 @@ package com.equipo.backend.controller;
 
 import com.equipo.backend.dto.EncuestaParcialDTO;
 import com.equipo.backend.dto.EncuestaRespuestaDTO;
+import com.equipo.backend.dto.SurveySummaryDTO;
 import com.equipo.backend.model.Survey;
+import com.equipo.backend.model.UserSurveys;
+import com.equipo.backend.repository.UserSurveysRepository;
 import com.equipo.backend.model.Respuesta;
 import com.equipo.backend.service.EncuestaService;
 import com.equipo.backend.service.FormSurveyService;
@@ -19,14 +22,18 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class SurveyAllUrlLogicController {
 
-    private final FormSurveyService formSurveyService;
+private final FormSurveyService formSurveyService;
     private final EncuestaService encuestaService;
+    private final UserSurveysRepository userSurveysRepository;
 
-    public SurveyAllUrlLogicController(FormSurveyService formSurveyService, EncuestaService encuestaService) {
+    // CORRECCIÓN: Cambiamos UserSurveys por UserSurveysRepository en los parámetros
+    public SurveyAllUrlLogicController(FormSurveyService formSurveyService, 
+                                       EncuestaService encuestaService, 
+                                       UserSurveysRepository userSurveysRepository) {
         this.formSurveyService = formSurveyService;
         this.encuestaService = encuestaService;
+        this.userSurveysRepository = userSurveysRepository; 
     }
-
     // --- MÉTODOS DE PLANTILLAS (FormSurvey) ---
 
     @GetMapping("/all")
@@ -34,12 +41,30 @@ public class SurveyAllUrlLogicController {
         return ResponseEntity.ok(formSurveyService.obtenerTodas());
     }
 
-    @PostMapping("/submit")
+@PostMapping("/submit")
     public ResponseEntity<?> submitForm(@RequestBody Survey encuesta) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(formSurveyService.guardarEncuesta(encuesta));
+            // 1. Validación preventiva: El nombre es lo mínimo necesario
+            if (encuesta.getName() == null || encuesta.getName().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "El nombre de la encuesta es obligatorio"));
+            }
+
+            // 2. Llamada al servicio (que ya tiene la lógica de vinculación de hijos)
+            Survey guardada = formSurveyService.guardarEncuesta(encuesta);
+
+            // 3. Retornar 201 Created con el objeto ya persistido (incluyendo IDs de DB)
+            return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
+
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+            // IMPORTANTE: Esto te permite ver en tu consola de Java qué falló exactamente
+            e.printStackTrace(); 
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "error", "Error al guardar la encuesta",
+                    "details", e.getMessage()
+                ));
         }
     }
 
@@ -73,7 +98,7 @@ public class SurveyAllUrlLogicController {
     @GetMapping("/{idEncuesta}/responses")
     public ResponseEntity<EncuestaParcialDTO> cargarRespuestas(
             @PathVariable Long idEncuesta, 
-            @RequestParam Long idUser) {
+            @RequestParam(name = "idUser") Long idUser) { // Especificamos el nombre explícitamente
         return ResponseEntity.ok(encuestaService.cargarRespuestas(idEncuesta, idUser));
     }
 
@@ -81,4 +106,11 @@ public class SurveyAllUrlLogicController {
     public ResponseEntity<String> test() {
         return ResponseEntity.ok("Backend de River App funcionando correctamente!");
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<SurveySummaryDTO>> getSurveysByUser(@PathVariable Long userId) {
+        // El Service ahora usa findByUserIdWithSurvey internamente
+        return ResponseEntity.ok(encuestaService.obtenerResumenEncuestasPorUsuario(userId));
+    }
 }
+

@@ -11,6 +11,7 @@ import lombok.Data;
 public class UserSteamQueries {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_user_steam_queries")
     private Long id;
     private String query;
     private int type;
