@@ -5,14 +5,17 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.equipo.backend.dto.GameSteamRequest;
+import com.equipo.backend.dto.SteamApiResponse;
 import com.equipo.backend.model.Game;
 import com.equipo.backend.model.UserSteam;
 import com.equipo.backend.repository.GameSteamRepository;
 import com.equipo.backend.repository.UserSteamRepository;
 
 import jakarta.transaction.Transactional;
+import reactor.core.publisher.Mono;
 
 @Service
 public class GameSteamService {
@@ -24,32 +27,32 @@ public class GameSteamService {
 
     @Transactional
     public void saveLibraryAndLinkToUser(String steamid, List<GameSteamRequest> requests) {
-        
+
         UserSteam user = userSteamRepository.findBySteamid(steamid)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + steamid));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + steamid));
 
         registerMultipleGames(requests);
 
         List<Long> appids = requests.stream().map(GameSteamRequest::getAppid).collect(Collectors.toList());
         List<Game> gamesInDb = gameRepository.findAllByAppidIn(appids);
 
-        //Actualizamos la lista del usuario (JPA escribe en 'user_steam_games')
+        // Actualizamos la lista del usuario (JPA escribe en 'user_steam_games')
         user.setGames(gamesInDb);
-        userSteamRepository.save(user); 
+        userSteamRepository.save(user);
     }
 
     public Game registerGame(GameSteamRequest request) {
         // Verificar si el juego ya existe para no duplicar
         return gameRepository.findByAppid(request.getAppid())
-            .orElseGet(() -> {
-                Game newGame = new Game();
-                newGame.setAppid(request.getAppid());
-                newGame.setTitle(request.getName());
-                newGame.setIconUrl(request.getImg_icon_url());                                                                         
-                // Por defecto ponemos 0                                                                                                                        
-                newGame.setIsEarlyAcces((byte) 0); 
-                return gameRepository.save(newGame);
-            });
+                .orElseGet(() -> {
+                    Game newGame = new Game();
+                    newGame.setAppid(request.getAppid());
+                    newGame.setTitle(request.getName());
+                    newGame.setIconUrl(request.getImg_icon_url());
+                    // Por defecto ponemos 0
+                    newGame.setIsEarlyAcces((byte) 0);
+                    return gameRepository.save(newGame);
+                });
     }
 
     public List<Game> registerMultipleGames(List<GameSteamRequest> requests) {
@@ -88,7 +91,7 @@ public class GameSteamService {
 
     public Game update(Long id, Game updatedGame) {
         Game game = gameRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Juego no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Juego no encontrado"));
 
         game.setTitle(updatedGame.getTitle());
         game.setIconUrl(updatedGame.getIconUrl());
@@ -98,5 +101,81 @@ public class GameSteamService {
 
     public void delete(Long id) {
         gameRepository.deleteById(id);
+    }
+
+    // Llama a Steam, mapea la respuesta y llama a saveLibraryAndLinkToUser.
+    public Mono<String> syncLibraryFromSteam(String steamid, String apiKey) { // Cuando un endpoint en Controller
+                                                                              // devuelve
+                                                                              // MONO se activa solo esperando el
+                                                                              // resultado para mostrarse como respuesta
+                                                                              // HTTP.
+        WebClient webClient = WebClient.create("https://api.steampowered.com");
+
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/IPlayerService/GetOwnedGames/v1/")
+                        .queryParam("key", apiKey)
+                        .queryParam("steamid", steamid)
+                        .queryParam("include_appinfo", 1)
+                        .queryParam("include_played_free_games", 1)
+                        .queryParam("format", "json")
+                        .build())
+                .retrieve()
+                .bodyToMono(SteamApiResponse.class)
+                .map(steamResponse -> {
+                    // Mando datos de Steam a nuestros DTOs internos
+                    List<GameSteamRequest> requests = steamResponse.getResponse()
+                            .getGames()
+                            .stream()
+                            .map(game -> {
+                                GameSteamRequest dto = new GameSteamRequest();
+                                dto.setAppid(game.getAppid());
+                                dto.setName(game.getName());
+                                dto.setImg_icon_url(game.getImg_icon_url());
+                                return dto;
+                            })
+                            .collect(Collectors.toList());
+
+                    // Llamo método de Pepe
+                    saveLibraryAndLinkToUser(steamid, requests);
+
+                    return "Sincronizados " + requests.size() + " juegos para steamid: " + steamid;
+                })
+                .onErrorResume(e -> Mono.just(
+                        "Error al conectar con Steam: " + e.getMessage()));
+    }
+
+    /**
+     * Devuelve los 3 juegos vinculados al usuario desde la BD propia.
+     * No llama a Steam — trabaja con lo que ya está guardado.
+     */
+    public List<Game> getTop3GamesBySteamId(String steamid) {
+        UserSteam user = userSteamRepository.findBySteamid(steamid)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + steamid));
+
+        return user.getGames()
+                .stream()
+                .limit(3)
+                .collect(Collectors.toList());
+    }
+
+    // Eliminación y resincronización de la librería del usuario (top 3 juegos) en 2
+    // pasos para
+    // evitar usar .block (Se ve que en ciertos casos causa deadlock (bloqueo mutuo
+    // entre diferentes transacciones activas))
+
+    // Paso 1: Solo limpia la relación (transaccional)
+    @Transactional
+    public void clearUserLibrary(String steamid) {
+        UserSteam user = userSteamRepository.findBySteamid(steamid)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + steamid));
+        user.getGames().clear();
+        userSteamRepository.save(user);
+    }
+
+    // Paso 2:Unión del paso 1 (limpieza) con sincronización (paso 2)
+    public Mono<String> clearAndResyncLibrary(String steamid, String apiKey) {
+        clearUserLibrary(steamid); // transacción
+        return syncLibraryFromSteam(steamid, apiKey); // sincronización
     }
 }
