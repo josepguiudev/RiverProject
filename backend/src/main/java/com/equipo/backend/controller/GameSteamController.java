@@ -25,7 +25,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/games")
-@CrossOrigin(origins = "*") 
+@CrossOrigin(origins = "*")
 public class GameSteamController {
     @Autowired
     private GameSteamService gameService; // Inyecta el Service, no el Repository
@@ -37,7 +37,7 @@ public class GameSteamController {
 
     @GetMapping("/external-extract")
     public Mono<ResponseEntity<Object>> extractFromSteam(@RequestParam String steamid, @RequestParam String apiKey) {
-    WebClient webClient = WebClient.create("https://api.steampowered.com");
+        WebClient webClient = WebClient.create("https://api.steampowered.com");
 
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -52,52 +52,80 @@ public class GameSteamController {
                 .bodyToMono(Object.class)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(
-                    ResponseEntity.badRequest().body("Error al conectar con Steam: " + e.getMessage())
-                ));
+                        ResponseEntity.badRequest().body("Error al conectar con Steam: " + e.getMessage())));
     }
 
     @SuppressWarnings("unchecked")
     @PostMapping("/save-steam-library")
     public ResponseEntity<?> saveSteamLibrary(@RequestBody java.util.Map<String, Object> payload) {
         try {
-            //Extraemos el steamid del mapa 
+            // Extraemos el steamid del mapa
             String steamid = (String) payload.get("steamid");
 
-            //Extraemos la lista de juegos del mapa raíz (haciendo el cast)
+            // Extraemos la lista de juegos del mapa raíz (haciendo el cast)
             List<java.util.Map<String, Object>> steamGames = (List<java.util.Map<String, Object>>) payload.get("games");
 
             if (steamGames == null) {
                 throw new Exception("La lista de juegos 'games' no puede estar vacía");
             }
-            //Convertimos el JSON crudo a tus DTOs
+            // Convertimos el JSON crudo a tus DTOs
             List<GameSteamRequest> requests = steamGames.stream()
-                .map(game -> {
-                    GameSteamRequest dto = new GameSteamRequest();
-                    dto.setAppid(Long.valueOf(game.get("appid").toString()));
-                    dto.setName((String) game.get("name"));
-                    dto.setImg_icon_url((String) game.get("img_icon_url"));
-                    return dto;
-                })
-                .collect(Collectors.toList());
+                    .map(game -> {
+                        GameSteamRequest dto = new GameSteamRequest();
+                        dto.setAppid(Long.valueOf(game.get("appid").toString()));
+                        dto.setName((String) game.get("name"));
+                        dto.setImg_icon_url((String) game.get("img_icon_url"));
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
 
-            //Llamamos al nuevo método del servicio que vincula al usuario
+            // Llamamos al nuevo método del servicio que vincula al usuario
             gameService.saveLibraryAndLinkToUser(steamid, requests);
-            
+
             return ResponseEntity.ok("Biblioteca sincronizada correctamente para el usuario " + steamid);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Error al procesar la biblioteca: " + e.getMessage());
         }
     }
 
-        @PutMapping("/{id}")
-        public Game update(@PathVariable Long id, @RequestBody Game game) {
-            return gameService.update(id, game);
-        }
+    @PutMapping("/{id}")
+    public Game update(@PathVariable Long id, @RequestBody Game game) {
+        return gameService.update(id, game);
+    }
 
-        @DeleteMapping("/{id}")
-        public void delete(@PathVariable Long id) {
-            gameService.delete(id);
-        }
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        gameService.delete(id);
+    }
+
+    @GetMapping("/sync-library") // Esto sirve para que React entienda que si llama a esta "puerta" recibirá la
+                                 // sincronización de la biblioteca de un usuario.
+    // Y a continuación se define lo que la "puerta" devolverá.
+    // Mono es lo mismo que promise de javascript.
+    // ResponseEntiti<> es como una "caja" que envuelve la respuesta.
+    // <String> es el tipo de dato que envuelve la "caja".
+    // manualSync es básicamente el nombre de la "puerta", puede llamarse como te
+    // cante el gallo.
+    // Los @RequestParam son los parámetros diciendole a Java de dónde sacarlos.
+    // .map() envuelve la respuesta de los parámetros dentro de la "caja"
+    // (ResponseEntity).
+    public Mono<ResponseEntity<String>> manualSync(@RequestParam String steamid, @RequestParam String apiKey) {
+        return gameService.syncLibraryFromSteam(steamid, apiKey).map(ResponseEntity::ok);
+    }
+
+    @GetMapping("/top3/{steamid}") // A diferencia del de arriba esta "puerta" lleva {}. A Java se le menciona que
+                                   // dicha parte de la URL no será literal (nomás dinámica) y por lo tanto, se
+                                   // debe usar @PathVariable.
+    // Aquí no usé Mono porque no estoy llamando a la API sino a nuestra DB.
+    /*
+     * @PathVariable es lo mismo que @RequestParam pero para partes dinámicas de la
+     * URL, también al ponerlo le damos a entender a Java que tiene que mirar el
+     * steamid para extraer justamente lo marcado.
+     */
+    public ResponseEntity<List<Game>> getTop3(@PathVariable String steamid) {
+        return ResponseEntity.ok(gameService.getTop3GamesBySteamId(steamid));
+    }
+
 }
