@@ -17,6 +17,7 @@ import SurveyCreatorScreen from "./screens/SurveyCreatorScreen";
 import TakeSurveyScreen from "./screens/TakeSurveyScreen";
 import SurveyListScreen from "./screens/SurveyListScreen";
 import HomeScreen from "./screens/Home/HomeScreen";
+import ProfileScreen from "./screens/Profile/ProfileScreen";
 
 
 import LoginScreen from "./screens/Auth/LoginScreen";
@@ -67,6 +68,7 @@ function App() {
 						/>
 						<Stack.Screen name="SurveyList" component={SurveyListScreen} />
 						<Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
+						<Stack.Screen name="Profile" component={ProfileScreen}></Stack.Screen>
 					</Stack.Navigator>
 				</NavigationContainer>
 			} </AuthProvider>
