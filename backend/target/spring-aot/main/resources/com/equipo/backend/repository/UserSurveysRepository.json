@@ -11,6 +11,20 @@
       }
     },
     {
+      "name": "findByUserIdAndSurveyId",
+      "signature": "public abstract java.util.Optional<com.equipo.backend.model.UserSurveys> com.equipo.backend.repository.UserSurveysRepository.findByUserIdAndSurveyId(java.lang.Long,java.lang.Long)",
+      "query": {
+        "query": "SELECT us FROM UserSurveys us WHERE us.user.id = :userId AND us.survey.id = :surveyId"
+      }
+    },
+    {
+      "name": "findByUserIdWithSurvey",
+      "signature": "public abstract java.util.List<com.equipo.backend.model.UserSurveys> com.equipo.backend.repository.UserSurveysRepository.findByUserIdWithSurvey(java.lang.Long)",
+      "query": {
+        "query": "SELECT us FROM UserSurveys us JOIN FETCH us.survey WHERE us.user.id = :userId"
+      }
+    },
+    {
       "name": "deleteAllByIdInBatch",
       "signature": "org.springframework.data.jpa.repository.support.SimpleJpaRepository",
       "fragment": {

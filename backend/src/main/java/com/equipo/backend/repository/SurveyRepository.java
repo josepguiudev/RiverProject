@@ -14,5 +14,7 @@ public interface SurveyRepository extends JpaRepository<Survey, Long> {
     // Busca encuestas que un usuario tiene asignadas y no ha respondido
     @Query("SELECT s FROM Survey s")
     List<Survey> findAllSurveys();
+    
+    List<Survey> findByClientId(Long clientId);
 
 }

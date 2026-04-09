@@ -14,6 +14,7 @@ public class GameSteamService__Autowiring {
    */
   public static GameSteamService apply(RegisteredBean registeredBean, GameSteamService instance) {
     AutowiredFieldValueResolver.forRequiredField("gameRepository").resolveAndSet(registeredBean, instance);
+    AutowiredFieldValueResolver.forRequiredField("userSteamRepository").resolveAndSet(registeredBean, instance);
     return instance;
   }
 }

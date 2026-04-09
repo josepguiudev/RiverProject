@@ -4,10 +4,17 @@
   "type": "IMPERATIVE",
   "methods": [
     {
+      "name": "deleteByUserIdAndOption_Question_Survey_Id",
+      "signature": "public abstract void com.equipo.backend.repository.RespuestaRepository.deleteByUserIdAndOption_Question_Survey_Id(java.lang.Long,java.lang.Long)",
+      "query": {
+        "query": "SELECT r FROM Respuesta r LEFT JOIN r.option o LEFT JOIN o.question q LEFT JOIN q.survey s WHERE r.user.id = :userId AND s.id = :surveyId"
+      }
+    },
+    {
       "name": "findByOption_Question_Survey_IdAndUserId",
       "signature": "public abstract java.util.List<com.equipo.backend.model.Respuesta> com.equipo.backend.repository.RespuestaRepository.findByOption_Question_Survey_IdAndUserId(java.lang.Long,java.lang.Long)",
       "query": {
-        "query": "SELECT r FROM Respuesta r LEFT JOIN r.option o LEFT JOIN o.question q LEFT JOIN q.survey s WHERE s.id = :idSurvey AND r.user.id = :idUser"
+        "query": "SELECT r FROM Respuesta r LEFT JOIN r.option o LEFT JOIN o.question q LEFT JOIN q.survey s WHERE s.id = :surveyId AND r.user.id = :userId"
       }
     },
     {
