@@ -108,7 +108,7 @@ export default function AdminScreen({ navigation }: any) {
         <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre]}>
             {/* 1. HEADER / BOTÓN MENU */}
             <View style={[globalStyles.cajaMenu, globalStyles.borde, globalStyles.alineadoPersonalVertical]}>
-                <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ padding: isDesktopView ? 30 : 20 }}>
+                <TouchableOpacity onPress={() => setMenuVisible(true)}>
                     <Text style={{ color: 'white' }}>{strings.menu}</Text>
                 </TouchableOpacity>
             </View>

@@ -7,8 +7,12 @@ import { ResponsiveLayout } from '../components/ResponsiveLayout';
 import { useAuth } from "../screens/Auth/AuthContext";
 import { useLayout } from '@/app/utils/useLayout';
 import stylesGlobal from './stylesGlobal';
+import globalStyles from "@/assets/globalStyles/globalStyles";
+import strings from "../../../frontend/assets/supportFiles/strings.json";
+import MenuPrincipal from '@/app/components/Menu/CustomMenu';
 
 const SurveyListScreen = ({ navigation }: any) => {
+    const [menuVisible, setMenuVisible] = useState(false);
     const { isDesktopView } = useLayout();
     const { user, loading: authLoading } = useAuth();
     
@@ -46,10 +50,16 @@ const SurveyListScreen = ({ navigation }: any) => {
     );
 
     return (
-        <ResponsiveLayout fullWidth={true}>
-            <View style={{ flex: 1, width: '100%', alignItems: 'center', backgroundColor: '#000' }}>
+            <View style={[ globalStyles.padre, globalStyles.tamanoCajaPadre ]}>
+
+                {/* 1. HEADER / BOTÓN MENU */}
+            <View style={[globalStyles.cajaMenu, globalStyles.borde, globalStyles.alineadoPersonalVertical]}>
+                <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ padding: isDesktopView ? 30 : 20 }}>
+                    <Text style={{ color: 'white' }}>{strings.menu}</Text>
+                </TouchableOpacity>
+            </View>
                 
-                <View style={{ width: '100%', maxWidth: 1000, alignItems: 'center', marginTop: 50 }}>
+                <View style={{ width: '100%', maxWidth: 1000, alignItems: 'center', justifyContent: 'center', marginTop: 50 }}>
                     <Text style={[
                         stylesGlobal.tituloHero, 
                         isDesktopView && stylesGlobal.tituloHeroDesktop,
@@ -154,8 +164,16 @@ const SurveyListScreen = ({ navigation }: any) => {
                         }
                     />
                 </View>
+
+
+                {/* 3. MENU AL FINAL (FUERA DE TODO) */}
+                <MenuPrincipal
+                    visible={menuVisible}
+                    onClose={() => setMenuVisible(false)}
+                />
+
+
             </View>
-        </ResponsiveLayout>
     );
 };
 
