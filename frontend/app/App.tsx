@@ -16,7 +16,6 @@ import ClientDashboard from "./screens/ClientDashboard";
 
 
 import LoginScreen from "./screens/Auth/LoginScreen";
-import Index from "./screens/index";
 
 import AdminScreen from "./screens/Admin/AdminScreen";
 
@@ -43,11 +42,7 @@ function App() {
 					initialRouteName="Login"
 					screenOptions={{ headerShown: false }}
 				>
-					<Stack.Screen
-						name="Index"
-						component={Index}
-						options={{ headerShown: false }}
-					/>
+					
 					<Stack.Screen
 						name="Login"
 						component={LoginScreen}

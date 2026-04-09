@@ -1,3 +1,4 @@
+import { isWeb } from './../utils/device';
 import { StyleSheet, Platform } from 'react-native';
 
 export const colors = {
@@ -63,23 +64,29 @@ export default StyleSheet.create({
 
     // --- CABECERA Y LOGO ---
     contendorLogoTitulos: {
-        flexDirection: 'row',
-        height: 120,
+        alignItems: 'center',
+        flexDirection: isWeb ? 'row' : 'column',
+        justifyContent: 'center',
+        // 'auto' permite que en móvil la caja crezca según el tamaño del logo y el texto
+        height: isWeb ? 120 : 'auto', 
         padding: 10,
+        marginBottom: isWeb ? 0 : 20,
     },
     containerFoto: {
         width: 80,
-        height: '100%',
+        height: 80, // Evita porcentajes aquí si el padre es 'auto'
     },
     logo: {
-        width: '100%',
-        height: '100%',
+        // En móvil le damos un tamaño fijo de 100x100. En web puede mantener su lógica.
+        width: isWeb ? 100 : 100, 
+        height: isWeb ? '100%' : 100, 
         resizeMode: 'contain',
+        marginBottom: isWeb ? 0 : 10,
     },
 
     // --- TEXTOS HERO Y TYPEWRITER ---
     tituloHero: {
-        fontSize: 60,
+        fontSize: isWeb ? 60 : 36,
         fontWeight: '900',
         color: colors.primary,
         textAlign: 'center',
@@ -118,6 +125,7 @@ export default StyleSheet.create({
         alignItems: 'center',
     },
     contenedorWritter: {
+        
         alignItems: 'center',
         padding: 20,
     },
