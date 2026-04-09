@@ -21,7 +21,7 @@ public class BackendApplication {
 		SpringApplication.run(BackendApplication.class, args);
 	}
 	/* 
-		@Bean
+		@Bean jajaja salu2
 		CommandLineRunner initSteamQueries(UserSteamQueriesRepository repository) {
 			return args -> {
 				/*System.out.println("--- Insertando datos de user_steam_queries ---");
