@@ -1,6 +1,7 @@
 package com.equipo.backend.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.*;
@@ -14,20 +15,21 @@ public class UserSurveys {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "id_user_survey")
     private Long id;
 
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_user")
-    @JsonIgnoreProperties("userSurveysList")
+    @JsonIgnore
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "id_survey")
-    @JsonIgnoreProperties("userSurveysList")
+    @JsonIgnoreProperties({"userSurveysList", "handler", "hibernateLazyInitializer"}) 
     private Survey survey;
 
-    private byte isRespondida;
+    private Byte isRespondida;
 
 
 

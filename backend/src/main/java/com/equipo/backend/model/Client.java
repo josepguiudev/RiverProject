@@ -2,8 +2,12 @@ package com.equipo.backend.model;
 
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 
 @Entity
@@ -13,6 +17,7 @@ public class Client {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_client")
     private Long id;
 
     private String nombre;
@@ -20,6 +25,8 @@ public class Client {
     private String urlImagen;
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
+    @JsonBackReference
+    @ToString.Exclude
     @nullable private List<Survey> surveyList = new ArrayList<>();
 
 

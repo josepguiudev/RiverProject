@@ -21,7 +21,9 @@ public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
     // 2. Buscar una respuesta específica (Navegación automática por nombre)
     Optional<Respuesta> findByUserIdAndOption_Question_Id(Long userId, Long questionId);
     
-    // 3. Método de respaldo por si el Service usa el nombre largo
-    List<Respuesta> findByOption_Question_Survey_IdAndUserId(Long idSurvey, Long idUser);
+    
+    void deleteByUserIdAndOption_Question_Survey_Id(Long userId, Long surveyId);
+    
+    List<Respuesta> findByOption_Question_Survey_IdAndUserId(Long surveyId, Long userId);
 }
 

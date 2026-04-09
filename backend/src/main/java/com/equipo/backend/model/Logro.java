@@ -9,6 +9,7 @@ import lombok.Data;
 public class Logro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_logro")
     private Long id;
     
     private String textLogro;
