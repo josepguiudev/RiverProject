@@ -19,7 +19,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import jakarta.persistence.FetchType;
+
 @Entity
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.PropertyGenerator.class,
+    property = "id"
+)
 @Table(name = "user_steam")
 @Data
 @NoArgsConstructor
@@ -32,6 +42,7 @@ public class UserSteam {
     private Long id;
 
     @OneToOne(mappedBy = "userSteam")
+    //@JsonBackReference  //lado “hijo” que será ignorado durante la serialización
     private User user;
 
     private String steamid;
@@ -50,12 +61,14 @@ public class UserSteam {
     private Long timecreated;
     private Long personastateflags;
 
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_steam_games",                          // Nombre de la tabla intermedia en la BD
         joinColumns = @JoinColumn(name = "user_steam_id"),  // FK que apunta a UserSteam
         inverseJoinColumns = @JoinColumn(name = "id_game")  // FK que apunta a Game
     )
+
+    //@JsonManagedReference //lado “padre” que quieres serializar normalmente.
     private List<Game> games = new ArrayList<>();
 
 

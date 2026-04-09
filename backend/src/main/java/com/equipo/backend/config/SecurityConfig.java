@@ -24,7 +24,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/auth2/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth2/**").permitAll()
                 .requestMatchers("/api/users/**").permitAll()
                 .requestMatchers("/api/queries/**").permitAll()
                 .requestMatchers("/api/surveys/**").permitAll() 
@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/games/**").permitAll()
                 .requestMatchers("/api/generes/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/usersteam/**").permitAll()
+                .requestMatchers("/api/usersteam/**").permitAll()
                 .anyRequest().authenticated()
             );
 
