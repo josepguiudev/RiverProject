@@ -8,7 +8,6 @@ DELETE FROM [dbo].[question_config];
 DELETE FROM [dbo].[options];
 DELETE FROM [dbo].[question];
 DELETE FROM [dbo].[survey];
-DELETE FROM [dbo].[users];
 DELETE FROM [dbo].[client];
 GO
 
