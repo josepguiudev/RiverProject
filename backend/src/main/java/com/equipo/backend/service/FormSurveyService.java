@@ -2,7 +2,10 @@ package com.equipo.backend.service;
 
 import com.equipo.backend.model.Survey;
 import com.equipo.backend.model.Question;
+import com.equipo.backend.model.Option;
+import com.equipo.backend.model.Client;
 import com.equipo.backend.repository.SurveyRepository;
+import com.equipo.backend.repository.ClientRepository; // <--- Importante
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,50 +16,67 @@ import java.util.List;
 public class FormSurveyService {
     
     private final SurveyRepository surveyRepository;
+    private final ClientRepository clientRepository; // <--- Añadido
 
-    public FormSurveyService(SurveyRepository surveyRepository) {
+    public FormSurveyService(SurveyRepository surveyRepository, ClientRepository clientRepository) {
         this.surveyRepository = surveyRepository;
+        this.clientRepository = clientRepository;
     }
 
     /**
-     * Guarda la plantilla de la encuesta junto con sus preguntas.
-     * @Transactional asegura que si algo falla con una pregunta, 
-     * no se guarde nada (mantiene la DB limpia).
+     * Guarda la plantilla de la encuesta vinculándola a un Cliente específico.
      */
     @Transactional
-    public Survey guardarEncuesta(Survey encuesta) {
-       
+    public Survey guardarEncuesta(Survey encuesta, Long idClient) {
+        // 1. Vincular al Cliente (Dueño de la encuesta)
+        Client client = clientRepository.findById(idClient)
+                .orElseThrow(() -> new RuntimeException("Error: Cliente no encontrado con ID: " + idClient));
+        
+        encuesta.setClient(client);
+
+        // 2. Manejo de fechas y valores por defecto
         if (encuesta.getCreationDate() == null) {
             encuesta.setCreationDate(LocalDateTime.now());
         }
+        
+        // Sincronizar contador de preguntas si viene en 0
+        if ((encuesta.getNumQuestions() == null || encuesta.getNumQuestions() == 0) 
+            && encuesta.getQuestionList() != null) {
+            encuesta.setNumQuestions(encuesta.getQuestionList().size());
+        }
 
-        // 2. Vincular preguntas con la encuesta (Relación bidireccional)
-        if (encuesta.getQuestionList() != null && !encuesta.getQuestionList().isEmpty()) {
+        // 3. Vincular Preguntas Y Opciones (Relación bidireccional)
+        if (encuesta.getQuestionList() != null) {
             for (Question pregunta : encuesta.getQuestionList()) {
-                pregunta.setSurvey(encuesta); // Esto llena la columna id_survey en SQL
+                pregunta.setSurvey(encuesta); 
+                
+                if (pregunta.getOption() != null) {
+                    for (Option opcion : pregunta.getOption()) {
+                        opcion.setQuestion(pregunta); 
+                    }
+                }
             }
         }
 
-        // 3. Guardar todo en cascada
+        // 4. Guardar todo en cascada
         return surveyRepository.save(encuesta);
     }
     
+    // --- Métodos de consulta ---
+
     public List<Survey> obtenerTodas() {
         return surveyRepository.findAll();
+    }
+
+    /**
+     * Recupera solo las encuestas que pertenecen a una empresa específica.
+     */
+    public List<Survey> obtenerPorCliente(Long idClient) {
+        return surveyRepository.findByClientId(idClient);
     }
 
     public Survey obtenerPorId(Long id) {
         return surveyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Encuesta no encontrada con ID: " + id));
-    }
-
-    public void guardarRespuesta(Survey survey) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'guardarRespuesta'");
-    }
-
-    public List<Survey> findAll() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findAll'");
     }
 }

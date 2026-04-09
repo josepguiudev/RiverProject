@@ -8,12 +8,15 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 
 import lombok.Data;
+import lombok.ToString;
 
 
 @Entity
@@ -23,12 +26,13 @@ import lombok.Data;
 public class Survey {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_survey")
     private Long id;
     
     @JsonProperty("numQuestions")
-    private int numQuestions;
+    private Integer numQuestions;
     
-    private int numUsers;
+    private Integer numUsers;
     
     @JsonProperty("name")
     private String name;
@@ -44,10 +48,12 @@ public class Survey {
     
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
     @JsonManagedReference
+    @ToString.Exclude
     private List<Question> questionList = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL) //solo para pruebas borrar cascade luego
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_pago_panelista", nullable = true)
+    @JsonManagedReference
     private PagoPanelista pagoPanelista;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -56,6 +62,7 @@ public class Survey {
         joinColumns = @JoinColumn(name = "id_survey"),
         inverseJoinColumns = @JoinColumn(name = "id_genere")
     )
+    @ToString.Exclude
     private List<Genere> genereList = new ArrayList<>();
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -64,14 +71,17 @@ public class Survey {
         joinColumns = @JoinColumn(name = "id_survey"),
         inverseJoinColumns = @JoinColumn(name = "id_category")
     )
+    @ToString.Exclude
     private List<Category> categoryList = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_client")
-    @JsonBackReference
+    @JsonIgnoreProperties("surveys")
     private Client client;
 
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @ToString.Exclude
     private List<UserSurveys> userSurveysList = new ArrayList<>();
 
 
@@ -80,10 +90,6 @@ public class Survey {
         throw new UnsupportedOperationException("Unimplemented method 'setCreationDate'");
     }
 
-    public void setCreationDate(Timestamp timestamp) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setCreationDate'");
-    }
 
 
     public Long getId() {
@@ -94,7 +100,7 @@ public class Survey {
         this.id = id;
     }
 
-    public int getNumQuestions() {
+    public Integer getNumQuestions() {
         return this.numQuestions;
     }
 
@@ -102,7 +108,7 @@ public class Survey {
         this.numQuestions = numQuestions;
     }
 
-    public int getNumUsers() {
+    public Integer getNumUsers() {
         return this.numUsers;
     }
 
@@ -163,11 +169,37 @@ public class Survey {
         this.genereList = genereList;
     }
 
+
+    public List<Category> getCategoryList() {
+        return this.categoryList;
+    }
+
+    public void setCategoryList(List<Category> categoryList) {
+        this.categoryList = categoryList;
+    }
+
+    public Client getClient() {
+        return this.client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public List<UserSurveys> getUserSurveysList() {
+        return this.userSurveysList;
+    }
+
+    public void setUserSurveysList(List<UserSurveys> userSurveysList) {
+        this.userSurveysList = userSurveysList;
+    }
+
+
     public Survey() {
     }
 
 
-    public Survey(Long id, int numQuestions, int numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList) {
+    public Survey(Long id, Integer numQuestions, Integer numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList) {
         this.id = id;
         this.numQuestions = numQuestions;
         this.numUsers = numUsers;

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
@@ -18,7 +19,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import jakarta.persistence.FetchType;
+
 @Entity
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.PropertyGenerator.class,
+    property = "id"
+)
 @Table(name = "user_steam")
 @Data
 @NoArgsConstructor
@@ -27,9 +38,11 @@ import lombok.NoArgsConstructor;
 public class UserSteam {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_user_steam")
     private Long id;
 
     @OneToOne(mappedBy = "userSteam")
+    //@JsonBackReference  //lado “hijo” que será ignorado durante la serialización
     private User user;
 
     private String steamid;
@@ -48,20 +61,139 @@ public class UserSteam {
     private Long timecreated;
     private Long personastateflags;
 
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_steam_games",                          // Nombre de la tabla intermedia en la BD
         joinColumns = @JoinColumn(name = "user_steam_id"),  // FK que apunta a UserSteam
         inverseJoinColumns = @JoinColumn(name = "id_game")  // FK que apunta a Game
     )
+
+    //@JsonManagedReference //lado “padre” que quieres serializar normalmente.
     private List<Game> games = new ArrayList<>();
+
+
 
     public Long getId() {
         return this.id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
+
+
+    public String getSteamid() {
+        return this.steamid;
+    }
+
+    public void setSteamid(String steamid) {
+        this.steamid = steamid;
+    }
+
+    public Long getCommunityvisibilitystate() {
+        return this.communityvisibilitystate;
+    }
+
+    public void setCommunityvisibilitystate(Long communityvisibilitystate) {
+        this.communityvisibilitystate = communityvisibilitystate;
+    }
+
+    public Long getProfilestate() {
+        return this.profilestate;
+    }
+
+    public void setProfilestate(Long profilestate) {
+        this.profilestate = profilestate;
+    }
+
+    public String getPersonaname() {
+        return this.personaname;
+    }
+
+    public void setPersonaname(String personaname) {
+        this.personaname = personaname;
+    }
+
+    public String getProfileurl() {
+        return this.profileurl;
+    }
+
+    public void setProfileurl(String profileurl) {
+        this.profileurl = profileurl;
+    }
+
+    public String getAvatarmedium() {
+        return this.avatarmedium;
+    }
+
+    public void setAvatarmedium(String avatarmedium) {
+        this.avatarmedium = avatarmedium;
+    }
+
+    public String getAvatarfull() {
+        return this.avatarfull;
+    }
+
+    public void setAvatarfull(String avatarfull) {
+        this.avatarfull = avatarfull;
+    }
+
+    public String getAvatarhash() {
+        return this.avatarhash;
+    }
+
+    public void setAvatarhash(String avatarhash) {
+        this.avatarhash = avatarhash;
+    }
+
+    public Long getLastlogoff() {
+        return this.lastlogoff;
+    }
+
+    public void setLastlogoff(Long lastlogoff) {
+        this.lastlogoff = lastlogoff;
+    }
+
+    public Long getPersonastate() {
+        return this.personastate;
+    }
+
+    public void setPersonastate(Long personastate) {
+        this.personastate = personastate;
+    }
+
+    public String getRealname() {
+        return this.realname;
+    }
+
+    public void setRealname(String realname) {
+        this.realname = realname;
+    }
+
+    public String getPrimaryclanid() {
+        return this.primaryclanid;
+    }
+
+    public void setPrimaryclanid(String primaryclanid) {
+        this.primaryclanid = primaryclanid;
+    }
+
+    public Long getTimecreated() {
+        return this.timecreated;
+    }
+
+    public void setTimecreated(Long timecreated) {
+        this.timecreated = timecreated;
+    }
+
+    public Long getPersonastateflags() {
+        return this.personastateflags;
+    }
+
+    public void setPersonastateflags(Long personastateflags) {
+        this.personastateflags = personastateflags;
+    }
+
 
     public String getSteamId() {
         return this.steamid;

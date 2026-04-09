@@ -33,6 +33,7 @@ public class AuthService {
         System.out.println("Genero: " + request.getGenero());
         System.out.println("Localizacion: " + request.getLocalizacion());
         System.out.println("-------------------------------------");
+
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("El usuario ya existe");
         }
@@ -49,7 +50,12 @@ public class AuthService {
         userRepository.save(user);
         
         String token = jwtService.generateToken(user);
-        return new LoginResponse(token);
+
+        // Limpiamos el password antes de enviarlo al frontend por seguridad
+        user.setPassword(null); 
+        
+        // MODIFICACIÓN: Retornamos token y el objeto usuario
+        return new LoginResponse(token, user);
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -61,6 +67,11 @@ public class AuthService {
         }
 
         String token = jwtService.generateToken(user);
-        return new LoginResponse(token);
+
+        // Limpiamos el password antes de enviarlo al frontend por seguridad
+        user.setPassword(null);
+
+        // MODIFICACIÓN: Retornamos token y el objeto usuario
+        return new LoginResponse(token, user);
     }
 }

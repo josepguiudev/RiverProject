@@ -1,125 +1,141 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Image, Animated } from "react-native";
+import { View, Text, TouchableOpacity, Image, Animated, Platform, Alert, ScrollView } from "react-native";
+import TypeWriter from "react-native-typewriter";
+import { useNavigation } from "@react-navigation/native";
+
 import CustomButton from "@/app/components/CustomButton/CustomButton";
 import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import styles from "./styles";
-import TypeWriter from "react-native-typewriter";
-import globalStyles from "@/assets/globalStyles/globalStyles";
 import strings from "../../../assets/supportFiles/strings.json";
+import styles from "../stylesGlobal"; // Tu archivo de estilos unificado
+import { useLayout } from "@/app/utils/useLayout";
+import { useAuth } from "../Auth/AuthContext"; 
 
-export default function LoginScreen({ navigation }: any) {
-	const cursorOpacity = React.useRef(new Animated.Value(1)).current;
+export default function LoginScreen() {
+    const navigation = useNavigation<any>();
+    const { isDesktopView } = useLayout();
+    const { login } = useAuth();
+    const cursorOpacity = React.useRef(new Animated.Value(1)).current;
 
-	// Animación del cursor parpadeante
-	useEffect(() => {
-		Animated.loop(
-			Animated.sequence([
-				Animated.timing(cursorOpacity, {
-					toValue: 0,
-					duration: 500,
-					useNativeDriver: true,
-				}),
-				Animated.timing(cursorOpacity, {
-					toValue: 1,
-					duration: 500,
-					useNativeDriver: true,
-				}),
-			]),
-		).start();
-	});
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	// .0.2 movil
-	const handleLogin = async () => {
-		const res = await fetch("http://localhost:8080/api/auth/login", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ email, password }),
-		});
+    useEffect(() => {
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(cursorOpacity, { toValue: 0, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
+                Animated.timing(cursorOpacity, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
+            ]),
+        ).start();
+    }, []);
 
-		if (!res.ok) {
-			alert(strings.badLogin);
-			return;
-		}
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert("Error", "Por favor, rellena todos los campos");
+            return;
+        }
 
-		const data = await res.json();
-		await AsyncStorage.setItem("token", data.token);
-		navigation.replace("Home");
-	};
+        setIsSubmitting(true);
+        // Ajuste de IP para emuladores Android vs Web
+        const baseUrl = Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080';
+        
+        try {
+            // Llamada al nuevo AuthService2
+            const response = await fetch(`${baseUrl}/api/auth2/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    email: email.trim(), 
+                    password: password 
+                }),
+            });
 
-	return (
-		<View style={[styles.maxWidth, styles.maxHeigth, globalStyles.padre]}>
-			<View style={[styles.contendorLogoTitulos]}>
-				<View style={[styles.containerFoto]}>
-					<Image
-						source={require("../../../assets/images/logo.png")}
-						style={styles.logo}
-					/>
-				</View>
-				<View
-					style={[styles.contenedorWritter, styles.alineadoPersonal]}
-				>
-					<Text style={styles.tituloHero}>
-						{strings.nameMayus}{" "}
-						<TypeWriter typing={1} style={styles.destaqueAzul}>
-							{strings.appMayus}
-						</TypeWriter>
-					</Text>
-				</View>
-			</View>
-			<View style={[styles.contenedorWritter]}>
-				<View style={styles.textWrapper}>
-					<TypeWriter
-						typing={1}
-						maxDelay={50}
-						style={styles.mainText}
-					>
-						{strings.tittle1}{" "}
-						<Text style={styles.blueText}>{strings.tittle2}</Text>
-					</TypeWriter>
+            const data = await response.json();
 
-					{/* El cursor va fuera para que siempre esté al final */}
-					<Animated.View
-						style={[styles.cursor, { opacity: cursorOpacity }]}
-					/>
-				</View>
-			</View>
-			{/* Parte del recuadro del login */}
-			<View
-				style={[
-					styles.alineadoPersonal,
-					styles.maxHeigth,
-					styles.noJustify,
-				]}
-			>
-				<View style={[styles.caja, styles.margen2]}>
-					<CustomInputText
-						label={strings.direccionEmail}
-						placeholder={strings.placeEmail}
-						onChangeText={setEmail}
-					/>
-					<CustomInputText
-						label={strings.contrasenia}
-						placeholder={strings.placePassword}
-						secureTextEntry
-						onChangeText={setPassword}
-					/>
-					<CustomButton title={strings.login} onPress={handleLogin} />
-					<View style={[styles.maxWidth, styles.margen1]}>
-						<TouchableOpacity
-							onPress={() => navigation.navigate("Register")}
-						>
-							<Text
-								style={[styles.texto, styles.alineadoPersonal]}
-							>
-								{strings.noCuenta}
-							</Text>
-						</TouchableOpacity>
-					</View>
-				</View>
-			</View>
-		</View>
-	);
+            if (!response.ok) {
+                Alert.alert("Error de acceso", data.error || "Credenciales incorrectas");
+                return;
+            }
+
+            // Guardamos en el AuthContext (User/Client + Token)
+            await login(data.user, data.token);
+
+            // --- LÓGICA DE REDIRECCIÓN ---
+            // Si el objeto tiene 'cuentaBancaria', es un Cliente
+            const isClient = data.user.hasOwnProperty('cuentaBancaria');
+
+            if (isClient) {
+                console.log("Acceso como Empresa detectado");
+                navigation.replace("ClientDashboard"); 
+            } else {
+                console.log("Acceso como Jugador detectado");
+                navigation.replace("SurveyList");
+            }
+
+        } catch (error) {
+            console.error("Login Error:", error);
+            Alert.alert("Error de conexión", "No se pudo contactar con el servidor");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0e0d0df1' }}>
+            <View style={styles.alineadoPersonal}>
+                
+                {/* Header con Logo y Título Animado */}
+                <View style={styles.contendorLogoTitulos}>
+                    <Image source={require("../../../assets/images/logo.png")} style={styles.logo} />
+                    <View style={styles.contenedorWritter}>
+                        <Text style={[styles.tituloHero, isDesktopView && styles.tituloHeroDesktop]}>
+                            {strings.nameMayus}{" "}
+                            <TypeWriter typing={1} style={styles.destaqueAzul}>{strings.appMayus}</TypeWriter>
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Caja de Login */}
+                <View style={[styles.caja, isDesktopView && styles.cajaDesktop]}>
+                    <Text style={[styles.mainText, { marginBottom: 30 }]}>Iniciar Sesión</Text>
+                    
+                    <View style={{ width: '100%', maxWidth: 400 }}>
+                        <CustomInputText
+                            label={strings.direccionEmail}
+                            placeholder={strings.placeEmail}
+                            onChangeText={setEmail}
+                            value={email}
+                        />
+                        <View style={{ marginTop: 10 }}>
+                            <CustomInputText
+                                label={strings.contrasenia}
+                                placeholder={strings.placePassword}
+                                secureTextEntry
+                                onChangeText={setPassword}
+                                value={password}
+                            />
+                        </View>
+                        
+                        <View style={{ marginTop: 30 }}>
+                            <CustomButton 
+                                title={isSubmitting ? "Entrando..." : strings.login} 
+                                onPress={handleLogin} 
+                                disabled={isSubmitting}
+                            />
+                        </View>
+
+                        <TouchableOpacity 
+                            onPress={() => navigation.navigate("Register")} 
+                            style={{ marginTop: 25, alignItems: 'center' }}
+                        >
+                            <Text style={styles.texto}>
+                                ¿No tienes cuenta? <Text style={styles.blueText}>Regístrate aquí</Text>
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+            </View>
+        </ScrollView>
+    );
 }

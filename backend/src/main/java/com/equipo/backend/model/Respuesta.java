@@ -12,23 +12,26 @@ public class Respuesta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_respuesta")
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "id_option")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_option",unique = false)
     @JsonIgnore
     private Option option;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_user")
+    @JsonIgnore
     private User user;
 
     private String valueRespuesta;
 
     @OneToOne(mappedBy = "respuesta", cascade = CascadeType.ALL)
+    @JsonIgnore
     private OpcionRespuesta opcionRespuesta;
 
-    private byte isCompletada = 0;
+    private Byte isCompletada = 0;
 
     public Long getId() {
         return this.id;

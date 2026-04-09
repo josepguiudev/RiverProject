@@ -1,62 +1,70 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
+import { TouchableOpacity, Text, View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { Survey } from '../../types/formsSurvey.types';
+import styles from '../../screens/stylesGlobal'; 
+import { useLayout } from '@/app/utils/useLayout';
 
 interface Props {
-  survey: Survey;
-  isCompleted: boolean;
-  onPress: () => void;
+    survey: Survey;
+    isCompleted: boolean;
+    onPress: () => void;
+    style?: StyleProp<ViewStyle>; // <--- Agregado para corregir error ts(2322)
 }
 
-export const SurveyCard = ({ survey, isCompleted, onPress }: Props) => {
-  return (
-    <TouchableOpacity 
-      style={[styles.card, isCompleted && styles.completedCard]} 
-      onPress={onPress}
-      disabled={isCompleted} // Bloquejada si ja està feta
-    >
-      <View style={styles.content}>
-        <Text style={[styles.title, isCompleted && styles.completedText]}>
-            {survey.name || "Enquesta sense títol"}
-        </Text>
-        <Text style={styles.info}>Preguntes: {survey.numQuestions}</Text>
-        {isCompleted && <Text style={styles.status}>✓ Ja realitzada</Text>}
-      </View>
-    </TouchableOpacity>
-  );
+export const SurveyCard = ({ survey, isCompleted, onPress, style }: Props) => {
+    const { isDesktopView } = useLayout();
+
+    return (
+        <TouchableOpacity 
+            style={[
+                styles.cajaEncuestas, 
+                { padding: 20, justifyContent: 'center' },
+                style,
+                isCompleted && { opacity: 0.6, borderColor: '#333', backgroundColor: '#121212' },
+            ]} 
+            onPress={onPress}
+            disabled={isCompleted}
+        >
+            <View>
+                <Text style={[
+                    styles.tittleTextSurvey, 
+                    isDesktopView && styles.tittleTextSurveyDesktop,
+                    isCompleted && { color: '#757575' }
+                ]}>
+                    {survey.name || "Encuesta sin título"}
+                </Text>
+                
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                    <Text style={[styles.texto, { fontSize: 14, color: '#aaa' }]}>
+                        Preguntas: {survey.numQuestions || 0}
+                    </Text>
+                    {survey.idPagoPanelista && !isCompleted && (
+                        <Text style={{ color: '#64B5F6', fontSize: 13, marginLeft: 15 }}>
+                            • Recompensa disponible
+                        </Text>
+                    )}
+                </View>
+
+                {isCompleted && (
+                    <View style={localStyles.badgeCompleted}>
+                        <Text style={localStyles.badgeText}>✓ COMPLETADA</Text>
+                    </View>
+                )}
+            </View>
+        </TouchableOpacity>
+    );
 };
 
-const styles = StyleSheet.create({
-  card: { 
-    backgroundColor: 'white', 
-    padding: 20, 
-    borderRadius: 12, 
-    marginBottom: 15, 
-    elevation: 3 
-  },
-  completedCard: { 
-    backgroundColor: '#e0e0e0', 
-    opacity: 0.7 
-  },
-  // AFEGEIX AIXÒ:
-  content: {
-    flexDirection: 'column',
-  },
-  title: { 
-    fontSize: 18, 
-    fontWeight: 'bold', 
-    color: '#673ab7' 
-  },
-  completedText: { 
-    color: '#757575' 
-  },
-  info: { 
-    color: '#666', 
-    marginTop: 5 
-  },
-  status: { 
-    color: '#4caf50', 
-    fontWeight: 'bold', 
-    marginTop: 10 
-  }
+const localStyles = StyleSheet.create({
+    badgeCompleted: {
+        alignSelf: 'flex-start',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4,
+        marginTop: 10,
+        borderWidth: 1,
+        borderColor: '#444'
+    },
+    badgeText: { fontSize: 10, fontWeight: 'bold', color: '#888' }
 });

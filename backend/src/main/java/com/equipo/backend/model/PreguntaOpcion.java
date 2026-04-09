@@ -15,6 +15,7 @@ public class PreguntaOpcion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_pregunta_opcion")
     private Long id;
 
     @ManyToOne
@@ -23,7 +24,7 @@ public class PreguntaOpcion {
     private Question question;
 
     @ManyToOne
-    @JoinColumn(name = "id_opcion")
+    @JoinColumn(name = "id_option")
     @JsonBackReference
     private Option option;
 

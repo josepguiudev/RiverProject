@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 @Entity
 @Table(name = "options")
@@ -16,6 +17,7 @@ public class Option {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_option")
     private Long id;
 
     private String textOpcion; 
@@ -27,6 +29,7 @@ public class Option {
 
     @OneToMany(mappedBy = "option", cascade = CascadeType.ALL)
     @JsonIgnore
+    @ToString.Exclude
     private List<PreguntaOpcion> preguntaOpciones = new ArrayList<>();
 
     @OneToOne(mappedBy = "option", cascade = CascadeType.ALL)

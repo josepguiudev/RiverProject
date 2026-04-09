@@ -2,8 +2,13 @@ package com.equipo.backend.model;
 
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 
 @Entity
@@ -13,13 +18,22 @@ public class Client {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_client")
     private Long id;
+
+    @Column(unique = true)
+    private String email;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
 
     private String nombre;
     private String cuentaBancaria;
     private String urlImagen;
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
+    @JsonBackReference
+    @ToString.Exclude
     @nullable private List<Survey> surveyList = new ArrayList<>();
 
 
@@ -64,17 +78,38 @@ public class Client {
         this.surveyList = surveyList;
     }
 
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+
     public Client() {
     }
 
 
-    public Client(Long id, String nombre, String cuentaBancaria, String urlImagen, List<Survey> surveyList) {
+    public Client(Long id, String email, String password, String nombre, String cuentaBancaria, String urlImagen, List<Survey> surveyList) {
         this.id = id;
+        this.email = email;
+        this.password = password;
         this.nombre = nombre;
         this.cuentaBancaria = cuentaBancaria;
         this.urlImagen = urlImagen;
         this.surveyList = surveyList;
     }
+
 
 
 }

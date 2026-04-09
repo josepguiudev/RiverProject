@@ -1,5 +1,8 @@
 package com.equipo.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -10,14 +13,17 @@ public class OpcionRespuesta {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_opcion_respuesta")
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "id_option")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_option", unique = false)
+    @JsonIgnoreProperties("opcionRespuestaList")
     private Option option;
 
-    @OneToOne
-    @JoinColumn(name = "id_respuesta")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_respuesta", unique = false)
+    @JsonIgnore
     private Respuesta respuesta;
 
 

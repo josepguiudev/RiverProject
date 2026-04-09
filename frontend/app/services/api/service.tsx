@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { API_CONFIG } from '../../config/api.config';
-import { EncuestaParcialDTO, EncuestaRespuestaDTO, Survey } from '../../types/formsSurvey.types';
+import { EncuestaParcialDTO, EncuestaRespuestaDTO, Survey, UserSurveyRel } from '../../types/formsSurvey.types';
 
 const apiClient = axios.create({
   baseURL: API_CONFIG.BASE_URL,
@@ -11,42 +11,13 @@ const apiClient = axios.create({
 });
 
 export class FormApiService {
-  static savePartial(arg0: { idPregunta: number; idOpcion: number; valor: string; isRespondida: boolean; }, arg1: number, surveyId: any) {
-    throw new Error('Method not implemented.');
-  }
   
   /**
-   * Obtener todas las encuestas (Antes: /api/formSurvey/responses)
+   * Obtener encuestas personalizadas para un usuario jugador
    */
-static async getAllResponses(): Promise<Survey[]> {
+  static async getUserSurveys(userId: number): Promise<UserSurveyRel[]> {
     try {
-        const response = await apiClient.get<Survey[]>("/api/surveys/all"); 
-        return response.data;
-    } catch (error) {
-        throw this.handleError(error);
-    }
-}
-
-  /**
-   * Enviar una nueva plantilla (Arregla el error de 'payload')
-   */
-  static async submitForm(formData: Survey): Promise<Survey> {
-    try {
-      // DEFINICIÓN DE PAYLOAD (Esto resuelve el error ts(2304))
-      const payload = {
-        name: formData.name, 
-        numQuestions: formData.questionList ? formData.questionList.length : 0,
-        questionList: formData.questionList ? formData.questionList.map(q => ({
-          text_question: q.textQuestion,
-          type_name: q.typeName,
-          options: q.options ? q.options.map(opt => ({
-            text_opcion: opt.textOpcion
-          })) : []
-        })) : [],
-        creationDate: new Date().toISOString()
-      };
-
-      const response = await apiClient.post<Survey>("/api/surveys/submit", payload);
+      const response = await apiClient.get<UserSurveyRel[]>(`/api/surveys/user/${userId}`); 
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -54,13 +25,60 @@ static async getAllResponses(): Promise<Survey[]> {
   }
 
   /**
-   * Cargar respuestas parciales
+   * NUEVO: Obtener encuestas creadas por un cliente (Empresa)
+   * Endpoint: @GetMapping("/my-surveys/{clientId}")
+   */
+  static async getSurveysByClient(clientId: number): Promise<Survey[]> {
+    try {
+      const response = await apiClient.get<Survey[]>(`/api/surveys/my-surveys/${clientId}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Enviar una nueva plantilla vinculada a un Cliente
+   * @param formData Datos de la encuesta
+   * @param idClient ID del cliente que la crea
+   */
+  static async submitForm(formData: Survey, idClient: number): Promise<Survey> {
+    try {
+      const payload = {
+        name: formData.name, 
+        numQuestions: formData.numQuestions,
+        numUsers: formData.numUsers || 0,
+        SurveyReward: formData.SurveyReward || 0,
+        genereList: formData.genereList || [],
+        questionList: formData.questionList.map(q => ({
+          textQuestion: q.textQuestion, 
+          typeName: q.typeName,         
+          option: q.option ? q.option.map(opt => ({
+            textOpcion: opt.textOpcion  
+          })) : []
+        })),
+        creationDate: new Date().toISOString()
+      };
+
+      // Enviamos el idClient como Query Param: /api/surveys/submit?idClient=5
+      const response = await apiClient.post<Survey>("/api/surveys/submit", payload, {
+        params: { idClient: idClient }
+      });
+      
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Cargar respuestas parciales (para retomar encuestas)
    */
   static async getPartialResponse(idSurvey: number, idUser: number): Promise<EncuestaParcialDTO> {
     try {
-      // Enviamos el idUser como query param (?idUser=1)
       const response = await apiClient.get<EncuestaParcialDTO>(
-        `/api/surveys/${idSurvey}/responses?idUser=${idUser}`
+        `/api/surveys/${idSurvey}/responses`, 
+        { params: { idUser: idUser } }
       );
       return response.data;
     } catch (error) {
@@ -69,7 +87,7 @@ static async getAllResponses(): Promise<Survey[]> {
   }
 
   /**
-   * Guardar respuestas de usuario
+   * Guardar respuestas de usuario (Jugador)
    */
   static async saveAnswers(data: EncuestaRespuestaDTO, isCompleted: boolean): Promise<any> {
     try {
@@ -92,14 +110,15 @@ static async getAllResponses(): Promise<Survey[]> {
     }
   }
 
-
   private static handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
       if (axiosError.response) {
-        return new Error(`Error del servidor: ${axiosError.response.status} - ${axiosError.response.statusText}`);
+        // Extraemos el mensaje de error que configuramos en el Map.of("error", ...) del Backend
+        const serverMessage = (axiosError.response.data as any)?.error || axiosError.response.statusText;
+        return new Error(`Error: ${serverMessage}`);
       }
     }
-    return new Error('Error inesperado al comunicarse con el servidor');
+    return new Error('No se pudo conectar con River DB. Revisa tu conexión.');
   }
 }

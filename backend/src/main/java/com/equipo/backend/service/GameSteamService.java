@@ -85,4 +85,18 @@ public class GameSteamService {
 
         return new java.util.ArrayList<>();
     }
+
+    public Game update(Long id, Game updatedGame) {
+        Game game = gameRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Juego no encontrado"));
+
+        game.setTitle(updatedGame.getTitle());
+        game.setIconUrl(updatedGame.getIconUrl());
+
+        return gameRepository.save(game);
+    }
+
+    public void delete(Long id) {
+        gameRepository.deleteById(id);
+    }
 }

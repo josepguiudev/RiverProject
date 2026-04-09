@@ -2,16 +2,10 @@ package com.equipo.backend.model;
 
 import java.util.*;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 
@@ -22,6 +16,7 @@ import lombok.ToString;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_user")
     private Long id;
 
 
@@ -31,11 +26,12 @@ public class User {
     @Column(unique = true)
     private String email;
     private Byte genero;
-    private Byte edad;
+    private Integer edad;
     private String localizacion;
     private String urlIdStream;
     private Date creacionCuentaUsuario;
     private Date creacionCuentaSteam;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private String urlImgUsuario;
     private Byte banned;
@@ -43,19 +39,24 @@ public class User {
     
     // RELACIÓN ONE TO ONE
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "steam_perfil_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "FK_USER_STEAM"))
-    @ToString.Exclude // Evita errores de recursión
+    @JoinColumn(name = "steam_perfil_id", referencedColumnName = "id_user_steam", foreignKey = @ForeignKey(name = "FK_USER_STEAM"))
+    @ToString.Exclude 
     private UserSteam userSteam;
 
 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @ToString.Exclude
     private List<UserGame> userGamesList = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @ToString.Exclude
     private List<UserSurveys> userSurveysList = new ArrayList<>();
 
     @OneToOne
+    @JsonIgnore
     private BonoTotal bonoTotal; 
 
 
@@ -94,10 +95,10 @@ public class User {
         this.genero = genero;
     }
 
-    public Byte getEdad() {
+    public Integer getEdad() {
         return this.edad;
     }
-    public void setEdad(Byte edad) {
+    public void setEdad(Integer edad) {
         this.edad = edad;
     }
 
@@ -198,9 +199,7 @@ public class User {
 
 
 
-    public User(Long id, String name, String apellido1, String apellido2, String email, Byte genero, Byte edad, String localizacion, 
-        String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned,
-         List<UserGame> userGamesList, List<UserSurveys> userSurveysList, BonoTotal bonoTotal) {
+    public User(Long id, String name, String apellido1, String apellido2, String email, Byte genero, Integer edad, String localizacion, String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned, Byte id_rol, List<UserGame> userGamesList, List<UserSurveys> userSurveysList, BonoTotal bonoTotal) {
         this.id = id;
         this.name = name;
         this.apellido1 = apellido1;
@@ -215,11 +214,13 @@ public class User {
         this.password = password;
         this.urlImgUsuario = urlImgUsuario;
         this.banned = banned;
+        this.id_rol = id_rol;
         this.userGamesList = userGamesList;
         this.userSurveysList = userSurveysList;
         this.bonoTotal = bonoTotal;
     }
-   
+
+
 
     public UserSteam getUserSteam() {
         return this.userSteam;

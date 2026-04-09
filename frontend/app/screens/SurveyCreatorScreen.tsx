@@ -1,33 +1,30 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  FlatList, 
-  Text, 
-  KeyboardAvoidingView, 
-  Platform,
-  Alert,
-  ActivityIndicator 
-} from 'react-native';
+import { View, TextInput, TouchableOpacity, FlatList, Text, Alert, ActivityIndicator } from 'react-native';
 import { Question, Survey } from '../types/formsSurvey.types';
 import { FormApiService } from '../services/api/service';
 import { QuestionCard } from '../components/QuestionCard/QuestionCard';
 
-const SurveyCreatorScreen = () => {
+import styles, { colors } from './stylesGlobal';
+import { useLayout } from '@/app/utils/useLayout';
+import { ResponsiveLayout } from '../components/ResponsiveLayout';
+import { useAuth } from './Auth/AuthContext'; // <--- IMPORTANTE: Importa tu AuthContext
+
+const SurveyCreatorScreen = ({ navigation }: any) => {
+  const { isDesktopView } = useLayout();
+  const { user } = useAuth(); // <--- OBTENER EL CLIENTE LOGUEADO
   const [surveyName, setSurveyName] = useState('');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // --- LÓGICA DE PREGUNTAS ---
-
+  // --- LÓGICA DE MANEJO DE PREGUNTAS ---
   const addQuestion = () => {
-    setQuestions([...questions, { 
-      text_question: '', 
-      type_name: 'SHORT_TEXT', 
+    const newQuestion: Question = {
+      id: Date.now(),
+      textQuestion: '', 
+      typeName: 'SHORT_TEXT', 
       options: [] 
-    }]);
+    };
+    setQuestions([...questions, newQuestion]);
   };
 
   const removeQuestion = (index: number) => {
@@ -38,48 +35,47 @@ const SurveyCreatorScreen = () => {
 
   const updateQuestionText = (index: number, text: string) => {
     const updated = [...questions];
-    updated[index].text_question = text;
+    updated[index].textQuestion = text;
     setQuestions(updated);
   };
 
-  const updateType = (index: number, type: 'SHORT_TEXT' | 'NUMERIC' | 'SINGLE_CHOICE') => {
+  const updateType = (index: number, type: Question['typeName']) => {
     const updated = [...questions];
-    updated[index].type_name = type;
+    updated[index].typeName = type; 
     
-    // Si el tipo es SINGLE_CHOICE, inicializar con una opción vacía si no tiene
-    if (type === 'SINGLE_CHOICE' && (!updated[index].options || updated[index].options.length === 0)) {
-      updated[index].options = [{ text_opcion: '' }];
+    if (type === 'SHORT_TEXT' || type === 'NUMERIC') {
+      updated[index].options = []; 
+    } else if (!updated[index].options || updated[index].options.length === 0) {
+      updated[index].options = [{ id: Date.now(), textOpcion: '' }];
     }
     setQuestions(updated);
   };
-
-  // --- LÓGICA DE OPCIONES ---
-
+  
   const addOption = (qIndex: number) => {
     const updated = [...questions];
     if (!updated[qIndex].options) updated[qIndex].options = [];
-    updated[qIndex].options!.push({ text_opcion: '' });
+    updated[qIndex].options!.push({ id: Date.now(), textOpcion: '' });
     setQuestions(updated);
   };
 
   const updateOptionText = (qIndex: number, oIndex: number, text: string) => {
     const updated = [...questions];
     if (updated[qIndex].options) {
-      updated[qIndex].options![oIndex].text_opcion = text;
+      updated[qIndex].options![oIndex].textOpcion = text;
       setQuestions(updated);
     }
   };
 
-  // --- ENVÍO AL BACKEND ---
-
+  // --- GUARDADO FINAL ---
   const handleSaveSurvey = async () => {
-    // Validaciones básicas
-    if (!surveyName.trim()) {
-      Alert.alert("Error", "El nombre de la encuesta es obligatorio");
+    if (!surveyName.trim() || questions.length === 0) {
+      Alert.alert("Error", "Completa el título y añade al menos una pregunta.");
       return;
     }
-    if (questions.length === 0) {
-      Alert.alert("Error", "Debes añadir al menos una pregunta");
+
+    // Verificación de seguridad
+    if (!user || !user.id) {
+      Alert.alert("Sesión expirada", "No se encontró el ID del cliente. Reintenta el login.");
       return;
     }
 
@@ -88,45 +84,53 @@ const SurveyCreatorScreen = () => {
       const finalSurvey: Survey = {
         name: surveyName,
         numQuestions: questions.length,
-        questionList: questions
+        numUsers: 0,
+        questionList: questions.map((q) => ({
+          textQuestion: q.textQuestion,
+          typeName: q.typeName,
+          option: q.options?.map((o) => ({
+            textOpcion: o.textOpcion
+          })) || []
+        })),
+        SurveyReward: 0,
+        genereList: [] 
       };
 
-      await FormApiService.submitForm(finalSurvey);
+      // Enviamos la encuesta y el ID del cliente al servicio
+      await FormApiService.submitForm(finalSurvey, user.id);
       
-      Alert.alert("Éxito", "Encuesta guardada correctamente en River DB");
-      
-      // Opcional: Limpiar el formulario tras éxito
-      setSurveyName('');
-      setQuestions([]);
+      Alert.alert("Éxito", "Encuesta publicada correctamente.");
+      navigation.goBack(); // Volver al listado de encuestas del cliente
       
     } catch (error) {
-      Alert.alert("Error de conexión", (error as Error).message);
+      Alert.alert("Error", (error as Error).message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={{ flex: 1 }} 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={styles.container}>
-        <FlatList
-          contentContainerStyle={styles.scrollContent}
-          ListHeaderComponent={
-            <View style={styles.headerSection}>
-              <Text style={styles.labelHeader}>Título de la Encuesta</Text>
-              <TextInput 
-                placeholder="Ej: Encuesta de Satisfacción 2026" 
-                style={styles.mainTitleInput}
-                value={surveyName}
-                onChangeText={setSurveyName}
-              />
+    <ResponsiveLayout fullWidth={true}>
+        <View style={{ width: '100%', marginBottom: 30 }}>
+            <Text style={[styles.tituloHero, isDesktopView && styles.tituloHeroDesktop, { textAlign: 'left', fontSize: 32 }]}>
+                Nuevo <Text style={styles.destaqueAzul}>Proyecto</Text>
+            </Text>
+            
+            <View style={[styles.margen2, { borderBottomWidth: 2, borderColor: colors.primary }]}>
+                <TextInput 
+                    placeholder="Título de la Encuesta..." 
+                    placeholderTextColor="#666"
+                    style={[styles.mainText, { textAlign: 'left', fontSize: 24, paddingVertical: 10, color: 'white' }]}
+                    value={surveyName}
+                    onChangeText={setSurveyName}
+                />
             </View>
-          }
+        </View>
+
+        <FlatList
           data={questions}
-          keyExtractor={(_, i) => i.toString()}
+          keyExtractor={(item) => item.id!.toString()}
+          scrollEnabled={false}
           renderItem={({ item, index }) => (
             <QuestionCard 
               question={item}
@@ -139,85 +143,27 @@ const SurveyCreatorScreen = () => {
             />
           )}
           ListFooterComponent={
-            <TouchableOpacity style={styles.addBtn} onPress={addQuestion}>
-               <Text style={styles.addBtnText}>+ Añadir Nueva Pregunta</Text>
+            <TouchableOpacity 
+                style={[styles.btnSecondary, { width: '100%', borderStyle: 'dashed', marginTop: 10, borderWidth: 1, borderColor: colors.primary, padding: 15, borderRadius: 10, alignItems: 'center' }]} 
+                onPress={addQuestion}
+            >
+                <Text style={{ color: colors.secondary, fontWeight: 'bold' }}>+ AÑADIR PREGUNTA</Text>
             </TouchableOpacity>
           }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No hay preguntas aún. Presiona el botón de abajo.</Text>
-            </View>
-          }
+          style={{ width: '100%' }}
         />
 
-        {/* Botón Flotante de Guardar */}
-        <View style={styles.footerAction}>
+        <View style={{ width: '100%', marginTop: 40, paddingBottom: 50 }}>
           <TouchableOpacity 
-            style={[styles.saveBtn, loading && styles.disabledBtn]} 
+            style={[styles.btnPrimary, { width: '100%' }, loading && { opacity: 0.5 }]} 
             onPress={handleSaveSurvey}
             disabled={loading}
           >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.saveText}>Guardar en River DB</Text>
-            )}
+            {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.btnPrimaryText}>PUBLICAR ENCUESTA</Text>}
           </TouchableOpacity>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+    </ResponsiveLayout>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F2F5' },
-  scrollContent: { padding: 20, paddingBottom: 120 },
-  headerSection: { marginBottom: 25 },
-  labelHeader: { fontSize: 12, color: '#666', fontWeight: 'bold', marginBottom: 5, textTransform: 'uppercase' },
-  mainTitleInput: { 
-    fontSize: 26, 
-    fontWeight: 'bold', 
-    color: '#1A1A1A', 
-    borderBottomWidth: 3, 
-    borderColor: '#2196F3', 
-    paddingVertical: 5 
-  },
-  addBtn: { 
-    padding: 20, 
-    borderStyle: 'dashed', 
-    borderWidth: 2, 
-    borderColor: '#2196F3', 
-    borderRadius: 15, 
-    alignItems: 'center', 
-    marginTop: 10,
-    backgroundColor: 'rgba(33, 150, 243, 0.05)'
-  },
-  addBtnText: { color: '#2196F3', fontWeight: 'bold', fontSize: 16 },
-  footerAction: { 
-    position: 'absolute', 
-    bottom: 0, 
-    left: 0, 
-    right: 0, 
-    padding: 20, 
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderColor: '#eee'
-  },
-  saveBtn: { 
-    backgroundColor: '#4CAF50', 
-    padding: 18, 
-    borderRadius: 15, 
-    alignItems: 'center', 
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5
-  },
-  disabledBtn: { backgroundColor: '#A5D6A7' },
-  saveText: { color: 'white', fontWeight: 'bold', fontSize: 18 },
-  emptyContainer: { padding: 40, alignItems: 'center' },
-  emptyText: { color: '#999', textAlign: 'center', fontSize: 14 }
-});
 
 export default SurveyCreatorScreen;

@@ -3,10 +3,8 @@ import { View, TouchableOpacity, Text, ScrollView, Alert, Image } from "react-na
 
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import styles from './styles';
-
 import MenuPrincipal from '@/app/components/Menu/CustomMenu';
 import strings from "../../../assets/supportFiles/strings.json";
-
 import CustomInputCard from '@/app/components/CustomInputCard/CustomInputCard';
 import CustomButton from '@/app/components/CustomButton/CustomButton';
 
@@ -110,14 +108,14 @@ export default function AdminScreen({ navigation }: any) {
         <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre]}>
             {/* 1. HEADER / BOTÓN MENU */}
             <View style={[globalStyles.cajaMenu, globalStyles.borde, globalStyles.alineadoPersonalVertical]}>
-                <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ padding: 20 }}>
+                <TouchableOpacity onPress={() => setMenuVisible(true)}>
                     <Text style={{ color: 'white' }}>{strings.menu}</Text>
                 </TouchableOpacity>
             </View>
 
             <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre, globalStyles.alineadoPersonal]}>
-                <View style={[styles.cajaPrincipal, globalStyles.borde, globalStyles.filas]}>
-                    <View style={[globalStyles.borde2, styles.contenedorFila, globalStyles.alineadoPersonalHorizontal]}>
+                <View style={[styles.cajaPrincipal, globalStyles.filas]}>
+                    <View style={[styles.contenedorFila, globalStyles.alineadoPersonalHorizontal]}>
                         <CustomInputCard title='Extraer Users' value={1} onResultFound={(data) => {
                             const listaFinal = data.response?.players 
                             ? data.response.players 
@@ -131,14 +129,14 @@ export default function AdminScreen({ navigation }: any) {
                             }}/>
                         <CustomInputCard title='Extraer Juegos' value={2} onResultFound={(data) => setJuegoDetalle(data)}/>
                     </View>
-                    <View style={[globalStyles.borde2, styles.contenedorFila2, styles.contenedorVertical]}>
+                    <View style={[styles.contenedorFila2, styles.contenedorVertical]}>
                         <View style={[styles.contenedorUserTittleButton]}>
                             <Text style={[styles.label]}>Resultado de búsqueda de usuario/s</Text>
                         </View>
                         <View style={[styles.contenedorUserTittleButton, {height: "84%"}, styles.contenedorVertical]}>
                             
                             <ScrollView
-                                style={styles.scrollView}
+                                style={[styles.scrollView, { width: '100%'}]}
                                 contentContainerStyle={styles.contentContainer}
                                 showsVerticalScrollIndicator={false} // Para un look más limpio
                                 bounces={true} // Efecto de rebote moderno (iOS)
@@ -215,27 +213,21 @@ export default function AdminScreen({ navigation }: any) {
                             <CustomButton title="Guardar usuario/s" onPress={guardarUsers} isAdmin={true} />
                         </View>
                     </View>
-                    <View style={[globalStyles.borde2, styles.contenedorFila2, styles.contenedorVertical]}>
+                    <View style={[styles.contenedorFila2, styles.contenedorVertical]}>
                         <View style={[styles.contenedorUserTittleButton]}>
                             <Text style={[styles.label]}>Resultado biblioteca de usuario</Text>
                         </View>
                         <View style={[styles.contenedorUserTittleButton, {height: "84%"}, styles.contenedorVertical]}>
                             
                             <ScrollView
-                                style={styles.scrollView}
+                                style={[styles.scrollView, { width: '100%'}]}
                                 contentContainerStyle={styles.contentContainer}
                                 showsVerticalScrollIndicator={false} // Para un look más limpio
                                 bounces={true} // Efecto de rebote moderno (iOS)
                                 >
-                                {/*{Array.isArray(juegosEncontrados) && juegosEncontrados.map((item: any, index: number) => (
-                                    <Text key={item.appid || index} style={{color: 'white', padding: 5}}>
-                                        {item.name} {/* <-- Cambiado de description a personaname */}
-                                    {/*</Text>
-                                ))}*/}
                                 {Array.isArray(juegosEncontrados) && juegosEncontrados.map((game: any, index: number) => {
                                 // La URL oficial requiere el AppID y el HASH que viene en img_icon_url
                                 // Si img_icon_url está vacío, usamos un placeholder
-                                const hasIcon = game.img_icon_url && game.img_icon_url !== "";
     
                                 const iconUrl = `http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`;
 
@@ -289,13 +281,13 @@ export default function AdminScreen({ navigation }: any) {
                             <CustomButton title="Guardar juegos" onPress={guardarBiblio} isAdmin={true} />
                         </View>
                     </View>
-                    <View style={[globalStyles.borde2, styles.contenedorFila2, styles.contenedorVertical]}>
+                    <View style={[styles.contenedorFila2, styles.contenedorVertical]}>
                         <View style={[styles.contenedorUserTittleButton]}>
                             <Text style={[styles.label]}>Juego extraído</Text>
                         </View>
                         <View style={[styles.contenedorUserTittleButton, {height: "84%"}, styles.contenedorVertical]}>
                                 <ScrollView
-                                    style={styles.scrollView}
+                                    style={[styles.scrollView, { width: '100%'}]}
                                     contentContainerStyle={styles.contentContainer}
                                     showsVerticalScrollIndicator={false} // Para un look más limpio
                                     bounces={true} // Efecto de rebote moderno (iOS)
@@ -362,13 +354,12 @@ export default function AdminScreen({ navigation }: any) {
                         </View>
                     </View>
                 </View>
-            </View>            
-
+            </View>
 
             {/* 3. MENU AL FINAL (FUERA DE TODO) */}
-            <MenuPrincipal 
-                visible={menuVisible} 
-                onClose={() => setMenuVisible(false)} 
+            <MenuPrincipal
+                visible={menuVisible}
+                onClose={() => setMenuVisible(false)}
             />
         </View>
     );

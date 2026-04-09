@@ -12,9 +12,9 @@ export interface Encuesta {
   /** Identificador único de la encuesta */
   id: number;
   /** Título de la encuesta */
-  titulo: string;
+  name: string;
   /** Descripción de la encuesta */
-  descripcion: string;
+  /**descripcion: string;*/
   /** Pago ofrecido por completar la encuesta (opcional) */
   pago?: number | null; //Coalesce en REACT con TS
 }
@@ -58,17 +58,17 @@ export default function ListaEncuestas({ dataTest }: ListEncuestasProps = {}) {
     const fetchData = async () => {
       // TO DO: HACER CONEXIÓN CON API UNA VEZ ESTÉ CREADA.
       const data: Encuesta[] = [
-        { id: 1, titulo: "Encuesta A", descripcion: "Descripción A" },
-        { id: 2, titulo: "Encuesta B", descripcion: "Descripción B", pago: 15 },
-        { id: 3, titulo: "Encuesta C", descripcion: "Descripción C", pago: 20 },
+        { id: 1, name: "Encuesta A" },
+        { id: 2, name: "Encuesta B", pago: 15 },
+        { id: 3, name: "Encuesta C", pago: 200000 },
       ];
 
       setEncuestas(data);
     };
 
     fetchData();
-  // }, []);
-  // Se añade dataTest como dependencia solo mientras exista esa prop de desarrollo.
+    // }, []);
+    // Se añade dataTest como dependencia solo mientras exista esa prop de desarrollo.
   }, [dataTest]);
 
   return (
@@ -80,8 +80,7 @@ export default function ListaEncuestas({ dataTest }: ListEncuestasProps = {}) {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <EncuestaCard
-            titulo={item.titulo}
-            descripcion={item.descripcion}
+            name={item.name}
             pago={item.pago}
           />
         )}

@@ -15,11 +15,11 @@ public class EncuestaParcialDTO {
     @Data
     public static class PreguntaCargadaDTO {
         private Long idPregunta;
-        private String textoPregunta; // Nuevo: Para mostrar la pregunta
-        private Long idOpcionSeleccionada; // Antes era idOpcion
-        private String valorRespuesta; // Antes era valor
-        
-        // Nuevo: Lista de opciones posibles para esta pregunta
+        private String textoPregunta;
+        private Long idOpcionSeleccionada; 
+        private List<Long> idsOpcionesSeleccionadas = new ArrayList<>(); 
+        private String valorRespuesta;
+        private Boolean esMultiple;
         private List<OpcionDisponibleDTO> opcionesDisponibles = new ArrayList<>();
     }
 

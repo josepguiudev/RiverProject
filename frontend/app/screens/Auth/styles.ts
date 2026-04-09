@@ -1,123 +1,121 @@
 import { StyleSheet, Platform } from 'react-native';
 
+export const colors = {
+    background: '#0e0d0df1',
+    cardBg: '#161616',
+    inputBg: '#1A1A1A',
+    primary: '#5b55c0',
+    secondary: '#3b82f6',
+    textMain: '#FFFFFF',
+    textSecondary: '#888888',
+    border: '#333333',
+};
+
 export default StyleSheet.create({
-    caja: {
-        // '000000' es negro, 'B3' es ~70% de opacidad en Hexadecimal
-        // También puedes usar 'rgba(0, 0, 0, 0.7)'
-        backgroundColor: '#0e0d0df1', 
-        
-        borderRadius: 20, // Esquinas redondeadas
-        padding: 20,
-        width: '70%',
-        display: 'flex',
-        flexWrap: 'wrap',
+    alineadoPersonal: {
+        flex: 1,
+        backgroundColor: colors.background,
         alignItems: 'center',
-        alignContent: 'center', // Verticalmente
-        justifyContent: "center",
-        height: 'auto'
-    },
-    texto: {
-        marginTop: '1%',
-        color: 'white',
-    },
-    maxWidth: {
+        justifyContent: 'center',
         width: '100%',
+        paddingVertical: 40, // Evita que se pegue arriba/abajo en web
+        ...Platform.select({
+            web: { minHeight: '100vh' as any },
+            default: { minHeight: '100%' as any }
+        })
     },
-    maxHeigth: {
-        height: '100%',
-    },
-    contendorLogoTitulos:{
-        flexDirection: 'row',
-        height: "15%",
-        padding: 10
-    },
-    borde:{
-        borderWidth: 1,         // El "1px"
-        borderColor: 'red',     // El "red"
-        borderStyle: 'solid',   // Opcional (es el valor por defecto)
-    },
-    borde2:{
-        borderWidth: 1,         // El "1px"
-        borderColor: 'green',     // El "red"
-        borderStyle: 'solid',   // Opcional (es el valor por defecto)
-    },
-    margen1:{
-        marginTop: '1%',
-    },
-    margen2:{
-        marginTop: '5%',
-    },
-    noJustify:{
-        justifyContent: 'flex-start'
-    },
-    alineadoPersonal:{
-        display: 'flex',
-        flexWrap: 'wrap',
+    caja: {
+        backgroundColor: colors.cardBg,
+        borderRadius: 24,
+        padding: 25,
+        width: '90%',
         alignItems: 'center',
-        alignContent: 'center', // Verticalmente
-        justifyContent: "center",
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
     },
-    containerFoto: {
-        width: '20%', 
-        height: '100%',
+    cajaDesktop: {
+        width: '70%',
+        maxWidth: 950, 
+        padding: 40,
+        ...Platform.select({
+            web: { boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }
+        })
+    },
+    contendorLogoTitulos: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        marginBottom: 30,
     },
     logo: {
-        width: '100%',
-        height: '100%',
-        resizeMode: 'contain', // Ajusta la imagen sin deformarla
-    },
-    contenedorWritter: {
-        alignItems: 'center',
-        padding: 20,
-    },
-    row: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    mainText: {
-        color: '#fff',
-        fontSize: 32,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        // En Android la fuente bold a veces necesita esto para verse muy gruesa
-        fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed',
-    },
-    blueText: {
-        color: '#5b55c0', // El azul característico de Aceternity
-    },
-    cursor: {
-        width: 4,
-        height: 35,
-        backgroundColor: '#5b55c0',
-        marginLeft: 5,
-        // Puedes añadir una animación simple de opacidad para el parpadeo
-    }, 
-    textWrapper: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        alignItems: 'center',
+        width: 60,
+        height: 60,
+        resizeMode: 'contain',
+        marginRight: 15,
     },
     tituloHero: {
-        fontSize: 70,
-        fontWeight: '900', // Grosor máximo
-        color: '#5b55c0',
-        textAlign: 'center',
-        letterSpacing: -1.5, // Letras más juntas para estilo moderno
-        lineHeight: 48,
-        // Efecto de brillo sutil (Glow)
-        textShadowColor: 'rgba(255, 255, 255, 0.3)',
-        textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 15,
-        // Ajuste de fuente según sistema
+        fontSize: 48,
+        fontWeight: '900',
+        color: colors.primary,
         fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed',
     },
+    tituloHeroDesktop: {
+        fontSize: 80,
+    },
     destaqueAzul: {
-        color: '#3b82f6',
-        // Un azul eléctrico tipo Aceternity
-        textShadowColor: 'rgba(59, 130, 246, 0.5)',
-        textShadowRadius: 20,
+        color: colors.secondary,
+    },
+    mainText: {
+        color: colors.textMain,
+        fontSize: 28,
+        fontWeight: 'bold',
+    },
+    selectorContainer: {
+        flexDirection: 'row',
+        backgroundColor: colors.inputBg,
+        borderRadius: 30,
+        padding: 4,
+        marginBottom: 30,
+        width: '100%',
+        maxWidth: 500, // No queremos el selector gigante en PC
+    },
+    selectorBtn: {
+        flex: 1,
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderRadius: 25,
+    },
+    selectorBtnActive: {
+        backgroundColor: colors.primary,
+    },
+    selectorText: {
+        color: colors.textSecondary,
+        fontWeight: '600',
+    },
+    selectorTextActive: {
+        color: colors.textMain,
+    },
+    formGrid: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
+    formStack: {
+        width: '100%',
+    },
+    column: {
+        width: '48%',
+    },
+    blueText: {
+        color: colors.secondary,
+        fontWeight: 'bold',
+    },
+    texto: {
+        color: colors.textSecondary,
+        fontSize: 14,
+    },
+    contenedorWritter: {
+        justifyContent: 'center',
     }
 });
