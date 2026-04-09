@@ -47,7 +47,7 @@ public class UserSteamController {
     @PostMapping("/register-multiple")
     public ResponseEntity<?> registerMultiple(@RequestBody List<UserSteamRequest> requests) {
         userSteamService.registerAll(requests);
-        return ResponseEntity.ok("Usuarios procesados correctamente");
+        return ResponseEntity.ok("Usuarios procesados correctamente");//sdf
     }
 
     @Autowired
