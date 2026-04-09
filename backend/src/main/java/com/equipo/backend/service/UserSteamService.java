@@ -64,8 +64,38 @@ public class UserSteamService {
                 userSteam.setTimeCreated(request.getTimeCreated());
                 userSteam.setPersonaStateFlags(request.getPersonaStateFlags());
 
-                userSteamRepository.save(userSteam);
+                userSteamRepository.save(userSteam); 
             }
         }
     }
+
+    public List<UserSteam> getAll() {
+        return userSteamRepository.findAll();
+    }
+
+    public UserSteam getById(Long id) {
+        return userSteamRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    public UserSteam update(Long id, UserSteam updatedUser) {
+        UserSteam user = userSteamRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        user.setPersonaName(updatedUser.getPersonaName());
+        user.setAvatar(updatedUser.getAvatar());
+        user.setProfileUrl(updatedUser.getProfileUrl());
+
+        return userSteamRepository.save(user);
+    }
+
+    public void delete(Long id) {
+        userSteamRepository.deleteById(id);
+    }
+
+    public UserSteam getBySteamId(String steamid) {
+    return userSteamRepository.findBySteamid(steamid)
+        .orElseThrow(() -> new RuntimeException("Usuario no encontrado con steamid"));
+}
+
 }
