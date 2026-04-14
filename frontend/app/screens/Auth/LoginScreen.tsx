@@ -41,8 +41,8 @@ export default function LoginScreen() {
         let baseUrl = null;
         if (isWeb){
             baseUrl = 'http://localhost:8080';
-        }else{
-            baseUrl = 'http://10.0.2.2:8080'
+        } else {
+            baseUrl = 'http://10.0.2.2:8080';
         }
         
         try {
@@ -56,11 +56,22 @@ export default function LoginScreen() {
                 }),
             });
 
-            const data = await response.json();
+            const textResponse = await response.text();
+            console.log("Respuesta cruda del servidor:", textResponse);
+            
+            let data;
+            try {
+                data = JSON.parse(textResponse);
+            } catch (jsonError) {
+                // Si falla, la app no explota. Te mostramos qué mandó el servidor.
+                console.error("El servidor no devolvió JSON. Devolvió:", textResponse);
+                Alert.alert("Error del servidor", textResponse.substring(0, 100)); // Mostramos los primeros 100 caracteres
+                return;
+            }
 
             if (!response.ok) {
                 Alert.alert("Error de acceso", data.error || "Credenciales incorrectas");
-                return;
+                return;   
             }
 
             // Guardamos en el AuthContext (User/Client + Token)
