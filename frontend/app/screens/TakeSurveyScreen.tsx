@@ -7,6 +7,10 @@ import { FormApiService } from "../services/api/service";
 import { EncuestaParcialDTO, EncuestaRespuestaDTO } from "../types/formsSurvey.types";
 import { useAuth } from "../screens/Auth/AuthContext";
 import { useLayout } from '@/app/utils/useLayout';
+import globalStyles from "@/assets/globalStyles/globalStyles";
+import strings from "../../../frontend/assets/supportFiles/strings.json";
+import MenuPrincipal from '@/app/components/Menu/CustomMenu';
+
 
 const TakeSurveyScreen = ({ route, navigation }: any) => {
     const { surveyId } = route.params;
