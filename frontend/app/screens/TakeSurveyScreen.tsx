@@ -7,10 +7,6 @@ import { FormApiService } from "../services/api/service";
 import { EncuestaParcialDTO, EncuestaRespuestaDTO } from "../types/formsSurvey.types";
 import { useAuth } from "../screens/Auth/AuthContext";
 import { useLayout } from '@/app/utils/useLayout';
-import globalStyles from "@/assets/globalStyles/globalStyles";
-import strings from "../../../frontend/assets/supportFiles/strings.json";
-import MenuPrincipal from '@/app/components/Menu/CustomMenu';
-
 
 const TakeSurveyScreen = ({ route, navigation }: any) => {
     const { surveyId } = route.params;
@@ -32,6 +28,7 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
                 if (data.preguntas) {
                     const initial: Record<number, any> = {};
                     data.preguntas.forEach(p => {
+                        // Sincronización con la nueva lógica del backend
                         if (p.esMultiple) {
                             initial[p.idPregunta] = p.idsOpcionesSeleccionadas || [];
                         } else if (p.idOpcionSeleccionada) {
@@ -39,7 +36,7 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
                         } else if (p.valorRespuesta) {
                             initial[p.idPregunta] = p.valorRespuesta;
                         } else {
-                            initial[p.idPregunta] = p.esMultiple ? [] : null;
+                            initial[p.idPregunta] = p.esMultiple ? [] : (p.opcionesDisponibles?.length ? [] : "");
                         }
                     });
                     setRespuestasUser(initial);
@@ -67,16 +64,19 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
                     : [...currentRes, oId];
                 return { ...prev, [qId]: nextRes };
             } else {
+                // Para single choice, reemplazamos el array con el nuevo ID
                 return { ...prev, [qId]: [oId] };
             }
         });
     };
 
     const handleSave = async (isFinal: boolean) => {
-        if (!user?.id || survey?.completada) return;
+        if (!user?.id || !survey || survey.completada) return;
 
+        // Formateo correcto para enviar al Backend
         const respuestasFormateadas = Object.entries(respuestasUser).flatMap(([qId, val]) => {
             if (Array.isArray(val)) {
+                // Si es un array de IDs (opciones)
                 return val.map(optionId => ({
                     idPregunta: parseInt(qId),
                     idOpcion: optionId,
@@ -84,11 +84,12 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
                     isRespondida: true,
                 }));
             }
+            // Si es un string (pregunta de texto libre)
             return [{
                 idPregunta: parseInt(qId),
                 idOpcion: undefined,
                 valor: val ? val.toString() : "",
-                isRespondida: true,
+                isRespondida: val ? val.toString().trim().length > 0 : false,
             }];
         });
 
@@ -145,7 +146,7 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
 
                 {survey?.preguntas?.map((pregunta) => {
                     const opciones = pregunta.opcionesDisponibles || [];
-                    const resValue = respuestasUser[pregunta.idPregunta] || [];
+                    const resValue = respuestasUser[pregunta.idPregunta];
 
                     return (
                         <View key={pregunta.idPregunta} style={styles.questionCard}>
@@ -164,13 +165,13 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
                                         >
                                             <View style={[
                                                 styles.radioOuter, 
-                                                { borderRadius: pregunta.esMultiple ? 4 : 10 }, 
+                                                { borderRadius: pregunta.esMultiple ? 4 : 12 }, 
                                                 selected && styles.selectedBorder
                                             ]}>
                                                 {selected && (
                                                     <View style={[
                                                         styles.radioInner, 
-                                                        { borderRadius: pregunta.esMultiple ? 2 : 5 }
+                                                        { borderRadius: pregunta.esMultiple ? 2 : 6 }
                                                     ]} />
                                                 )}
                                             </View>
@@ -212,6 +213,7 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
     );
 };
 
+// ... (estilos se mantienen igual que en tu código original)
 const styles = StyleSheet.create({
     loadingContainer: { flex: 1, backgroundColor: "#000", justifyContent: "center", alignItems: "center" },
     mainScroll: { flex: 1 },

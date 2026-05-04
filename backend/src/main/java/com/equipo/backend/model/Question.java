@@ -3,6 +3,8 @@ package com.equipo.backend.model;
 
 import java.util.*;
 
+import org.hibernate.annotations.BatchSize;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -28,6 +30,7 @@ public class Question {
     private Survey survey;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @BatchSize(size = 50)
     @JsonManagedReference
     @ToString.Exclude
     private List<Option> option = new ArrayList<>();

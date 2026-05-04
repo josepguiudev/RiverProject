@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -47,6 +49,7 @@ public class Survey {
     @Column(nullable = true) private LocalDateTime closeDate;
     
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
+    @BatchSize(size = 20)
     @JsonManagedReference
     @ToString.Exclude
     private List<Question> questionList = new ArrayList<>();

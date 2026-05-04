@@ -20,18 +20,19 @@ public class Option {
     @Column(name = "id_option")
     private Long id;
 
+    @Column(name = "text_opcion")
     private String textOpcion; 
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_question")
     @JsonBackReference
     private Question question;
-
+/* 
     @OneToMany(mappedBy = "option", cascade = CascadeType.ALL)
     @JsonIgnore
     @ToString.Exclude
     private List<PreguntaOpcion> preguntaOpciones = new ArrayList<>();
-
+*/
     @OneToOne(mappedBy = "option", cascade = CascadeType.ALL)
     @JsonIgnore
     private OpcionRespuesta opcionRespuesta;
@@ -60,16 +61,43 @@ public class Option {
     public void setQuestion(Question question) {
         this.question = question;
     }
+/* 
+    public List<PreguntaOpcion> getPreguntaOpciones() {
+        return this.preguntaOpciones;
+    }
+
+    public void setPreguntaOpciones(List<PreguntaOpcion> preguntaOpciones) {
+        this.preguntaOpciones = preguntaOpciones;
+    }
+ */
+    public OpcionRespuesta getOpcionRespuesta() {
+        return this.opcionRespuesta;
+    }
+
+    public void setOpcionRespuesta(OpcionRespuesta opcionRespuesta) {
+        this.opcionRespuesta = opcionRespuesta;
+    }
 
 
     public Option() {
     }
 
-    public Option(Long id, String textOpcion, Question question) {
+    public Option(Long id, String textOpcion, Question question, OpcionRespuesta opcionRespuesta) {
         this.id = id;
         this.textOpcion = textOpcion;
         this.question = question;
+        //this.preguntaOpciones = preguntaOpciones;
+        this.opcionRespuesta = opcionRespuesta;
     }
-    
+
+    public Option(Long id, String textOpcion, Question question, List<PreguntaOpcion> preguntaOpciones, OpcionRespuesta opcionRespuesta) {
+        this.id = id;
+        this.textOpcion = textOpcion;
+        this.question = question;
+        //this.preguntaOpciones = preguntaOpciones;
+        this.opcionRespuesta = opcionRespuesta;
+    }
+  
+
 
 }

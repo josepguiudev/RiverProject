@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.equipo.backend.dto.EncuestaParcialDTO;
 import com.equipo.backend.dto.EncuestaRespuestaDTO;
 import com.equipo.backend.dto.EncuestaRespuestaDTO.RespuestaDTO;
@@ -20,7 +22,7 @@ import com.equipo.backend.repository.SurveyRepository;
 import com.equipo.backend.repository.UserRepository;
 import com.equipo.backend.repository.UserSurveysRepository;
 
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -91,68 +93,86 @@ public class EncuestaServiceImpl implements EncuestaService {
         respuestaRepository.save(respuesta);
     }
 
-    @Override
-    @Transactional
-    public EncuestaParcialDTO cargarRespuestas(Long idEncuesta, Long idUser) {
-        Survey survey = encuestaRepository.findById(idEncuesta)
-                .orElseThrow(() -> new RuntimeException("Encuesta no encontrada"));
+@Override
+@Transactional(readOnly = true)
+public EncuestaParcialDTO cargarRespuestas(Long idEncuesta, Long idUser) {
+    // 1. Obtener la encuesta con sus preguntas (Consulta 1 en tu log)
+    // Se asume que el repositorio devuelve el objeto Survey con su lista de preguntas
+    Survey survey = encuestaRepository.findByIdWithQuestions(idEncuesta)
+            .orElseThrow(() -> new RuntimeException("No se encontró la encuesta con ID: " + idEncuesta));
 
-        // Traemos todas las respuestas del usuario para esta encuesta
-        List<Respuesta> respuestasGuardadas = respuestaRepository.findByOption_Question_Survey_IdAndUserId(idEncuesta, idUser);
-
-        EncuestaParcialDTO parcialDTO = new EncuestaParcialDTO();
-        parcialDTO.setIdEncuesta(idEncuesta);
-        parcialDTO.setNombreEncuesta(survey.getName());
-        
-        // Verificamos estado de la encuesta en la tabla intermedia o por flag
-        parcialDTO.setCompletada(respuestasGuardadas.stream().anyMatch(r -> r.getIsCompletada() == (byte) 1));
-
-        List<EncuestaParcialDTO.PreguntaCargadaDTO> listaPreguntas = survey.getQuestionList().stream().map(pregunta -> {
-            EncuestaParcialDTO.PreguntaCargadaDTO pDTO = new EncuestaParcialDTO.PreguntaCargadaDTO();
-            pDTO.setIdPregunta(pregunta.getId());
-            pDTO.setTextoPregunta(pregunta.getTextQuestion());
-
-            // --- CORRECCIÓN: Lógica de esMultiple ---
-            // Asumimos que si tienes QuestionConfig, lo sacamos de ahí. 
-            // Si no, puedes usar: "MULTIPLE_CHOICE".equals(pregunta.getConfig().getTypeName())
-            if (pregunta.getConfig() != null) {
-                // Si isMultiple() es null, asigna false. Si no, usa su valor.
-                Boolean multiple = pregunta.getConfig().getIsMultiple();
-                pDTO.setEsMultiple(multiple != null ? multiple : false); 
-            }
-                        // Mapear opciones disponibles
-            pDTO.setOpcionesDisponibles(pregunta.getOption().stream().map(opt -> {
-                EncuestaParcialDTO.OpcionDisponibleDTO oDTO = new EncuestaParcialDTO.OpcionDisponibleDTO();
-                oDTO.setIdOpcion(opt.getId());
-                oDTO.setTextoOpcion(opt.getTextOpcion());
-                return oDTO;
-            }).toList());
-
-            // --- CORRECCIÓN: Cargar Múltiples Respuestas ---
-            List<Respuesta> respuestasDeEstaPregunta = respuestasGuardadas.stream()
-                .filter(r -> r.getOption() != null && r.getOption().getQuestion().getId().equals(pregunta.getId()))
-                .toList();
-
-            if (!respuestasDeEstaPregunta.isEmpty()) {
-                // Llenamos la lista de IDs para el modo múltiple (Checkbox)
-                List<Long> seleccionados = respuestasDeEstaPregunta.stream()
-                    .map(r -> r.getOption().getId())
-                    .toList();
-                pDTO.setIdsOpcionesSeleccionadas(seleccionados);
-
-                // Para compatibilidad con Radio, ponemos el primero en idOpcionSeleccionada
-                pDTO.setIdOpcionSeleccionada(seleccionados.get(0));
-                
-                // Valor de texto (si aplica)
-                pDTO.setValorRespuesta(respuestasDeEstaPregunta.get(0).getValueRespuesta());
-            }
-
-            return pDTO;
-        }).toList();
-
-        parcialDTO.setPreguntas(listaPreguntas);
-        return parcialDTO;
+    // 2. FORZAR LA CARGA DE OPCIONES (Solución al fallo del log)
+    // Como Hibernate no las trae automáticamente, recorremos cada pregunta y 
+    // accedemos a su lista de opciones para disparar el SELECT faltante.
+    if (survey.getQuestionList() != null) {
+        for (Question q : survey.getQuestionList()) {
+            q.getOption().forEach(opt -> opt.getId()); // accede a cada elemento
+        }
     }
+
+    // 3. Obtener las respuestas previas del usuario (Consulta 2 en tu log)
+    List<Respuesta> respuestasGuardadas = respuestaRepository.findByOption_Question_Survey_IdAndUserId(idEncuesta, idUser);
+
+    // 4. Mapear al DTO Principal
+    EncuestaParcialDTO parcialDTO = new EncuestaParcialDTO();
+    parcialDTO.setIdEncuesta(idEncuesta);
+    parcialDTO.setNombreEncuesta(survey.getName());
+    
+    // Marcar si la encuesta ya fue enviada/completada
+    boolean completada = respuestasGuardadas.stream()
+            .anyMatch(r -> r.getIsCompletada() != null && r.getIsCompletada() == (byte) 1);
+    parcialDTO.setCompletada(completada);
+
+    // 5. Mapear la lista de PREGUNTAS (Nombre exacto en tu DTO)
+    List<EncuestaParcialDTO.PreguntaCargadaDTO> listaPreguntas = survey.getQuestionList().stream().map(pregunta -> {
+        EncuestaParcialDTO.PreguntaCargadaDTO pDTO = new EncuestaParcialDTO.PreguntaCargadaDTO();
+        pDTO.setIdPregunta(pregunta.getId());
+        pDTO.setTextoPregunta(pregunta.getTextQuestion());
+        
+        // Mapear configuración (esMultiple)
+        if (pregunta.getConfig() != null) {
+            pDTO.setEsMultiple(pregunta.getConfig().getIsMultiple());
+        } else {
+            pDTO.setEsMultiple(false);
+        }
+
+        // 6. Mapear OPCIONES DISPONIBLES (Aquí se llenan los datos de la tabla 'options')
+        pDTO.setOpcionesDisponibles(pregunta.getOption().stream().map(opt -> {
+            EncuestaParcialDTO.OpcionDisponibleDTO oDTO = new EncuestaParcialDTO.OpcionDisponibleDTO();
+            oDTO.setIdOpcion(opt.getId());
+            oDTO.setTextoOpcion(opt.getTextOpcion()); 
+            return oDTO;
+        }).toList());
+
+        // 7. Cargar las respuestas que el usuario seleccionó para esta pregunta
+        List<Respuesta> respuestasDeEstaPregunta = respuestasGuardadas.stream()
+            .filter(r -> r.getOption() != null && r.getOption().getQuestion().getId().equals(pregunta.getId()))
+            .toList();
+
+        if (!respuestasDeEstaPregunta.isEmpty()) {
+            // IDs para checkbox/multiple
+            List<Long> seleccionados = respuestasDeEstaPregunta.stream()
+                .map(r -> r.getOption().getId())
+                .toList();
+            
+            pDTO.setIdsOpcionesSeleccionadas(seleccionados);
+            // ID para radio/single choice
+            pDTO.setIdOpcionSeleccionada(seleccionados.get(0));
+            // Valor de texto (si aplica)
+            pDTO.setValorRespuesta(respuestasDeEstaPregunta.get(0).getValueRespuesta());
+        } else {
+            pDTO.setIdsOpcionesSeleccionadas(new ArrayList<>());
+            pDTO.setIdOpcionSeleccionada(null);
+            pDTO.setValorRespuesta("");
+        }
+
+        return pDTO;
+    }).toList();
+
+    parcialDTO.setPreguntas(listaPreguntas);
+
+    return parcialDTO;
+}
 
     @Override
     public List<SurveySummaryDTO> obtenerResumenEncuestasPorUsuario(Long idUser) {
