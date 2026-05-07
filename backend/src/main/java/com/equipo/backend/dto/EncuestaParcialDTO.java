@@ -19,6 +19,7 @@ public class EncuestaParcialDTO {
         private Long idOpcionSeleccionada; 
         private List<Long> idsOpcionesSeleccionadas = new ArrayList<>(); 
         private String valorRespuesta;
+        private String tipoPregunta;
         private Boolean esMultiple;
         private List<OpcionDisponibleDTO> opcionesDisponibles = new ArrayList<>();
     }

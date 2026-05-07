@@ -41,7 +41,7 @@ public class Question {
     private List<PreguntaOpcion> preguntaOption = new ArrayList<>();
 
 
-    @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private QuestionConfig config;
 

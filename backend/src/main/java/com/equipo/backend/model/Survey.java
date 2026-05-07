@@ -59,7 +59,7 @@ public class Survey {
     @JsonManagedReference
     private PagoPanelista pagoPanelista;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(
         name = "survey_genere",
         joinColumns = @JoinColumn(name = "id_survey"),
@@ -68,7 +68,7 @@ public class Survey {
     @ToString.Exclude
     private List<Genere> genereList = new ArrayList<>();
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(
         name = "survey_category",
         joinColumns = @JoinColumn(name = "id_survey"),

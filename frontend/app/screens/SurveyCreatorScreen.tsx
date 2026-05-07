@@ -1,107 +1,137 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, FlatList, Text, Alert, ActivityIndicator } from 'react-native';
-import { Question, Survey } from '../types/formsSurvey.types';
+import { Question, Survey, Category, Genere } from '../types/formsSurvey.types';
 import { FormApiService } from '../services/api/service';
 import { QuestionCard } from '../components/QuestionCard/QuestionCard';
-
+import { SurveySidebar } from '../components/QuestionCard/SurveySidebar';
 import styles, { colors } from './stylesGlobal';
 import { useLayout } from '@/app/utils/useLayout';
 import { ResponsiveLayout } from '../components/ResponsiveLayout';
-import { useAuth } from './Auth/AuthContext'; // <--- IMPORTANTE: Importa tu AuthContext
+import { useAuth } from './Auth/AuthContext';
 
 const SurveyCreatorScreen = ({ navigation }: any) => {
   const { isDesktopView } = useLayout();
-  const { user } = useAuth(); // <--- OBTENER EL CLIENTE LOGUEADO
-  const [surveyName, setSurveyName] = useState('');
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const { user } = useAuth();
+  
   const [loading, setLoading] = useState(false);
+  const [loadingMetadata, setLoadingMetadata] = useState(true);
 
-  // --- LÓGICA DE MANEJO DE PREGUNTAS ---
+  const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+  const [availableGeneres, setAvailableGeneres] = useState<Genere[]>([]);
+
+  const [survey, setSurvey] = useState<Survey>({
+    name: '',
+    numUsers: 0,
+    numQuestions: 0,
+    questionList: [],
+    categoryList: [], 
+    genereList: [],   
+    launchDate: new Date().toISOString(),
+    closeDate: ''
+  });
+
+  useEffect(() => {
+    const loadMetadata = async () => {
+      try {
+        const [cats, gens] = await Promise.all([
+          FormApiService.getCategories(),
+          FormApiService.getGeneres()
+        ]);
+        setAvailableCategories(cats);
+        setAvailableGeneres(gens);
+      } catch (error) {
+        console.error("Error cargando metadatos:", error);
+      } finally {
+        setLoadingMetadata(false);
+      }
+    };
+    loadMetadata();
+  }, []);
+
+  // --- MANEJO DE PREGUNTAS (CORREGIDO) ---
   const addQuestion = () => {
     const newQuestion: Question = {
-      id: Date.now(),
-      textQuestion: '', 
-      typeName: 'SHORT_TEXT', 
-      options: [] 
-    };
-    setQuestions([...questions, newQuestion]);
+      textQuestion: '',
+      // Ajustamos a la estructura de la base de datos
+      config: {
+        typeName: 'SHORT_TEXT',
+        isMultiple: false,
+        attributes: ''
+      },
+      option: [] 
+    } as any; // Cast temporal si aún no has actualizado la interfaz .types
+
+    setSurvey({
+      ...survey,
+      questionList: [...survey.questionList, newQuestion]
+    });
   };
 
   const removeQuestion = (index: number) => {
-    const updated = [...questions];
+    const updated = [...survey.questionList];
     updated.splice(index, 1);
-    setQuestions(updated);
+    setSurvey({ ...survey, questionList: updated });
   };
 
   const updateQuestionText = (index: number, text: string) => {
-    const updated = [...questions];
+    const updated = [...survey.questionList];
     updated[index].textQuestion = text;
-    setQuestions(updated);
+    setSurvey({ ...survey, questionList: updated });
   };
 
-  const updateType = (index: number, type: Question['typeName']) => {
-    const updated = [...questions];
-    updated[index].typeName = type; 
+  // --- ACTUALIZACIÓN DE TIPO (CORREGIDO PARA QUESTION_CONFIG) ---
+  const updateType = (index: number, type: any) => {
+    const updated = [...survey.questionList];
     
-    if (type === 'SHORT_TEXT' || type === 'NUMERIC') {
-      updated[index].options = []; 
-    } else if (!updated[index].options || updated[index].options.length === 0) {
-      updated[index].options = [{ id: Date.now(), textOpcion: '' }];
-    }
-    setQuestions(updated);
+    // Guardamos los datos dentro del objeto config
+    updated[index].config = {
+      typeName: type,
+      isMultiple: type === 'MULTIPLE_CHOICE',
+      attributes: ''
+    };
+
+    // Mantenemos la lógica de inicializar opciones
+    updated[index].option = (type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE') 
+      ? [{ textOpcion: '' }] 
+      : [];
+
+    setSurvey({ ...survey, questionList: updated });
   };
-  
+
   const addOption = (qIndex: number) => {
-    const updated = [...questions];
-    if (!updated[qIndex].options) updated[qIndex].options = [];
-    updated[qIndex].options!.push({ id: Date.now(), textOpcion: '' });
-    setQuestions(updated);
+    const updated = [...survey.questionList];
+    if (!updated[qIndex].option) {
+      updated[qIndex].option = [];
+    }
+    updated[qIndex].option!.push({ textOpcion: '' });
+    setSurvey({ ...survey, questionList: updated });
   };
 
   const updateOptionText = (qIndex: number, oIndex: number, text: string) => {
-    const updated = [...questions];
-    if (updated[qIndex].options) {
-      updated[qIndex].options![oIndex].textOpcion = text;
-      setQuestions(updated);
+    const updated = [...survey.questionList];
+    if (updated[qIndex].option) {
+      updated[qIndex].option![oIndex].textOpcion = text;
+      setSurvey({ ...survey, questionList: updated });
     }
   };
 
-  // --- GUARDADO FINAL ---
   const handleSaveSurvey = async () => {
-    if (!surveyName.trim() || questions.length === 0) {
+    if (!survey.name.trim() || survey.questionList.length === 0) {
       Alert.alert("Error", "Completa el título y añade al menos una pregunta.");
       return;
     }
 
-    // Verificación de seguridad
-    if (!user || !user.id) {
-      Alert.alert("Sesión expirada", "No se encontró el ID del cliente. Reintenta el login.");
+    if (!user?.id) {
+      Alert.alert("Error", "Sesión no válida.");
       return;
     }
 
     setLoading(true);
     try {
-      const finalSurvey: Survey = {
-        name: surveyName,
-        numQuestions: questions.length,
-        numUsers: 0,
-        questionList: questions.map((q) => ({
-          textQuestion: q.textQuestion,
-          typeName: q.typeName,
-          option: q.options?.map((o) => ({
-            textOpcion: o.textOpcion
-          })) || []
-        })),
-        SurveyReward: 0,
-        genereList: [] 
-      };
-
-      // Enviamos la encuesta y el ID del cliente al servicio
-      await FormApiService.submitForm(finalSurvey, user.id);
-      
+      // Enviamos el objeto survey que ya tiene la estructura con 'config'
+      await FormApiService.submitForm(survey, user.id);
       Alert.alert("Éxito", "Encuesta publicada correctamente.");
-      navigation.goBack(); // Volver al listado de encuestas del cliente
-      
+      navigation.goBack();
     } catch (error) {
       Alert.alert("Error", (error as Error).message);
     } finally {
@@ -109,59 +139,77 @@ const SurveyCreatorScreen = ({ navigation }: any) => {
     }
   };
 
+  if (loadingMetadata) return <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />;
+
   return (
     <ResponsiveLayout fullWidth={true}>
-        <View style={{ width: '100%', marginBottom: 30 }}>
-            <Text style={[styles.tituloHero, isDesktopView && styles.tituloHeroDesktop, { textAlign: 'left', fontSize: 32 }]}>
-                Nuevo <Text style={styles.destaqueAzul}>Proyecto</Text>
-            </Text>
-            
-            <View style={[styles.margen2, { borderBottomWidth: 2, borderColor: colors.primary }]}>
-                <TextInput 
-                    placeholder="Título de la Encuesta..." 
-                    placeholderTextColor="#666"
-                    style={[styles.mainText, { textAlign: 'left', fontSize: 24, paddingVertical: 10, color: 'white' }]}
-                    value={surveyName}
-                    onChangeText={setSurveyName}
-                />
-            </View>
-        </View>
+      <View style={{ width: '100%', marginBottom: 30 }}>
+        <Text style={[styles.tituloHero, isDesktopView && styles.tituloHeroDesktop, { textAlign: 'left', fontSize: 32 }]}>
+          Nuevo <Text style={styles.destaqueAzul}>Proyecto</Text>
+        </Text>
+      </View>
 
-        <FlatList
-          data={questions}
-          keyExtractor={(item) => item.id!.toString()}
-          scrollEnabled={false}
-          renderItem={({ item, index }) => (
-            <QuestionCard 
-              question={item}
-              index={index}
-              onUpdateQuestion={(text) => updateQuestionText(index, text)}
-              onRemoveQuestion={() => removeQuestion(index)}
-              onUpdateType={(type) => updateType(index, type)}
-              onAddOption={() => addOption(index)}
-              onUpdateOption={(text, oIndex) => updateOptionText(index, oIndex, text)}
+      <View style={{ flexDirection: isDesktopView ? 'row' : 'column', width: '100%', gap: 30 }}>
+        <View style={{ flex: 3 }}>
+          <View style={[styles.margen2, { borderBottomWidth: 2, borderColor: colors.primary, marginBottom: 25 }]}>
+            <TextInput 
+              placeholder="Título de la Encuesta..." 
+              placeholderTextColor="#666"
+              style={[styles.mainText, { textAlign: 'left', fontSize: 24, paddingVertical: 10, color: 'white' }]}
+              value={survey.name}
+              onChangeText={(text) => setSurvey({ ...survey, name: text })}
             />
-          )}
-          ListFooterComponent={
-            <TouchableOpacity 
+          </View>
+
+          <FlatList
+            data={survey.questionList}
+            keyExtractor={(_, index) => index.toString()}
+            scrollEnabled={false}
+            renderItem={({ item, index }) => (
+              <QuestionCard 
+                // Pasamos el tipo extraído de config para que el componente visual funcione
+                question={{
+                  ...item,
+                  typeName: item.config?.typeName || 'SHORT_TEXT' 
+                } as any}
+                index={index}
+                onUpdateQuestion={(text) => updateQuestionText(index, text)}
+                onRemoveQuestion={() => removeQuestion(index)}
+                onUpdateType={(type) => updateType(index, type)}
+                onAddOption={() => addOption(index)}
+                onUpdateOption={(text, oIndex) => updateOptionText(index, oIndex, text)}
+              />
+            )}
+            ListFooterComponent={
+              <TouchableOpacity 
                 style={[styles.btnSecondary, { width: '100%', borderStyle: 'dashed', marginTop: 10, borderWidth: 1, borderColor: colors.primary, padding: 15, borderRadius: 10, alignItems: 'center' }]} 
                 onPress={addQuestion}
-            >
+              >
                 <Text style={{ color: colors.secondary, fontWeight: 'bold' }}>+ AÑADIR PREGUNTA</Text>
-            </TouchableOpacity>
-          }
-          style={{ width: '100%' }}
-        />
+              </TouchableOpacity>
+            }
+          />
 
-        <View style={{ width: '100%', marginTop: 40, paddingBottom: 50 }}>
-          <TouchableOpacity 
-            style={[styles.btnPrimary, { width: '100%' }, loading && { opacity: 0.5 }]} 
-            onPress={handleSaveSurvey}
-            disabled={loading}
-          >
-            {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.btnPrimaryText}>PUBLICAR ENCUESTA</Text>}
-          </TouchableOpacity>
+          <View style={{ width: '100%', marginTop: 40, paddingBottom: 50 }}>
+            <TouchableOpacity 
+              style={[styles.btnPrimary, { width: '100%' }, loading && { opacity: 0.5 }]} 
+              onPress={handleSaveSurvey}
+              disabled={loading}
+            >
+              {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.btnPrimaryText}>PUBLICAR ENCUESTA</Text>}
+            </TouchableOpacity>
+          </View>
         </View>
+
+        <View style={{ flex: 1, minWidth: 280 }}>
+          <SurveySidebar 
+            survey={survey}
+            setSurvey={setSurvey}
+            availableCategories={availableCategories}
+            availableGeneres={availableGeneres}
+          />
+        </View>
+      </View>
     </ResponsiveLayout>
   );
 };

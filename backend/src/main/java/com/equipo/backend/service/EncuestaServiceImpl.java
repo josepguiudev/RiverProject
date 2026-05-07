@@ -93,22 +93,29 @@ public class EncuestaServiceImpl implements EncuestaService {
         respuestaRepository.save(respuesta);
     }
 
-@Override
-@Transactional(readOnly = true)
-public EncuestaParcialDTO cargarRespuestas(Long idEncuesta, Long idUser) {
-    // 1. Obtener la encuesta con sus preguntas (Consulta 1 en tu log)
-    // Se asume que el repositorio devuelve el objeto Survey con su lista de preguntas
-    Survey survey = encuestaRepository.findByIdWithQuestions(idEncuesta)
-            .orElseThrow(() -> new RuntimeException("No se encontró la encuesta con ID: " + idEncuesta));
-
-    // 2. FORZAR LA CARGA DE OPCIONES (Solución al fallo del log)
-    // Como Hibernate no las trae automáticamente, recorremos cada pregunta y 
-    // accedemos a su lista de opciones para disparar el SELECT faltante.
-    if (survey.getQuestionList() != null) {
-        for (Question q : survey.getQuestionList()) {
-            q.getOption().forEach(opt -> opt.getId()); // accede a cada elemento
+    @Override
+    @Transactional(readOnly = true)
+    public EncuestaParcialDTO cargarRespuestas(Long idEncuesta, Long idUser) {
+        // 1. Obtener la encuesta
+        Survey survey = encuestaRepository.findByIdWithQuestions(idEncuesta);
+        
+        // Validar manualmente si es nulo
+        if (survey == null) {
+            throw new RuntimeException("No se encontró la encuesta con ID: " + idEncuesta);
         }
-    }
+
+        // 2. FORZAR LA CARGA DE OPCIONES
+        if (survey.getQuestionList() != null) {
+            for (Question q : survey.getQuestionList()) {
+                // El .size() o acceder a cualquier propiedad dispara la carga perezosa (Lazy Loading)
+                if (q.getOption() != null) {
+                    q.getOption().size(); 
+                }
+                if (q.getConfig() != null) {
+                    q.getConfig().getTypeName(); // Esto dispara la SELECT a question_config
+                }
+            }
+        }
 
     // 3. Obtener las respuestas previas del usuario (Consulta 2 en tu log)
     List<Respuesta> respuestasGuardadas = respuestaRepository.findByOption_Question_Survey_IdAndUserId(idEncuesta, idUser);
@@ -129,11 +136,14 @@ public EncuestaParcialDTO cargarRespuestas(Long idEncuesta, Long idUser) {
         pDTO.setIdPregunta(pregunta.getId());
         pDTO.setTextoPregunta(pregunta.getTextQuestion());
         
-        // Mapear configuración (esMultiple)
+        // --- MEJORA DEL MAPEO DE CONFIGURACIÓN ---
         if (pregunta.getConfig() != null) {
+            // Accedemos a las propiedades para asegurar que el Proxy se inicialice
             pDTO.setEsMultiple(pregunta.getConfig().getIsMultiple());
+            pDTO.setTipoPregunta(pregunta.getConfig().getTypeName()); 
         } else {
             pDTO.setEsMultiple(false);
+            pDTO.setTipoPregunta("SHORT_TEXT");
         }
 
         // 6. Mapear OPCIONES DISPONIBLES (Aquí se llenan los datos de la tabla 'options')
