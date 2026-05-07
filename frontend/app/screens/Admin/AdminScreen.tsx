@@ -106,6 +106,7 @@ export default function AdminScreen({ navigation }: any) {
 
     return (
         <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre]}>
+            
             {/* 1. HEADER / BOTÓN MENU */}
             <View style={[globalStyles.cajaMenu, globalStyles.borde, globalStyles.alineadoPersonalVertical]}>
                 <TouchableOpacity onPress={() => setMenuVisible(true)}>
