@@ -1,7 +1,6 @@
 package com.equipo.backend.controller;
 
 import com.equipo.backend.dto.LoginRequest;
-import com.equipo.backend.dto.LoginResponse;
 import com.equipo.backend.dto.RegisterRequest;
 import com.equipo.backend.service.AuthService2;
 import org.springframework.http.ResponseEntity;

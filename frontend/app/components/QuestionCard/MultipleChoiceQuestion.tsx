@@ -10,7 +10,7 @@ interface Props {
 
 export const MultipleChoiceQuestion = ({ question, onAddOption, onUpdateOption }: Props) => (
   <View style={styles.container}>
-    {question.options?.map((opt, i) => (
+    {question.option?.map((opt, i) => (
       <View key={i} style={styles.optionRow}>
         <View style={styles.checkboxSquare} /> 
         <TextInput
