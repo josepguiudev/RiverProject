@@ -8,14 +8,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SurveySummaryDTO {
-    private Long id; // Cambiado de idUserSurvey a id para coincidir con UserSurveyRel
-    private int isRespondida; // Cambiado de boolean a int (0 o 1) para coincidir con tu TS
-    private SurveySimpleDTO survey; // Objeto anidado para que funcione el e.survey.name
+    private Long id;
+    private int isRespondida;
+    private SurveySimpleDTO survey;
 
     @Data
     @AllArgsConstructor
     public static class SurveySimpleDTO {
         private Long id;
         private String name;
+        private Integer numQuestions;
     }
 }

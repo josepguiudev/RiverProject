@@ -104,6 +104,9 @@ public class Survey {
     }
 
     public Integer getNumQuestions() {
+        if (this.questionList != null && !this.questionList.isEmpty()) {
+            return this.questionList.size();
+        }
         return this.numQuestions;
     }
 
