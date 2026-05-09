@@ -7,10 +7,14 @@ spring:
         password: politecnics
         driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
+    steam:
+        api:
+            key: BA9965C760565512F17B2D6648110A9C
+
     jpa:
         show-sql: true
         hibernate:
-            ddl-auto: update
+            ddl-auto: create
         properties:
             hibernate:
                 naming:

@@ -4,6 +4,12 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { AuthProvider } from './screens/Auth/AuthContext';
 
+// Importo TanStack Query para usarlo en toda la app
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Y le creo uun cliente para guardar el cache de las consultas
+const queryClient = new QueryClient();
+
 // 1. Importaciones de tus pantallas
 
 import RegisterScreen from "./screens/Auth/RegisterScreen";
@@ -12,6 +18,7 @@ import TakeSurveyScreen from "./screens/TakeSurveyScreen";
 import SurveyListScreen from "./screens/SurveyListScreen";
 import HomeScreen from "./screens/Home/HomeScreen";
 import ClientDashboard from "./screens/ClientDashboard";
+import ProfileScreen from "./screens/Profile/ProfileScreen";
 
 
 
@@ -31,10 +38,10 @@ function App() {
 	// Si el interruptor está activo, devolvemos Storybook
 	/*
   if (SHOW_STORYBOOK) {
-    const StorybookUI = require('../.rnstorybook').default;
-    return <StorybookUI />;
+	const StorybookUI = require('../.rnstorybook').default;
+	return <StorybookUI />;
   }
-    */
+	*/
 
 	// Si no, devolvemos tu navegación normal
 	return (
@@ -65,6 +72,37 @@ function App() {
 				</Stack.Navigator>
 			</NavigationContainer>
 		} </AuthProvider>
+		<QueryClientProvider client={queryClient}>
+			<AuthProvider> {
+				<NavigationContainer>
+					<Stack.Navigator
+						initialRouteName="Login"
+						screenOptions={{ headerShown: false }}
+					>
+						<Stack.Screen
+							name="Index"
+							component={Index}
+							options={{ headerShown: false }}
+						/>
+						<Stack.Screen
+							name="Login"
+							component={LoginScreen}
+							options={{ headerShown: false }}
+						/>
+						<Stack.Screen name="Register" component={RegisterScreen} />
+						<Stack.Screen name="Home" component={HomeScreen} />
+						<Stack.Screen name="Admin" component={AdminScreen} />
+						<Stack.Screen
+							name="SuerveyCreator"
+							component={SurveyCreatorScreen}
+						/>
+						<Stack.Screen name="SurveyList" component={SurveyListScreen} />
+						<Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
+						<Stack.Screen name="Profile" component={ProfileScreen}></Stack.Screen>
+					</Stack.Navigator>
+				</NavigationContainer>
+			} </AuthProvider>
+		</QueryClientProvider>
 	);
 }
 export default App;

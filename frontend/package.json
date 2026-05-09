@@ -27,6 +27,7 @@
     "@storybook/addon-ondevice-actions": "^10.2.3",
     "@storybook/addon-ondevice-controls": "^10.2.3",
     "@storybook/react-native": "^10.2.3",
+    "@tanstack/react-query": "^5.96.2",
     "axios": "^1.13.5",
     "babel-loader": "^8.4.1",
     "expo": "^51.0.39",
@@ -58,22 +59,22 @@
     "tty-browserify": "^0.0.1"
   },
   "devDependencies": {
-    "@types/react": "~18.2.79",
-    "@types/react-native-typewriter": "^0.7.4",
-    "eslint": "^9.25.0",
-    "eslint-config-expo": "~10.0.0",
-    "typescript": "~5.9.2",
-    "@storybook/react-native-web-vite": "^10.2.10",
     "@chromatic-com/storybook": "^5.0.1",
-    "@storybook/addon-vitest": "^10.2.10",
     "@storybook/addon-a11y": "^10.2.10",
     "@storybook/addon-docs": "^10.2.10",
-    "vite": "^7.3.1",
-    "eslint-plugin-storybook": "^10.2.10",
-    "vitest": "^4.0.18",
-    "playwright": "^1.58.2",
+    "@storybook/addon-vitest": "^10.2.10",
+    "@storybook/react-native-web-vite": "^10.2.10",
+    "@types/react": "~18.2.79",
+    "@types/react-native-typewriter": "^0.7.4",
     "@vitest/browser-playwright": "^4.0.18",
-    "@vitest/coverage-v8": "^4.0.18"
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^9.25.0",
+    "eslint-config-expo": "~10.0.0",
+    "eslint-plugin-storybook": "^10.2.10",
+    "playwright": "^1.58.2",
+    "typescript": "~5.9.2",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18"
   },
   "private": true
 }
