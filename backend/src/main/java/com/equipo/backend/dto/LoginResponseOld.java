@@ -7,11 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
+public class LoginResponseOld {
     private String token;
     private Object user;
-    private String role;           // "USER" o "CLIENT"
-    private Integer registrationStep; // 1, 2, 3 o null para clientes
 }
-
-

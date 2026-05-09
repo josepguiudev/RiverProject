@@ -214,7 +214,21 @@ export default StyleSheet.create({
     borde2: { borderWidth: 1, borderColor: 'green' },
     borde3: { borderWidth: 1, borderColor: 'orange' },
 
-
+    ayudaContenedor: {
+    backgroundColor: '#1a1a1a',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#007AFF'
+    },
+    pasoAyuda: {
+    marginBottom: 5,
+    },
+    textoChico: {
+    color: '#ccc',
+    fontSize: 13,
+    }
 
 
 });
