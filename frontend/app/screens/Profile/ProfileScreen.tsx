@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Text, StyleSheet, Platform, Alert } from 'react-native';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import globalStyles from '@/assets/globalStyles/globalStyles';
@@ -7,11 +7,15 @@ import strings from '../../../assets/supportFiles/strings.json';
 import MenuPrincipal from '@/app/components/Menu/CustomMenu';
 import { useLayout } from '@/app/utils/useLayout';
 import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '@/app/services/api/api';
+import { useAuth } from '@/app/screens/Auth/AuthContext';
 
 import ProfileHeader from '@/app/components/Profile/ProfileHeader';
 import DonutGenresCard from '@/app/components/Profile/DonutGenresCard';
 import TopGamesCard from '@/app/components/Profile/TopGamesCard';
 import SurveysGrid from '@/app/components/Profile/SurveysGrid';
+import SettingsTab from '@/app/components/Profile/SettingsTab';
+import type { SavePayload } from '@/app/components/Profile/SettingsTab';
 
 const BASE_URL = 'http://localhost:8080';
 
@@ -26,9 +30,14 @@ const BASE_URL = 'http://localhost:8080';
 4. Repartir el trabajo a los componentes hijos inyectándoles los datos a través de las **props**.
 */
 
+// ── Sub-pestañas del perfil ──
+type ProfileTab = 'perfil' | 'configuracion';
+
 export default function ProfileScreen({ navigation }: any) {
     const { isMobileView, isDesktopView } = useLayout();
     const [menuVisible, setMenuVisible] = useState(false);
+    const [activeTab, setActiveTab] = useState<ProfileTab>('perfil');
+    const { user } = useAuth(); // Usuario logueado (contiene id, name, email)
 
     const steamId = strings.idPlayerJoako || '76561199167008828';
     const apiKey = Constants.expoConfig?.extra?.STEAM_API_KEY || '';
@@ -71,10 +80,40 @@ export default function ProfileScreen({ navigation }: any) {
                 surveysData = surveysRes.data;
             }
 
+            // 5. Cargar Géneros top 5 del usuario (a partir de sus juegos)
+            // Ruta real: GET /api/games/top-genres/{steamid}
+            // Respuesta esperada: [{ name: "Shooter", percentage: 35 }, ...]
+            // Fallback: si el backend no responde, el componente DonutGenresCard usa sus datos mock.
+            let genresData: { name: string; percentage: number }[] = [];
+            try {
+                const genresRes = await fetch(`${BASE_URL}/api/games/top-genres/${steamId}`);
+                if (genresRes.ok) {
+                    genresData = await genresRes.json();
+                }
+            } catch {
+                // Fallback: el backend no respondió — DonutGenresCard usará mock
+            }
+
+            // 6. Cargar datos del usuario de la BD (para Settings)
+            // Ruta real: GET /api/users/{id}
+            let userDbData = null;
+            if (user?.id) {
+                try {
+                    const userRes = await apiFetch(`/api/users/${user.id}`);
+                    if (userRes.ok) {
+                        userDbData = await userRes.json();
+                    }
+                } catch {
+                    // Fallback: no se pudo cargar datos del usuario de la BD
+                }
+            }
+
             return {
                 steamProfile: profileJson,
                 topGames: gamesJson,
-                surveys: surveysData
+                surveys: surveysData,
+                genres: genresData,
+                userDb: userDbData,
             };
         }
     });
@@ -86,64 +125,159 @@ export default function ProfileScreen({ navigation }: any) {
     // aún no están disponibles (es la promesa de loading ;)).
     const topGames = profileData?.topGames || [];
     const surveys = profileData?.surveys || [];
+    const genres = profileData?.genres || [];
+    const userDb = profileData?.userDb || null;
+
+    // ── Callback para guardar datos de configuración ──
+    // Llama a las rutas REALES del backend con fallback si no están disponibles.
+    const handleSettingsSave = async (payload: SavePayload) => {
+        const { userData, passwordChange } = payload;
+
+        // 1. Actualizar datos del usuario
+        // Ruta real: PUT /api/users/{id}
+        if (user?.id) {
+            const updateRes = await apiFetch(`/api/users/${user.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    name: userData.name,
+                    apellido1: userData.apellido1,
+                    apellido2: userData.apellido2,
+                    email: userData.email,
+                    edad: userData.edad ? parseInt(userData.edad) : null,
+                    localizacion: userData.localizacion,
+                    urlIdStream: userData.steamId, // El campo en el modelo User es urlIdStream
+                }),
+            });
+
+            if (!updateRes.ok) {
+                const errData = await updateRes.json().catch(() => ({}));
+                throw new Error(errData.error || 'Error al actualizar los datos del usuario.');
+            }
+        }
+
+        // 2. Cambiar contraseña (solo si el usuario rellenó los campos)
+        // Ruta real: PUT /api/auth2/change-password
+        if (passwordChange && user?.id) {
+            const pwRes = await apiFetch('/api/auth2/change-password', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    userId: user.id,
+                    currentPassword: passwordChange.currentPassword,
+                    newPassword: passwordChange.newPassword,
+                }),
+            });
+
+            if (!pwRes.ok) {
+                const errData = await pwRes.json().catch(() => ({}));
+                throw new Error(errData.error || 'Error al cambiar la contraseña.');
+            }
+        }
+    };
 
     return (
         <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre]}>
 
             {/* Botón menú */}
-            <View style={[globalStyles.cajaMenu, globalStyles.borde, globalStyles.alineadoPersonalVertical]}>
+            <View style={[globalStyles.cajaMenu, globalStyles.alineadoPersonalVertical, styles.menuBar]}>
                 <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ padding: 20 }}>
                     <Text style={{ color: 'white' }}>{strings.menu}</Text>
                 </TouchableOpacity>
             </View>
 
-            <ScrollView
-                style={styles.scroll}
-                contentContainerStyle={[
-                    styles.content,
-                    isDesktopView && styles.contentDesktop
-                ]}
-            >
-                {/* Sección 1 — Header */}
-                <ProfileHeader profile={steamProfile} loading={loading} />
+            {/* ── Sub-pestañas ── */}
+            <View style={styles.tabBar}>
+                <TouchableOpacity
+                    style={[styles.tab, activeTab === 'perfil' && styles.tabActive]}
+                    onPress={() => setActiveTab('perfil')}
+                    activeOpacity={0.7}
+                >
+                    <Text style={[styles.tabText, activeTab === 'perfil' && styles.tabTextActive]}>
+                        Perfil
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.tab, activeTab === 'configuracion' && styles.tabActive]}
+                    onPress={() => setActiveTab('configuracion')}
+                    activeOpacity={0.7}
+                >
+                    <Text style={[styles.tabText, activeTab === 'configuracion' && styles.tabTextActive]}>
+                        Configuración
+                    </Text>
+                </TouchableOpacity>
+            </View>
 
-                {/* Sección 2 — Donut + Juegos
-                    En móvil van en columna, en desktop en fila */}
+            {/* ── Contenido según pestaña activa ── */}
+            {activeTab === 'perfil' ? (
+                <ScrollView
+                    style={styles.scroll}
+                    contentContainerStyle={[
+                        styles.content,
+                        isDesktopView && styles.contentDesktop
+                    ]}
+                >
+                    {/* Sección 1 — Header */}
+                    <ProfileHeader profile={steamProfile} loading={loading} />
+
+                    {/* Sección 2 — Donut + Juegos
+                        En móvil van en columna, en desktop en fila */}
+                    <View style={[
+                        styles.middleRow,
+                        isMobileView ? styles.middleRowMobile : styles.middleRowDesktop
+                    ]}>
+                        <View style={isMobileView ? styles.fullWidth : styles.halfWidth}>
+                            <DonutGenresCard genres={genres.length > 0 ? genres : undefined} />
+                        </View>
+                        <View style={isMobileView ? styles.fullWidth : styles.halfWidth}>
+                            {/* games={topGames} recibe los 3 juegos principales del usuario (ya cargados desde la BD) 
+                            y en loading={loading} definimos si la rueda sigue girando */}
+                            <TopGamesCard
+                                games={topGames} // Esta es una prop mencionada arriba del todo (linea 25), en este 
+                                // caso esta está devolviendo el valor de estado 'topGames' (linea 107)
+                                loading={loading} //Aquí esta prop está devolviendo el valor de estado 'loading'
+                                isMobile={isMobileView}
+                            // Luego el componente en cuestión (TopGamesCard) se encarga de recoger estas props 
+                            // y mostrar los datos como si dichas props fuesen los paramatros de entrada de una función
+
+                            // En resumen, las props son como el hilo conector de la comunicación entre componentes.
+                            // El componente padre le pasa las props al componente hijo, y el componente hijo 
+                            // se encarga de recoger estas props y mostrar los datos como si dichas props fuesen 
+                            // los paramatros de entrada de una función :))
+                            />
+                        </View>
+                    </View>
+
+                    {/* Sección 3 — Encuestas */}
+                    <SurveysGrid
+                        surveys={surveys}
+                        loading={loading}
+                        isMobile={isMobileView}
+                    />
+
+                    <View style={{ height: 80 }} />
+                </ScrollView>
+            ) : (
+                /* ── Pestaña Configuración ── */
                 <View style={[
-                    styles.middleRow,
-                    isMobileView ? styles.middleRowMobile : styles.middleRowDesktop
+                    styles.settingsWrapper,
+                    isDesktopView && styles.settingsWrapperDesktop,
                 ]}>
-                    <View style={isMobileView ? styles.fullWidth : styles.halfWidth}>
-                        <DonutGenresCard genres={[]} />
-                    </View>
-                    <View style={isMobileView ? styles.fullWidth : styles.halfWidth}>
-                        {/* games={topGames} recibe los 3 juegos principales del usuario (ya cargados desde la BD) 
-                        y en loading={loading} definimos si la rueda sigue girando */}
-                        <TopGamesCard
-                            games={topGames} // Esta es una prop mencionada arriba del todo (linea 25), en este 
-                            // caso esta está devolviendo el valor de estado 'topGames' (linea 107)
-                            loading={loading} //Aquí esta prop está devolviendo el valor de estado 'loading'
-                            isMobile={isMobileView}
-                        // Luego el componente en cuestión (TopGamesCard) se encarga de recoger estas props 
-                        // y mostrar los datos como si dichas props fuesen los paramatros de entrada de una función
-
-                        // En resumen, las props son como el hilo conector de la comunicación entre componentes.
-                        // El componente padre le pasa las props al componente hijo, y el componente hijo 
-                        // se encarga de recoger estas props y mostrar los datos como si dichas props fuesen 
-                        // los paramatros de entrada de una función :))
-                        />
-                    </View>
+                    <SettingsTab
+                        isMobile={isMobileView}
+                        initialData={{
+                            // Primero intenta con los datos reales de la BD (GET /api/users/{id})
+                            // Fallback: usa lo que tenga del AuthContext o del perfil Steam
+                            name: userDb?.name || user?.name || steamProfile?.personaName || steamProfile?.personaname || '',
+                            apellido1: userDb?.apellido1 || '',
+                            apellido2: userDb?.apellido2 || '',
+                            email: userDb?.email || user?.email || '',
+                            edad: userDb?.edad ? String(userDb.edad) : '',
+                            localizacion: userDb?.localizacion || '',
+                            steamId: userDb?.urlIdStream || steamId,
+                        }}
+                        onSave={handleSettingsSave}
+                    />
                 </View>
-
-                {/* Sección 3 — Encuestas */}
-                <SurveysGrid
-                    surveys={surveys}
-                    loading={loading}
-                    isMobile={isMobileView}
-                />
-
-                <View style={{ height: 80 }} />
-            </ScrollView>
+            )}
 
             <MenuPrincipal visible={menuVisible} onClose={() => setMenuVisible(false)} />
         </View>
@@ -151,6 +285,40 @@ export default function ProfileScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+    menuBar: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#1a1a2e',
+    },
+    // ── Tab bar ──
+    tabBar: {
+        flexDirection: 'row',
+        backgroundColor: '#0a0a18',
+        borderBottomWidth: 1,
+        borderBottomColor: '#1a1a2e',
+        paddingHorizontal: 16,
+    },
+    tab: {
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        marginRight: 4,
+        borderBottomWidth: 3,
+        borderBottomColor: 'transparent',
+    },
+    tabActive: {
+        borderBottomColor: '#5b55c0',
+    },
+    tabText: {
+        color: '#666',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    tabTextActive: {
+        color: '#ffffff',
+        textShadowColor: '#5b55c0',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 8,
+    },
+    // ── Scroll / layout ──
     scroll: {
         flex: 1,
     },
@@ -180,5 +348,16 @@ const styles = StyleSheet.create({
     },
     halfWidth: {
         flex: 1,
+    },
+    // ── Settings wrapper ──
+    settingsWrapper: {
+        flex: 1,
+        padding: 16,
+    },
+    settingsWrapperDesktop: {
+        maxWidth: 800,
+        alignSelf: 'center',
+        width: '100%',
+        paddingHorizontal: 40,
     },
 });

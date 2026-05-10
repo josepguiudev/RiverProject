@@ -128,4 +128,13 @@ public class GameSteamController {
         return ResponseEntity.ok(gameService.getTop3GamesBySteamId(steamid));
     }
 
+    /**
+     * Devuelve los top 5 géneros del usuario (porcentaje) a partir de su biblioteca.
+     * El frontend lo usa para la gráfica de donut en el perfil.
+     */
+    @GetMapping("/top-genres/{steamid}")
+    public ResponseEntity<List<com.equipo.backend.dto.GenrePercentageDTO>> getTopGenres(@PathVariable String steamid) {
+        return ResponseEntity.ok(gameService.getTopGenresBySteamId(steamid));
+    }
+
 }

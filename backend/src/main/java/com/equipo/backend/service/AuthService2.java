@@ -95,4 +95,22 @@ public class AuthService2 {
 
         throw new RuntimeException("Credenciales incorrectas");
     }
+
+    /**
+     * Cambia la contraseña de un usuario.
+     * Valida la contraseña actual antes de actualizar.
+     */
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar que la contraseña actual sea correcta
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("La contraseña actual es incorrecta");
+        }
+
+        // Codificar y guardar la nueva contraseña
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 }

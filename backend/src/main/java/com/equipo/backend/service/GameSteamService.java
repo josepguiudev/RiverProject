@@ -1,6 +1,8 @@
 package com.equipo.backend.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.equipo.backend.dto.GameSteamRequest;
+import com.equipo.backend.dto.GenrePercentageDTO;
 import com.equipo.backend.dto.SteamApiResponse;
 import com.equipo.backend.model.Game;
 import com.equipo.backend.model.UserSteam;
@@ -178,4 +181,55 @@ public class GameSteamService {
         clearUserLibrary(steamid); // transacción
         return syncLibraryFromSteam(steamid, apiKey); // sincronización
     }
-}
+
+    /**
+     * Devuelve los top 5 géneros del usuario (como porcentaje) a partir de los juegos
+     * vinculados en la BD. Si hay más de 5 géneros, agrupa el resto en "Otros".
+     */
+    public List<GenrePercentageDTO> getTopGenresBySteamId(String steamid) {
+        UserSteam user = userSteamRepository.findBySteamid(steamid)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + steamid));
+
+        List<Game> allGames = user.getGames();
+
+        // Contamos cuántas veces aparece cada género
+        Map<String, Integer> genreCount = new HashMap<>();
+        int totalGenreEntries = 0;
+
+        for (Game game : allGames) {
+            for (com.equipo.backend.model.Genere genere : game.getGenereList()) {
+                String name = genere.getDescription();
+                genreCount.put(name, genreCount.getOrDefault(name, 0) + 1);
+                totalGenreEntries++;
+            }
+        }
+
+        if (totalGenreEntries == 0) {
+            return new java.util.ArrayList<>();
+        }
+
+        // Ordenamos de mayor a menor
+        final int total = totalGenreEntries;
+        List<Map.Entry<String, Integer>> sorted = genreCount.entrySet().stream()
+                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+                .collect(Collectors.toList());
+
+        // Top 5 + Otros
+        List<GenrePercentageDTO> result = new java.util.ArrayList<>();
+        int accumulatedPercentage = 0;
+
+        for (int i = 0; i < Math.min(5, sorted.size()); i++) {
+            Map.Entry<String, Integer> entry = sorted.get(i);
+            int pct = (int) Math.round((entry.getValue() * 100.0) / total);
+            accumulatedPercentage += pct;
+            result.add(new GenrePercentageDTO(entry.getKey(), pct));
+        }
+
+        // Si hay más de 5, agrupamos el resto
+        if (sorted.size() > 5) {
+            result.add(new GenrePercentageDTO("Otros", 100 - accumulatedPercentage));
+        }
+
+        return result;
+    }
+}

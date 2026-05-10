@@ -8,9 +8,21 @@ interface Genre {
     color: string;
 }
 
-interface Props {
-    genres?: Genre[];
+interface ApiGenre {
+    name: string;
+    percentage: number;
 }
+
+interface Props {
+    /** 
+     * Géneros que vienen de la API (sin color).
+     * Si no se pasan o están vacíos, se usan los mock.
+     */
+    genres?: ApiGenre[];
+}
+
+// Paleta de colores para asignar a los géneros dinámicamente
+const GENRE_COLORS = ['#e43f5a', '#5b55c0', '#64B5F6', '#8BC34A', '#FFB74D', '#CE93D8', '#4DD0E1', '#FF8A65'];
 
 // Mock hasta que el backend devuelva géneros reales
 const MOCK_GENRES: Genre[] = [
@@ -24,10 +36,44 @@ const MOCK_GENRES: Genre[] = [
 const RADIUS = 40;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS; // ≈ 251.2
 
-export default function DonutGenresCard({ genres = MOCK_GENRES }: Props) {
+/**
+ * Convierte géneros de la API (sin color) a géneros con color asignado.
+ * Solo toma los top 5 y agrupa el resto en "Otros".
+ */
+function mapApiGenres(apiGenres: ApiGenre[]): Genre[] {
+    if (!apiGenres || apiGenres.length === 0) return MOCK_GENRES;
+
+    // Tomamos top 5; si hay más, sumamos el resto como "Otros"
+    const top5 = apiGenres.slice(0, 5);
+    const rest = apiGenres.slice(5);
+
+    const result: Genre[] = top5.map((g, i) => ({
+        name: g.name,
+        percentage: g.percentage,
+        color: GENRE_COLORS[i % GENRE_COLORS.length],
+    }));
+
+    if (rest.length > 0) {
+        const otherPercentage = rest.reduce((sum, g) => sum + g.percentage, 0);
+        result.push({
+            name: 'Otros',
+            percentage: otherPercentage,
+            color: '#a2a8d3',
+        });
+    }
+
+    return result;
+}
+
+export default function DonutGenresCard({ genres }: Props) {
+    // Si vienen datos reales de la API, los mapeamos; si no, mock.
+    const displayGenres = genres && genres.length > 0
+        ? mapApiGenres(genres)
+        : MOCK_GENRES;
+
     // Construimos los segmentos acumulando el offset
     let accumulatedOffset = 0;
-    const segments = genres.map((genre) => {
+    const segments = displayGenres.map((genre) => {
         const dash = (genre.percentage / 100) * CIRCUMFERENCE;
         const gap  = CIRCUMFERENCE - dash;
         const offset = accumulatedOffset;
@@ -67,7 +113,7 @@ export default function DonutGenresCard({ genres = MOCK_GENRES }: Props) {
 
             {/* Leyenda */}
             <View style={styles.legend}>
-                {genres.map((genre, i) => (
+                {displayGenres.map((genre, i) => (
                     <View key={i} style={styles.legendItem}>
                         <View style={[styles.dot, { backgroundColor: genre.color }]} />
                         <Text style={styles.legendText}>

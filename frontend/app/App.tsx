@@ -45,38 +45,11 @@ function App() {
 
 	// Si no, devolvemos tu navegación normal
 	return (
-		<AuthProvider> {
-			<NavigationContainer>
-				<Stack.Navigator
-					initialRouteName="Login"
-					screenOptions={{ headerShown: false }}
-				>
-					<Stack.Screen
-						name="Index"
-						component={Index}
-						options={{ headerShown: false }}
-					/>
-					<Stack.Screen
-						name="Login"
-						component={LoginScreen}
-						options={{ headerShown: false }}
-					/>
-					<Stack.Screen name="Register" component={RegisterScreen} />
-					<Stack.Screen name="Home" component={HomeScreen} />
-					<Stack.Screen name="Admin" component={AdminScreen} />
-					<Stack.Screen name="AdminUser" component={AdminUserScreen} />
-					<Stack.Screen name="ClientDashboard" component={ClientDashboard} />
-					<Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen}/>
-					<Stack.Screen name="SurveyList" component={SurveyListScreen} />
-					<Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
-				</Stack.Navigator>
-			</NavigationContainer>
-		} </AuthProvider>
 		<QueryClientProvider client={queryClient}>
-			<AuthProvider> {
+			<AuthProvider>
 				<NavigationContainer>
 					<Stack.Navigator
-						initialRouteName="Login"
+						initialRouteName="Admin"
 						screenOptions={{ headerShown: false }}
 					>
 						<Stack.Screen
@@ -92,16 +65,15 @@ function App() {
 						<Stack.Screen name="Register" component={RegisterScreen} />
 						<Stack.Screen name="Home" component={HomeScreen} />
 						<Stack.Screen name="Admin" component={AdminScreen} />
-						<Stack.Screen
-							name="SuerveyCreator"
-							component={SurveyCreatorScreen}
-						/>
+						<Stack.Screen name="AdminUser" component={AdminUserScreen} />
+						<Stack.Screen name="ClientDashboard" component={ClientDashboard} />
+						<Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen} />
 						<Stack.Screen name="SurveyList" component={SurveyListScreen} />
 						<Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
-						<Stack.Screen name="Profile" component={ProfileScreen}></Stack.Screen>
+						<Stack.Screen name="Profile" component={ProfileScreen} />
 					</Stack.Navigator>
 				</NavigationContainer>
-			} </AuthProvider>
+			</AuthProvider>
 		</QueryClientProvider>
 	);
 }
