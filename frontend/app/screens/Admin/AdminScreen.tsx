@@ -16,13 +16,20 @@ export default function AdminScreen({ navigation }: any) {
     const [juegosEncontrados, setJuegosEncontrados] = useState<any[]>([]);
     const [juegoDetalle, setJuegoDetalle] = useState<any>(null);
     
+    // --- Función auxiliar para la URL base (web vs Android) ---
+    const getBaseUrl = () => {
+        if (isWeb) return strings.parte2Desktop;
+        return 'http://10.0.2.2:8080/';
+    };
+
+    // --- Guardar usuarios ---
     const guardarUsers = async () => {
         if (!usuariosEncontrados || usuariosEncontrados.length === 0) {
             Alert.alert("Aviso", "Primero debes buscar usuarios.");
             return;
         }
         try {
-            const url = `${strings.parte2Desktop}api/usersteam/register-multiple`;           
+            const url = `${getBaseUrl()}api/usersteam/register-multiple`;
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -38,15 +45,16 @@ export default function AdminScreen({ navigation }: any) {
             console.error("Error al guardar usuarios:", error);
             Alert.alert("Error", "No se pudo conectar con el servidor.");
         }
-    }
+    };
 
+    // --- Guardar biblioteca de juegos ---
     const guardarBiblio = async () => {
         if (!juegosEncontrados.length || !usuariosEncontrados.length) {
             Alert.alert("Aviso", "Asegúrate de haber extraído el usuario y su biblioteca.");
             return;
         }
         try {
-            const url = `${strings.parte2Desktop}api/games/save-steam-library`;
+            const url = `${getBaseUrl()}api/games/save-steam-library`;
             const steamidOwner = usuariosEncontrados[0].steamid;
             const response = await fetch(url, {
                 method: 'POST',
@@ -58,15 +66,16 @@ export default function AdminScreen({ navigation }: any) {
         } catch (error: any) {
             Alert.alert("Error", error);
         }
-    }
+    };
 
+    // --- Guardar detalles de un juego ---
     const guardarJuego = async () => {
         if (!juegoDetalle) {
             Alert.alert("Aviso", "Primero debes extraer los detalles de un juego.");
             return;
         }
         try {
-            const url = `${strings.parte2Desktop}api/generes/save-game-details`;
+            const url = `${getBaseUrl()}api/generes/save-game-details`;
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -82,7 +91,7 @@ export default function AdminScreen({ navigation }: any) {
             console.error("Error al guardar juego:", error);
             Alert.alert("Error", "No se pudo conectar con el servidor.");
         }
-    }
+    };
 
     // ----------------------------------------
     // VERSIÓN WEB (EXACTAMENTE IGUAL AL ORIGINAL)
@@ -216,143 +225,157 @@ export default function AdminScreen({ navigation }: any) {
     }
 
     // ----------------------------------------
-// VERSIÓN ANDROID (DISEÑO NUEVO, MISMA LÓGICA)
-// ----------------------------------------
-return (
-    <SafeAreaView style={styles.androidSafeArea}>
-        <View style={styles.androidContainer}>
-            {/* Cabecera con botón de menú estilo SurveyListScreen */}
-            <View style={[stylesGlobal.row, { justifyContent: 'space-between', paddingVertical: 12, paddingHorizontal: 8, width: '100%' }]}>
-                <TouchableOpacity 
-                    onPress={() => setMenuVisible(true)} 
-                    style={stylesGlobal.iconContainerAndroid}
-                >
-                    <Ionicons name="menu-outline" size={30} color="white" />
-                </TouchableOpacity>
-                <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={[stylesGlobal.texto, { fontWeight: 'bold', color: colors.secondary }]}>Admin</Text>
-                </View>
-            </View>
+    // VERSIÓN ANDROID (MEJORADA: SCROLL + ESPACIOS)
+    // ----------------------------------------
+    return (
+        <SafeAreaView style={styles.androidSafeArea}>
+            <ScrollView 
+                showsVerticalScrollIndicator={true}
+                contentContainerStyle={{ paddingBottom: 40 }}
+            >
+                <View style={styles.androidContainer}>
+                    {/* Cabecera con botón de menú estilo SurveyListScreen */}
+                    <View style={[stylesGlobal.row, { justifyContent: 'space-between', paddingVertical: 16, paddingHorizontal: 8, width: '100%' }]}>
+                        <TouchableOpacity 
+                            onPress={() => setMenuVisible(true)} 
+                            style={stylesGlobal.iconContainerAndroid}
+                        >
+                            <Ionicons name="menu-outline" size={32} color="white" />
+                        </TouchableOpacity>
+                        <View style={{ alignItems: 'flex-end' }}>
+                            <Text style={[stylesGlobal.texto, { fontWeight: 'bold', color: colors.secondary, fontSize: 16 }]}>Admin</Text>
+                        </View>
+                    </View>
 
-            {/* Tarjeta 1: Extraer datos */}
-            <View style={styles.androidSection}>
-                <View style={styles.androidSectionHeader}>
-                    <Text style={styles.androidSectionTitle}>Extraer datos</Text>
-                </View>
-                <View style={styles.androidCardsRow}>
-                    <View style={styles.androidCardWrapper}>
-                        <CustomInputCard title='Extraer Users' value={1} onResultFound={(data) => {
-                            const listaFinal = data.response?.players ? data.response.players : (Array.isArray(data) ? data : []); 
-                            setUsuariosEncontrados([...listaFinal])
-                        }}/>
-                    </View>
-                    <View style={styles.androidCardWrapper}>
-                        <CustomInputCard title='Extraer Juegos Bibliotecas' value={3} onResultFound={(data) => {
-                            setJuegosEncontrados([]);
-                            const listaJuegos = data.response?.games || (Array.isArray(data) ? data : []);
-                            setJuegosEncontrados([...listaJuegos])
-                        }}/>
-                    </View>
-                    <View style={styles.androidCardWrapper}>
-                        <CustomInputCard title='Extraer Juegos' value={2} onResultFound={(data) => setJuegoDetalle(data)}/>
-                    </View>
-                </View>
-            </View>
-
-            {/* Sección Usuarios */}
-            <View style={styles.androidSection}>
-                <View style={styles.androidSectionHeader}>
-                    <Text style={styles.androidSectionTitle}>Resultado de búsqueda de usuario/s</Text>
-                </View>
-                <ScrollView style={styles.androidScrollArea} showsVerticalScrollIndicator={true}>
-                    {usuariosEncontrados && usuariosEncontrados.map((user: any, index: number) => (
-                        <View key={user.steamid || index} style={styles.androidUserCard}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Image source={{ uri: user.avatarfull }} style={[styles.androidUserAvatar, { borderColor: user.personastate === 1 ? '#66c0f4' : '#888' }]}/>
-                                <View style={{ marginLeft: 12, flex: 1 }}>
-                                    <Text style={styles.androidUserName}>{user.personaname}</Text>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                                        <View style={[styles.androidStatusDot, { backgroundColor: user.personastate === 1 ? '#66c0f4' : '#888' }]} />
-                                        <Text style={styles.androidStatusText}>{user.personastate === 1 ? 'En línea' : 'Desconectado'}</Text>
-                                    </View>
-                                    <Text style={styles.androidUserId}>ID: {user.steamid}</Text>
-                                </View>
+                    {/* Tarjeta 1: Extraer datos */}
+                    <View style={[styles.androidSection, { marginBottom: 20 }]}>
+                        <View style={styles.androidSectionHeader}>
+                            <Text style={[styles.androidSectionTitle, { fontSize: 18 }]}>Extraer datos</Text>
+                        </View>
+                        <View style={[styles.androidCardsRow, { paddingVertical: 16, gap: 12 }]}>
+                            <View style={styles.androidCardWrapper}>
+                                <CustomInputCard title='Extraer Users' value={1} onResultFound={(data) => {
+                                    const listaFinal = data.response?.players ? data.response.players : (Array.isArray(data) ? data : []); 
+                                    setUsuariosEncontrados([...listaFinal])
+                                }}/>
                             </View>
-                            <View style={styles.androidUserExtra}>
-                                <Text style={styles.androidExtraText}><Text style={{ fontWeight: 'bold' }}>País:</Text> {user.loccountrycode || 'N/A'}</Text>
-                                <Text style={styles.androidExtraText}><Text style={{ fontWeight: 'bold' }}>Creado el:</Text> {new Date(user.timecreated * 1000).toLocaleDateString()}</Text>
-                                <Text style={[styles.androidExtraText, { color: '#66c0f4' }]} numberOfLines={1}>{user.profileurl}</Text>
+                            <View style={styles.androidCardWrapper}>
+                                <CustomInputCard title='Extraer Juegos Bibliotecas' value={3} onResultFound={(data) => {
+                                    setJuegosEncontrados([]);
+                                    const listaJuegos = data.response?.games || (Array.isArray(data) ? data : []);
+                                    setJuegosEncontrados([...listaJuegos])
+                                }}/>
+                            </View>
+                            <View style={styles.androidCardWrapper}>
+                                <CustomInputCard title='Extraer Juegos' value={2} onResultFound={(data) => setJuegoDetalle(data)}/>
                             </View>
                         </View>
-                    ))}
-                </ScrollView>
-                <View style={styles.androidButtonArea}>
-                    <CustomButton title="Guardar usuario/s" onPress={guardarUsers} isAdmin={true} />
-                </View>
-            </View>
+                    </View>
 
-            {/* Sección Bibliotecas */}
-            <View style={styles.androidSection}>
-                <View style={styles.androidSectionHeader}>
-                    <Text style={styles.androidSectionTitle}>Resultado biblioteca de usuario</Text>
-                </View>
-                <ScrollView style={styles.androidScrollArea} showsVerticalScrollIndicator={true}>
-                    {Array.isArray(juegosEncontrados) && juegosEncontrados.map((game: any, index: number) => {
-                        const iconUrl = `http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`;
-                        return (
-                            <View key={game.appid || index} style={styles.androidGameCard}>
-                                <Image source={{ uri: iconUrl }} style={styles.androidGameIcon} resizeMode="cover"/>
-                                <View style={styles.androidGameInfo}>
-                                    <Text style={styles.androidGameName} numberOfLines={1}>{game.name}</Text>
-                                    <View style={styles.androidGameMeta}>
-                                        <Text style={styles.androidGameId}>ID: {game.appid}</Text>
-                                        {game.playtime_forever !== undefined && <Text style={styles.androidGameHours}>{Math.floor(game.playtime_forever / 60)}h</Text>}
+                    {/* Sección Usuarios */}
+                    <View style={[styles.androidSection, { marginBottom: 20 }]}>
+                        <View style={styles.androidSectionHeader}>
+                            <Text style={[styles.androidSectionTitle, { fontSize: 18 }]}>Resultado de búsqueda de usuario/s</Text>
+                        </View>
+                        <ScrollView 
+                            style={{ maxHeight: 400, paddingHorizontal: 12, paddingVertical: 8 }} 
+                            showsVerticalScrollIndicator={true}
+                        >
+                            {usuariosEncontrados && usuariosEncontrados.map((user: any, index: number) => (
+                                <View key={user.steamid || index} style={[styles.androidUserCard, { marginBottom: 16 }]}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Image source={{ uri: user.avatarfull }} style={[styles.androidUserAvatar, { borderColor: user.personastate === 1 ? '#66c0f4' : '#888', width: 70, height: 70 }]}/>
+                                        <View style={{ marginLeft: 12, flex: 1 }}>
+                                            <Text style={[styles.androidUserName, { fontSize: 18 }]}>{user.personaname}</Text>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+                                                <View style={[styles.androidStatusDot, { backgroundColor: user.personastate === 1 ? '#66c0f4' : '#888', width: 10, height: 10 }]} />
+                                                <Text style={[styles.androidStatusText, { fontSize: 13 }]}>{user.personastate === 1 ? 'En línea' : 'Desconectado'}</Text>
+                                            </View>
+                                            <Text style={[styles.androidUserId, { fontSize: 12 }]}>ID: {user.steamid}</Text>
+                                        </View>
+                                    </View>
+                                    <View style={[styles.androidUserExtra, { marginTop: 12, paddingTop: 10 }]}>
+                                        <Text style={[styles.androidExtraText, { fontSize: 12 }]}><Text style={{ fontWeight: 'bold' }}>País:</Text> {user.loccountrycode || 'N/A'}</Text>
+                                        <Text style={[styles.androidExtraText, { fontSize: 12 }]}><Text style={{ fontWeight: 'bold' }}>Creado el:</Text> {new Date(user.timecreated * 1000).toLocaleDateString()}</Text>
+                                        <Text style={[styles.androidExtraText, { color: '#66c0f4', fontSize: 12 }]} numberOfLines={2}>{user.profileurl}</Text>
                                     </View>
                                 </View>
-                            </View>
-                        );
-                    })}
-                </ScrollView>
-                <View style={styles.androidButtonArea}>
-                    <CustomButton title="Guardar juegos" onPress={guardarBiblio} isAdmin={true} />
-                </View>
-            </View>
+                            ))}
+                        </ScrollView>
+                        <View style={[styles.androidButtonArea, { padding: 16 }]}>
+                            <CustomButton title="Guardar usuario/s" onPress={guardarUsers} isAdmin={true} />
+                        </View>
+                    </View>
 
-            {/* Sección Juego Extraído */}
-            <View style={styles.androidSection}>
-                <View style={styles.androidSectionHeader}>
-                    <Text style={styles.androidSectionTitle}>Juego extraído</Text>
-                </View>
-                <ScrollView style={styles.androidScrollArea} showsVerticalScrollIndicator={true}>
-                    {juegoDetalle && Object.keys(juegoDetalle).map((key) => {
-                        const gameData = juegoDetalle[key].data;
-                        if (!gameData) return null;
-                        return (
-                            <View key={key} style={styles.androidDetailCard}>
-                                {gameData.header_image && <Image source={{ uri: gameData.header_image }} style={styles.androidDetailImage} resizeMode="cover"/>}
-                                <Text style={styles.androidDetailTitle}>{gameData.name}</Text>
-                                <Text style={styles.androidDetailSub}>AppID: {gameData.steam_appid} | {gameData.type.toUpperCase()}</Text>
-                                <View style={{ marginBottom: 10 }}>
-                                    <Text style={{ color: '#ccc', fontSize: 12, fontWeight: 'bold', marginBottom: 4 }}>Géneros:</Text>
-                                    <View style={styles.androidGenresContainer}>
-                                        {gameData.genres && gameData.genres.map((g: any, idx: number) => (
-                                            <View key={idx} style={styles.androidGenreBadge}><Text style={styles.androidGenreText}>{g.description}</Text></View>
-                                        ))}
+                    {/* Sección Bibliotecas */}
+                    <View style={[styles.androidSection, { marginBottom: 20 }]}>
+                        <View style={styles.androidSectionHeader}>
+                            <Text style={[styles.androidSectionTitle, { fontSize: 18 }]}>Resultado biblioteca de usuario</Text>
+                        </View>
+                        <ScrollView 
+                            style={{ maxHeight: 400, paddingHorizontal: 12, paddingVertical: 8 }} 
+                            showsVerticalScrollIndicator={true}
+                        >
+                            {Array.isArray(juegosEncontrados) && juegosEncontrados.map((game: any, index: number) => {
+                                const iconUrl = `http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`;
+                                return (
+                                    <View key={game.appid || index} style={[styles.androidGameCard, { paddingVertical: 12, marginBottom: 12 }]}>
+                                        <Image source={{ uri: iconUrl }} style={[styles.androidGameIcon, { width: 50, height: 50 }]} resizeMode="cover"/>
+                                        <View style={styles.androidGameInfo}>
+                                            <Text style={[styles.androidGameName, { fontSize: 15 }]} numberOfLines={2}>{game.name}</Text>
+                                            <View style={styles.androidGameMeta}>
+                                                <Text style={[styles.androidGameId, { fontSize: 11 }]}>ID: {game.appid}</Text>
+                                                {game.playtime_forever !== undefined && <Text style={[styles.androidGameHours, { fontSize: 11 }]}>{Math.floor(game.playtime_forever / 60)}h</Text>}
+                                            </View>
+                                        </View>
                                     </View>
-                                </View>
-                                <Text style={styles.androidCategoriesText}>Categorías: {gameData.categories?.map((c: any) => c.description).join(" • ")}</Text>
-                                <Text style={styles.androidDescription}>{gameData.short_description?.replace(/<[^>]*>?/gm, '')}</Text>
-                            </View>
-                        );
-                    })}
-                </ScrollView>
-                <View style={styles.androidButtonArea}>
-                    <CustomButton title="Guardar juego" onPress={guardarJuego} isAdmin={true} />
-                </View>
-            </View>
+                                );
+                            })}
+                        </ScrollView>
+                        <View style={[styles.androidButtonArea, { padding: 16 }]}>
+                            <CustomButton title="Guardar juegos" onPress={guardarBiblio} isAdmin={true} />
+                        </View>
+                    </View>
 
-            <MenuPrincipal visible={menuVisible} onClose={() => setMenuVisible(false)} />
-        </View>
-    </SafeAreaView>
-);
+                    {/* Sección Juego Extraído */}
+                    <View style={[styles.androidSection, { marginBottom: 20 }]}>
+                        <View style={styles.androidSectionHeader}>
+                            <Text style={[styles.androidSectionTitle, { fontSize: 18 }]}>Juego extraído</Text>
+                        </View>
+                        <ScrollView 
+                            style={{ maxHeight: 400, paddingHorizontal: 12, paddingVertical: 8 }} 
+                            showsVerticalScrollIndicator={true}
+                        >
+                            {juegoDetalle && Object.keys(juegoDetalle).map((key) => {
+                                const gameData = juegoDetalle[key].data;
+                                if (!gameData) return null;
+                                return (
+                                    <View key={key} style={[styles.androidDetailCard, { padding: 16, marginBottom: 12 }]}>
+                                        {gameData.header_image && <Image source={{ uri: gameData.header_image }} style={[styles.androidDetailImage, { height: 160 }]} resizeMode="cover"/>}
+                                        <Text style={[styles.androidDetailTitle, { fontSize: 20 }]}>{gameData.name}</Text>
+                                        <Text style={[styles.androidDetailSub, { fontSize: 13 }]}>AppID: {gameData.steam_appid} | {gameData.type.toUpperCase()}</Text>
+                                        <View style={{ marginBottom: 12 }}>
+                                            <Text style={{ color: '#ccc', fontSize: 14, fontWeight: 'bold', marginBottom: 6 }}>Géneros:</Text>
+                                            <View style={styles.androidGenresContainer}>
+                                                {gameData.genres && gameData.genres.map((g: any, idx: number) => (
+                                                    <View key={idx} style={[styles.androidGenreBadge, { paddingHorizontal: 12, paddingVertical: 6 }]}><Text style={[styles.androidGenreText, { fontSize: 12 }]}>{g.description}</Text></View>
+                                                ))}
+                                            </View>
+                                        </View>
+                                        <Text style={[styles.androidCategoriesText, { fontSize: 12, marginBottom: 12 }]}>Categorías: {gameData.categories?.map((c: any) => c.description).join(" • ")}</Text>
+                                        <Text style={[styles.androidDescription, { fontSize: 12, lineHeight: 18 }]}>{gameData.short_description?.replace(/<[^>]*>?/gm, '')}</Text>
+                                    </View>
+                                );
+                            })}
+                        </ScrollView>
+                        <View style={[styles.androidButtonArea, { padding: 16 }]}>
+                            <CustomButton title="Guardar juego" onPress={guardarJuego} isAdmin={true} />
+                        </View>
+                    </View>
+
+                    <MenuPrincipal visible={menuVisible} onClose={() => setMenuVisible(false)} />
+                </View>
+            </ScrollView>
+        </SafeAreaView>
+    );
 }
