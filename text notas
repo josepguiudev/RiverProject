@@ -15,8 +15,19 @@ Moha front
         - crear usuario asingarle las encuestas automaticamente [done]
 
 Joaking
-    - configuracion
-    - pantallas
-        - Perfil
-        - etc
-    - diseño en general
+    - Hacer diseño pantallas:
+            -  Admin
+            - AdminUser
+            - ClientDashboard (empresa)
+            - CompleteProfile
+            - ConnectSteam
+        # Retocar un poco:
+            - SurveyCreator
+            - SurveyList
+        # Revisar diseño:
+            - Profile
+            - Register
+            - Login
+            - Home
+    - Profile [solucionar 400]
+    - Configuración [llamada ciertos campos desde la BD]
