@@ -137,7 +137,10 @@ public class AuthService2 {
         user.setGenero(request.getGenero());
         user.setLocalizacion(request.getLocalizacion());
         user.setRegistrationStep(2); 
-        
+
+        User savedUser = userRepository.save(user);
+        asignarEncuestasDisponibles(savedUser);
+
         return userRepository.save(user);
     }
 
@@ -241,4 +244,31 @@ public class AuthService2 {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
+   @Transactional
+    public void assignSurveyToUsers(Long surveyId, Integer limit) {
+        Survey survey = surveyRepository.findById(surveyId)
+                .orElseThrow(() -> new RuntimeException("Encuesta no encontrada"));
+        List<User> eligibleUsers = userRepository.findUsersNotAssignedToSurvey(surveyId);
+
+        if (eligibleUsers.isEmpty()) {
+            return;
+        }
+
+        int toAssignCount = (limit != null && limit > 0) 
+                            ? Math.min(limit, eligibleUsers.size()) 
+                            : eligibleUsers.size();
+
+        List<User> selectedUsers = eligibleUsers.subList(0, toAssignCount);
+
+        List<UserSurveys> newAssignments = selectedUsers.stream().map(user -> {
+            UserSurveys rel = new UserSurveys();
+            rel.setUser(user);
+            rel.setSurvey(survey);
+            rel.setIsRespondida((byte) 0);
+            return rel;
+        }).collect(Collectors.toList());
+
+        userSurveysRepository.saveAll(newAssignments);
+    }
+
 }

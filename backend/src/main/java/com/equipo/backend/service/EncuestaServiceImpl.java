@@ -192,7 +192,9 @@ public class EncuestaServiceImpl implements EncuestaService {
                 relacion.getIsRespondida() == (byte) 1 ? 1 : 0, // isRespondida como numero
                 new SurveySummaryDTO.SurveySimpleDTO(
                     relacion.getSurvey().getId(),
-                    relacion.getSurvey().getName()
+                    relacion.getSurvey().getName(),
+                    relacion.getSurvey().getNumQuestions(),
+                    relacion.getSurvey().getUrlGraficoSuperset()
                 )
             ))
             .collect(Collectors.toList());

@@ -65,6 +65,15 @@ public class AuthController2 {
             return ResponseEntity.ok(false); 
         }
     }
+    
+    @PostMapping("/assign-survey/{surveyId}")
+    public ResponseEntity<?> assignSurvey(
+            @PathVariable Long surveyId, 
+            @RequestParam(required = false, defaultValue = "0") Integer limit) {
+        
+        authService2.assignSurveyToUsers(surveyId, limit);
+        return ResponseEntity.ok().body("{\"message\": \"Encuesta asignada con éxito\"}");
+    }
 
 
     /**
