@@ -3,96 +3,252 @@ package com.equipo.backend.service;
 import com.equipo.backend.dto.LoginRequest;
 import com.equipo.backend.dto.LoginResponse;
 import com.equipo.backend.dto.RegisterRequest;
-import com.equipo.backend.model.Client;
-import com.equipo.backend.model.User;
-import com.equipo.backend.repository.ClientRepository;
-import com.equipo.backend.repository.UserRepository;
+import com.equipo.backend.model.*;
+import com.equipo.backend.repository.*;
 import com.equipo.backend.security.JwtService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import jakarta.persistence.EntityManager;
+
+import java.util.Date; // IMPORTANTE: Corrige el error "Date cannot be resolved"
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService2 {
 
     private final UserRepository userRepository;
     private final ClientRepository clientRepository;
+    private final SurveyRepository surveyRepository; // Inyectado para la asignación
+    private final UserSurveysRepository userSurveysRepository; // Para la tabla intermedia
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
+
+    @Value("${steam.api.baseurl:https://api.steampowered.com}")
+    private String steamBaseUrl;
+
+    // Aquí es obligatorio que esté en el YAML o fallará
+    @Value("${steam.api.key}")
+    private String steamApiKey;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private UserSteamQueriesRepository queriesRepository;
+    
     public AuthService2(UserRepository userRepository,
                         ClientRepository clientRepository,
+                        SurveyRepository surveyRepository,
+                        UserSurveysRepository userSurveysRepository,
                         PasswordEncoder passwordEncoder,
-                        JwtService jwtService) {
+                        JwtService jwtService,
+                        UserSteamQueriesRepository queriesRepository,
+                        RestTemplate restTemplate) {
         this.userRepository = userRepository;
         this.clientRepository = clientRepository;
+        this.surveyRepository = surveyRepository;
+        this.userSurveysRepository = userSurveysRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.queriesRepository = queriesRepository;
+        this.restTemplate = restTemplate;
     }
 
+    @Transactional
     public LoginResponse register(RegisterRequest request) {
-        // Validar si el email ya existe en cualquiera de las dos tablas
+        // 1. Validación común
         if (userRepository.findByEmail(request.getEmail()).isPresent() || 
             clientRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("El email ya está registrado");
         }
 
-        if ("CLIENT".equalsIgnoreCase(request.getType())) {
-            // Flujo de CLIENTE
-            Client client = new Client();
-            client.setEmail(request.getEmail());
-            client.setPassword(passwordEncoder.encode(request.getPassword()));
-            client.setNombre(request.getName());
-            client.setCuentaBancaria(request.getCuentaBancaria());
-            client.setUrlImagen(request.getUrlImagen());
-            
-            clientRepository.save(client);
-            
-            String token = jwtService.generateTokenForClient(client); 
-            client.setPassword(null);
-            return new LoginResponse(token, client);
-
-        } else {
-            // Flujo de USUARIO
-            User user = new User();
-            user.setEmail(request.getEmail());
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setName(request.getName());
-            user.setApellido1(request.getApellido1());
-            user.setApellido2(request.getApellido2());
-            user.setEdad(request.getEdad());
-            user.setGenero(request.getGenero());
-            user.setLocalizacion(request.getLocalizacion());
-            user.setId_rol((byte) 1);
-            user.setBanned((byte) 0);
-
-            userRepository.save(user);
-
-            String token = jwtService.generateToken(user);
-            user.setPassword(null);
-            return new LoginResponse(token, user);
-        }
+        // 2. Switch por tipo para crear la entidad
+        return switch (request.getType().toUpperCase()) {
+            case "USER" -> {
+                User user = new User();
+                user.setEmail(request.getEmail());
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
+                user.setName(request.getName());
+                user.setId_rol((byte) 1);
+                user.setRegistrationStep(1);
+                user.setCreacionCuentaUsuario(new Date());
+                
+                userRepository.save(user);
+                yield new LoginResponse(jwtService.generateToken(user), user, "USER", 1);
+            }
+            case "CLIENT" -> {
+                Client client = new Client();
+                client.setEmail(request.getEmail());
+                client.setPassword(passwordEncoder.encode(request.getPassword()));
+                client.setNombre(request.getName());
+                client.setCuentaBancaria(request.getCuentaBancaria());
+                
+                clientRepository.save(client);
+                yield new LoginResponse(jwtService.generateTokenForClient(client), client, "CLIENT", 3);
+            }
+            default -> throw new RuntimeException("Tipo de cuenta no soportado");
+        };
     }
 
     public LoginResponse login(LoginRequest request) {
-        // Buscar en Usuarios
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
-        if (userOpt.isPresent() && passwordEncoder.matches(request.getPassword(), userOpt.get().getPassword())) {
-            User user = userOpt.get();
-            String token = jwtService.generateToken(user);
-            user.setPassword(null);
-            return new LoginResponse(token, user);
-        }
-
-        // Buscar en Clientes
         Optional<Client> clientOpt = clientRepository.findByEmail(request.getEmail());
-        if (clientOpt.isPresent() && passwordEncoder.matches(request.getPassword(), clientOpt.get().getPassword())) {
-            Client client = clientOpt.get();
-            String token = jwtService.generateTokenForClient(client);
-            client.setPassword(null);
-            return new LoginResponse(token, client);
+
+        String role = "NONE";
+        if (userOpt.isPresent()) role = "USER";
+        else if (clientOpt.isPresent()) role = "CLIENT";
+
+        switch (role) {
+            case "USER":
+                User user = userOpt.get();
+                if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                    throw new RuntimeException("Credenciales incorrectas");
+                }
+                return new LoginResponse(jwtService.generateToken(user), user, "USER", user.getRegistrationStep());
+
+            case "CLIENT":
+                Client client = clientOpt.get();
+                if (!passwordEncoder.matches(request.getPassword(), client.getPassword())) {
+                    throw new RuntimeException("Credenciales incorrectas");
+                }
+                return new LoginResponse(jwtService.generateTokenForClient(client), client, "CLIENT", 3);
+
+            default:
+                throw new RuntimeException("Usuario no encontrado");
+        }
+    }
+    // PASO 2: Completar perfil
+    public User completeProfile(Long userId, RegisterRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        user.setApellido1(request.getApellido1());
+        user.setApellido2(request.getApellido2());
+        user.setEdad(request.getEdad());
+        user.setGenero(request.getGenero());
+        user.setLocalizacion(request.getLocalizacion());
+        user.setRegistrationStep(2); 
+
+        User savedUser = userRepository.save(user);
+        asignarEncuestasDisponibles(savedUser);
+
+        return userRepository.save(user);
+    }
+
+     //PASO 3: Finalizar con Steam y asignar encuestas
+    @Transactional
+    public User completeSteamRegistration(Long userId, String steamId) {
+        
+        // 1. Buscamos el ENDPOINT en la base de datos (Type 1: GetPlayerSummaries)
+        String playerSummaryEndpoint = queriesRepository.findByType(1).stream()
+                .filter(q -> q.getQuery().contains("GetPlayerSummaries"))
+                .findFirst()
+                .map(UserSteamQueries::getQuery)
+                .orElse("ISteamUser/GetPlayerSummaries/v2/"); // Fallback de seguridad
+
+        // 2. Construimos la URL completa
+        String finalUrl = steamBaseUrl + "/" + playerSummaryEndpoint + "?key=" + steamApiKey + "&steamids=" + steamId;
+
+        try {
+            // 3. Validamos contra Steam
+            Map<String, Object> response = restTemplate.getForObject(finalUrl, Map.class);
+            
+            // Navegamos por el JSON de respuesta de Steam: response -> players -> [0]
+            Map<?, ?> responseBody = (Map<?, ?>) response.get("response");
+            List<?> players = (List<?>) responseBody.get("players");
+
+            if (players == null || players.isEmpty()) {
+                throw new RuntimeException("El ID de Steam no existe o el perfil es privado.");
+            }
+
+            // 4. Si es válido, actualizamos el usuario en nuestra DB
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado en la base de datos"));
+
+            user.setUrlIdStream(steamId);
+            user.setRegistrationStep(3); // Marcamos que ha completado el registro
+            
+            User savedUser = userRepository.save(user);
+            
+            // 5. Disparamos la lógica para asignarle encuestas basadas en su perfil
+            asignarEncuestasDisponibles(savedUser);
+
+            return savedUser;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error en la validación de Steam: " + e.getMessage());
+        }
+    }
+
+
+    private void asignarEncuestasDisponibles(User user) {
+        List<Survey> allSurveys = surveyRepository.findAll();
+        
+        List<UserSurveys> assignments = allSurveys.stream().map(survey -> {
+            UserSurveys rel = new UserSurveys();
+            rel.setUser(user);
+            rel.setSurvey(survey);
+            rel.setIsRespondida((byte) 0);
+            return rel;
+        }).collect(Collectors.toList());
+
+        userSurveysRepository.saveAll(assignments);
+    }
+
+   public boolean verifySteamIdExists(String steamId) {
+        try {
+            // Usamos las piezas de la DB para ser coherentes con el resto del service
+            String playerSummaryEndpoint = queriesRepository.findByType(1).stream()
+                    .filter(q -> q.getQuery().contains("GetPlayerSummaries"))
+                    .findFirst()
+                    .map(UserSteamQueries::getQuery)
+                    .orElse("ISteamUser/GetPlayerSummaries/v2/");
+
+            String url = steamBaseUrl + "/" + playerSummaryEndpoint + "?key=" + steamApiKey + "&steamids=" + steamId;
+            
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            Map<?, ?> responseBody = (Map<?, ?>) response.get("response");
+            List<?> players = (List<?>) responseBody.get("players");
+            return players != null && !players.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+   @Transactional
+    public void assignSurveyToUsers(Long surveyId, Integer limit) {
+        Survey survey = surveyRepository.findById(surveyId)
+                .orElseThrow(() -> new RuntimeException("Encuesta no encontrada"));
+        List<User> eligibleUsers = userRepository.findUsersNotAssignedToSurvey(surveyId);
+
+        if (eligibleUsers.isEmpty()) {
+            return;
         }
 
-        throw new RuntimeException("Credenciales incorrectas");
+        int toAssignCount = (limit != null && limit > 0) 
+                            ? Math.min(limit, eligibleUsers.size()) 
+                            : eligibleUsers.size();
+
+        List<User> selectedUsers = eligibleUsers.subList(0, toAssignCount);
+
+        List<UserSurveys> newAssignments = selectedUsers.stream().map(user -> {
+            UserSurveys rel = new UserSurveys();
+            rel.setUser(user);
+            rel.setSurvey(survey);
+            rel.setIsRespondida((byte) 0);
+            return rel;
+        }).collect(Collectors.toList());
+
+        userSurveysRepository.saveAll(newAssignments);
     }
+
 }

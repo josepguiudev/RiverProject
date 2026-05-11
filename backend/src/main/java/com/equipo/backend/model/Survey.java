@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -47,6 +49,7 @@ public class Survey {
     @Column(nullable = true) private LocalDateTime closeDate;
     
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL)
+    @BatchSize(size = 20)
     @JsonManagedReference
     @ToString.Exclude
     private List<Question> questionList = new ArrayList<>();
@@ -56,7 +59,7 @@ public class Survey {
     @JsonManagedReference
     private PagoPanelista pagoPanelista;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(
         name = "survey_genere",
         joinColumns = @JoinColumn(name = "id_survey"),
@@ -65,7 +68,7 @@ public class Survey {
     @ToString.Exclude
     private List<Genere> genereList = new ArrayList<>();
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(
         name = "survey_category",
         joinColumns = @JoinColumn(name = "id_survey"),
@@ -84,6 +87,7 @@ public class Survey {
     @ToString.Exclude
     private List<UserSurveys> userSurveysList = new ArrayList<>();
 
+    private String urlGraficoSuperset;
 
     public void setCreationDate(LocalDateTime timestamp) {
         // TODO Auto-generated method stub
@@ -101,6 +105,9 @@ public class Survey {
     }
 
     public Integer getNumQuestions() {
+        if (this.questionList != null && !this.questionList.isEmpty()) {
+            return this.questionList.size();
+        }
         return this.numQuestions;
     }
 
@@ -195,11 +202,18 @@ public class Survey {
     }
 
 
+    public String getUrlGraficoSuperset() {
+        return this.urlGraficoSuperset;
+    }
+
+    public void setUrlGraficoSuperset(String urlGraficoSuperset) {
+        this.urlGraficoSuperset = urlGraficoSuperset;
+    }
+
     public Survey() {
     }
 
-
-    public Survey(Long id, Integer numQuestions, Integer numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList) {
+    public Survey(Long id, Integer numQuestions, Integer numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList, List<Category> categoryList, Client client, List<UserSurveys> userSurveysList, String urlGraficoSuperset) {
         this.id = id;
         this.numQuestions = numQuestions;
         this.numUsers = numUsers;
@@ -210,6 +224,12 @@ public class Survey {
         this.questionList = questionList;
         this.pagoPanelista = pagoPanelista;
         this.genereList = genereList;
+        this.categoryList = categoryList;
+        this.client = client;
+        this.userSurveysList = userSurveysList;
+        this.urlGraficoSuperset = urlGraficoSuperset;
     }
+
+
 
 }

@@ -2,6 +2,7 @@ package com.equipo.backend.model;
 
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,7 +26,9 @@ public class User {
     private String apellido2;
     @Column(unique = true)
     private String email;
-    private Byte genero;
+    private String genero;
+    @JsonFormat(pattern="yyyy-MM-dd")
+    private Date fechaNacimiento;
     private Integer edad;
     private String localizacion;
     private String urlIdStream;
@@ -36,7 +39,10 @@ public class User {
     private String urlImgUsuario;
     private Byte banned;
     private Byte id_rol;
-    
+    private Integer registrationStep; // 1: Básico, 2: Perfil, 3: Steam, 4: Completado
+    @Column(name = "is_active")
+    private Boolean isActive = false; //
+        
     // RELACIÓN ONE TO ONE
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "steam_perfil_id", referencedColumnName = "id_user_steam", foreignKey = @ForeignKey(name = "FK_USER_STEAM"))
@@ -88,10 +94,10 @@ public class User {
         this.apellido2 = apellido2;
     }
 
-    public Byte getGenero() {
+    public String getGenero() {
         return this.genero;
     }
-    public void setGenero(Byte genero) {
+    public void setGenero(String genero) {
         this.genero = genero;
     }
 
@@ -143,6 +149,34 @@ public class User {
     }
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Date getFechaNacimiento() {
+        return this.fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(Date fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
+    }
+
+    public Integer getRegistrationStep() {
+        return this.registrationStep;
+    }
+
+    public void setRegistrationStep(Integer registrationStep) {
+        this.registrationStep = registrationStep;
+    }
+
+    public Boolean isIsActive() {
+        return this.isActive;
+    }
+
+    public Boolean getIsActive() {
+        return this.isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
     
 
@@ -199,7 +233,7 @@ public class User {
 
 
 
-    public User(Long id, String name, String apellido1, String apellido2, String email, Byte genero, Integer edad, String localizacion, String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned, Byte id_rol, List<UserGame> userGamesList, List<UserSurveys> userSurveysList, BonoTotal bonoTotal) {
+    public User(Long id, String name, String apellido1, String apellido2, String email, String genero, Integer edad, String localizacion, String urlIdStream, Date creacionCuentaUsuario, Date creacionCuentaSteam, String password, String urlImgUsuario, Byte banned, Byte id_rol, List<UserGame> userGamesList, List<UserSurveys> userSurveysList, BonoTotal bonoTotal) {
         this.id = id;
         this.name = name;
         this.apellido1 = apellido1;

@@ -1,169 +1,261 @@
-import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, FlatList, Text, Alert, ActivityIndicator } from 'react-native';
-import { Question, Survey } from '../types/formsSurvey.types';
-import { FormApiService } from '../services/api/service';
-import { QuestionCard } from '../components/QuestionCard/QuestionCard';
-
-import styles, { colors } from './stylesGlobal';
-import { useLayout } from '@/app/utils/useLayout';
-import { ResponsiveLayout } from '../components/ResponsiveLayout';
-import { useAuth } from './Auth/AuthContext'; // <--- IMPORTANTE: Importa tu AuthContext
+import React, { useState, useEffect } from "react";
+import {
+	View,
+	TextInput,
+	TouchableOpacity,
+	FlatList,
+	Text,
+	Alert,
+	ActivityIndicator,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Question, Survey, Category, Genere } from "../types/formsSurvey.types";
+import { FormApiService } from "../services/api/service";
+import { QuestionCard } from "../components/QuestionCard/QuestionCard";
+import { SurveySidebar } from "../components/QuestionCard/SurveySidebar";
+import styles, { colors } from "./stylesGlobal";
+import { useLayout } from "@/app/utils/useLayout";
+import { ResponsiveLayout } from "../components/ResponsiveLayout";
+import { useAuth } from "./Auth/AuthContext";
 
 const SurveyCreatorScreen = ({ navigation }: any) => {
-  const { isDesktopView } = useLayout();
-  const { user } = useAuth(); // <--- OBTENER EL CLIENTE LOGUEADO
-  const [surveyName, setSurveyName] = useState('');
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(false);
+	const { isDesktopView } = useLayout();
+	const { user } = useAuth();
 
-  // --- LÓGICA DE MANEJO DE PREGUNTAS ---
-  const addQuestion = () => {
-    const newQuestion: Question = {
-      id: Date.now(),
-      textQuestion: '', 
-      typeName: 'SHORT_TEXT', 
-      options: [] 
-    };
-    setQuestions([...questions, newQuestion]);
-  };
+	const [loading, setLoading] = useState(false);
+	const [loadingMetadata, setLoadingMetadata] = useState(true);
 
-  const removeQuestion = (index: number) => {
-    const updated = [...questions];
-    updated.splice(index, 1);
-    setQuestions(updated);
-  };
+	const [availableCategories, setAvailableCategories] = useState<Category[]>(
+		[],
+	);
+	const [availableGeneres, setAvailableGeneres] = useState<Genere[]>([]);
 
-  const updateQuestionText = (index: number, text: string) => {
-    const updated = [...questions];
-    updated[index].textQuestion = text;
-    setQuestions(updated);
-  };
+	const [survey, setSurvey] = useState<Survey>({
+		name: "",
+		numUsers: 0,
+		numQuestions: 0,
+		questionList: [],
+		categoryList: [],
+		genereList: [],
+		launchDate: new Date().toISOString(),
+		closeDate: "",
+	});
 
-  const updateType = (index: number, type: Question['typeName']) => {
-    const updated = [...questions];
-    updated[index].typeName = type; 
-    
-    if (type === 'SHORT_TEXT' || type === 'NUMERIC') {
-      updated[index].options = []; 
-    } else if (!updated[index].options || updated[index].options.length === 0) {
-      updated[index].options = [{ id: Date.now(), textOpcion: '' }];
-    }
-    setQuestions(updated);
-  };
-  
-  const addOption = (qIndex: number) => {
-    const updated = [...questions];
-    if (!updated[qIndex].options) updated[qIndex].options = [];
-    updated[qIndex].options!.push({ id: Date.now(), textOpcion: '' });
-    setQuestions(updated);
-  };
+	useEffect(() => {
+		const loadMetadata = async () => {
+			try {
+				const [cats, gens] = await Promise.all([
+					FormApiService.getCategories(),
+					FormApiService.getGeneres(),
+				]);
+				setAvailableCategories(cats);
+				setAvailableGeneres(gens);
+			} catch (error) {
+				console.error("Error cargando metadatos:", error);
+			} finally {
+				setLoadingMetadata(false);
+			}
+		};
+		loadMetadata();
+	}, []);
 
-  const updateOptionText = (qIndex: number, oIndex: number, text: string) => {
-    const updated = [...questions];
-    if (updated[qIndex].options) {
-      updated[qIndex].options![oIndex].textOpcion = text;
-      setQuestions(updated);
-    }
-  };
+	const addQuestion = () => {
+		const newQuestion: Question = {
+			textQuestion: "",
+			config: {
+				typeName: "SHORT_TEXT",
+				isMultiple: false,
+				attributes: "",
+			},
+			option: [],
+		} as any;
 
-  // --- GUARDADO FINAL ---
-  const handleSaveSurvey = async () => {
-    if (!surveyName.trim() || questions.length === 0) {
-      Alert.alert("Error", "Completa el título y añade al menos una pregunta.");
-      return;
-    }
+		setSurvey({
+			...survey,
+			questionList: [...survey.questionList, newQuestion],
+		});
+	};
 
-    // Verificación de seguridad
-    if (!user || !user.id) {
-      Alert.alert("Sesión expirada", "No se encontró el ID del cliente. Reintenta el login.");
-      return;
-    }
+	const removeQuestion = (index: number) => {
+		const updated = [...survey.questionList];
+		updated.splice(index, 1);
+		setSurvey({ ...survey, questionList: updated });
+	};
 
-    setLoading(true);
-    try {
-      const finalSurvey: Survey = {
-        name: surveyName,
-        numQuestions: questions.length,
-        numUsers: 0,
-        questionList: questions.map((q) => ({
-          textQuestion: q.textQuestion,
-          typeName: q.typeName,
-          option: q.options?.map((o) => ({
-            textOpcion: o.textOpcion
-          })) || []
-        })),
-        SurveyReward: 0,
-        genereList: [] 
-      };
+	const updateQuestionText = (index: number, text: string) => {
+		const updated = [...survey.questionList];
+		updated[index].textQuestion = text;
+		setSurvey({ ...survey, questionList: updated });
+	};
 
-      // Enviamos la encuesta y el ID del cliente al servicio
-      await FormApiService.submitForm(finalSurvey, user.id);
-      
-      Alert.alert("Éxito", "Encuesta publicada correctamente.");
-      navigation.goBack(); // Volver al listado de encuestas del cliente
-      
-    } catch (error) {
-      Alert.alert("Error", (error as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
+	const updateType = (index: number, type: any) => {
+		const updated = [...survey.questionList];
+		updated[index].config = {
+			typeName: type,
+			isMultiple: type === "MULTIPLE_CHOICE",
+			attributes: "",
+		};
+		updated[index].option =
+			type === "SINGLE_CHOICE" || type === "MULTIPLE_CHOICE"
+				? [{ textOpcion: "" }]
+				: [];
+		setSurvey({ ...survey, questionList: updated });
+	};
 
-  return (
-    <ResponsiveLayout fullWidth={true}>
-        <View style={{ width: '100%', marginBottom: 30 }}>
-            <Text style={[styles.tituloHero, isDesktopView && styles.tituloHeroDesktop, { textAlign: 'left', fontSize: 32 }]}>
-                Nuevo <Text style={styles.destaqueAzul}>Proyecto</Text>
-            </Text>
-            
-            <View style={[styles.margen2, { borderBottomWidth: 2, borderColor: colors.primary }]}>
-                <TextInput 
-                    placeholder="Título de la Encuesta..." 
-                    placeholderTextColor="#666"
-                    style={[styles.mainText, { textAlign: 'left', fontSize: 24, paddingVertical: 10, color: 'white' }]}
-                    value={surveyName}
-                    onChangeText={setSurveyName}
-                />
-            </View>
-        </View>
+	const addOption = (qIndex: number) => {
+		const updated = [...survey.questionList];
+		if (!updated[qIndex].option) updated[qIndex].option = [];
+		updated[qIndex].option!.push({ textOpcion: "" });
+		setSurvey({ ...survey, questionList: updated });
+	};
 
-        <FlatList
-          data={questions}
-          keyExtractor={(item) => item.id!.toString()}
-          scrollEnabled={false}
-          renderItem={({ item, index }) => (
-            <QuestionCard 
-              question={item}
-              index={index}
-              onUpdateQuestion={(text) => updateQuestionText(index, text)}
-              onRemoveQuestion={() => removeQuestion(index)}
-              onUpdateType={(type) => updateType(index, type)}
-              onAddOption={() => addOption(index)}
-              onUpdateOption={(text, oIndex) => updateOptionText(index, oIndex, text)}
-            />
-          )}
-          ListFooterComponent={
-            <TouchableOpacity 
-                style={[styles.btnSecondary, { width: '100%', borderStyle: 'dashed', marginTop: 10, borderWidth: 1, borderColor: colors.primary, padding: 15, borderRadius: 10, alignItems: 'center' }]} 
-                onPress={addQuestion}
-            >
-                <Text style={{ color: colors.secondary, fontWeight: 'bold' }}>+ AÑADIR PREGUNTA</Text>
-            </TouchableOpacity>
-          }
-          style={{ width: '100%' }}
-        />
+	const updateOptionText = (qIndex: number, oIndex: number, text: string) => {
+		const updated = [...survey.questionList];
+		if (updated[qIndex].option) {
+			updated[qIndex].option![oIndex].textOpcion = text;
+			setSurvey({ ...survey, questionList: updated });
+		}
+	};
 
-        <View style={{ width: '100%', marginTop: 40, paddingBottom: 50 }}>
-          <TouchableOpacity 
-            style={[styles.btnPrimary, { width: '100%' }, loading && { opacity: 0.5 }]} 
-            onPress={handleSaveSurvey}
-            disabled={loading}
-          >
-            {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.btnPrimaryText}>PUBLICAR ENCUESTA</Text>}
-          </TouchableOpacity>
-        </View>
-    </ResponsiveLayout>
-  );
+	const handleSaveSurvey = async () => {
+		if (!survey.name.trim() || survey.questionList.length === 0) {
+			Alert.alert(
+				"Error",
+				"Completa el título y añade al menos una pregunta.",
+			);
+			return;
+		}
+		if (!user?.id) {
+			Alert.alert("Error", "Sesión no válida.");
+			return;
+		}
+		setLoading(true);
+		try {
+			await FormApiService.submitForm(survey, user.id);
+			Alert.alert("Éxito", "Encuesta publicada correctamente.");
+			navigation.goBack();
+		} catch (error) {
+			Alert.alert("Error", (error as Error).message);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	if (loadingMetadata)
+		return <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />;
+
+	return (
+		<View style={styles.alineadoPersonal}>
+			<ResponsiveLayout fullWidth={true}>
+				<View style={{ padding: 20, width: "100%" }}>
+					{/* Títol Principal */}
+					<View style={{ marginBottom: 30 }}>
+						<Text style={styles.tituloHero}>
+							Nuevo{" "}
+							<Text style={styles.destaqueAzul}>Proyecto</Text>
+						</Text>
+					</View>
+
+					{/* Cos de la pantalla: 2 columnes en Desktop */}
+					<View
+						style={{
+							flexDirection: isDesktopView ? "row" : "column",
+							width: "100%",
+							gap: 30,
+						}}
+					>
+						{/* COLUMNA ESQUERRA (Preguntes) */}
+						<View style={{ flex: isDesktopView ? 2 : 1 }}>
+							<TextInput
+								placeholder="Título de la Encuesta..."
+								placeholderTextColor="#666"
+								style={styles.inputTitulo}
+								value={survey.name}
+								onChangeText={(text) =>
+									setSurvey({ ...survey, name: text })
+								}
+							/>
+
+							<FlatList
+								data={survey.questionList}
+								keyExtractor={(_, index) => index.toString()}
+								scrollEnabled={false}
+								renderItem={({ item, index }) => (
+									<QuestionCard
+										question={
+											{
+												...item,
+												typeName:
+													item.config?.typeName ||
+													"SHORT_TEXT",
+											} as any
+										}
+										index={index}
+										onUpdateQuestion={(text) =>
+											updateQuestionText(index, text)
+										}
+										onRemoveQuestion={() =>
+											removeQuestion(index)
+										}
+										onUpdateType={(type) =>
+											updateType(index, type)
+										}
+										onAddOption={() => addOption(index)}
+										onUpdateOption={(text, oIndex) =>
+											updateOptionText(
+												index,
+												oIndex,
+												text,
+											)
+										}
+									/>
+								)}
+								ListFooterComponent={
+									<TouchableOpacity
+										style={styles.btnSecondary}
+										onPress={addQuestion}
+									>
+										<Text
+											style={{
+												color: colors.text,
+												fontWeight: "bold",
+											}}
+										>
+											+ AÑADIR PREGUNTA
+										</Text>
+									</TouchableOpacity>
+								}
+							/>
+
+							<TouchableOpacity
+								style={[styles.btnPrimary, { marginTop: 30 }]}
+								onPress={handleSaveSurvey}
+							>
+								<Text style={styles.btnPrimaryText}>
+									PUBLICAR PROYECTO
+								</Text>
+							</TouchableOpacity>
+						</View>
+
+						{/* COLUMNA DRETA (Configuració/Sidebar) */}
+						<View
+							style={{
+								flex: 1,
+								minWidth: isDesktopView ? 300 : "100%",
+							}}
+						>
+							<SurveySidebar
+								survey={survey}
+								setSurvey={setSurvey}
+								availableCategories={availableCategories}
+								availableGeneres={availableGeneres}
+							/>
+						</View>
+					</View>
+				</View>
+			</ResponsiveLayout>
+		</View>
+	);
 };
 
 export default SurveyCreatorScreen;

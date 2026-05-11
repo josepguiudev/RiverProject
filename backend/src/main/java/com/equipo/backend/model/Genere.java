@@ -22,6 +22,7 @@ public class Genere {
     private String description;
 
     @ManyToMany(mappedBy = "genereList")
+    @JsonIgnore
     private List<Game> games = new ArrayList<>();
 
     @ManyToMany(mappedBy = "genereList")

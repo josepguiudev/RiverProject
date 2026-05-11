@@ -23,6 +23,7 @@ public class Category {
     
     @ManyToMany(mappedBy = "categoryList")
     @ToString.Exclude
+    @JsonIgnore
     private List<Game> gamesList = new ArrayList<>();
 
     @ManyToMany(mappedBy = "categoryList")
