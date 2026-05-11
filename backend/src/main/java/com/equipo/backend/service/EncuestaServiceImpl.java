@@ -193,7 +193,8 @@ public class EncuestaServiceImpl implements EncuestaService {
                 new SurveySummaryDTO.SurveySimpleDTO(
                     relacion.getSurvey().getId(),
                     relacion.getSurvey().getName(),
-                    relacion.getSurvey().getNumQuestions()
+                    relacion.getSurvey().getNumQuestions(),
+                    relacion.getSurvey().getUrlGraficoSuperset()
                 )
             ))
             .collect(Collectors.toList());

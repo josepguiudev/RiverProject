@@ -18,5 +18,6 @@ public class SurveySummaryDTO {
         private Long id;
         private String name;
         private Integer numQuestions;
+        private String supersetID;
     }
 }

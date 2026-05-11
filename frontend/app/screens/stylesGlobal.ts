@@ -1,120 +1,179 @@
-// stylesGlobal.ts
 import { StyleSheet, Platform, Dimensions } from 'react-native';
 
-const { width } = Dimensions.get('window');
-const isWeb = Platform.OS === 'web';
+const { width: screenWidth } = Dimensions.get('window');
 
 export const colors = {
-    background: '#0e0d0df1',
-    cardBg: '#263238',
-    primary: '#5b55c0',
-    secondary: '#3b82f6',
-    accent: '#64B5F6',
-    cta: '#8BC34A',
-    textMain: '#F0F2F5',
-    white: '#ffffff',
+  primary: '#5b55c0',
+  secondary: '#7c4dff',
+  background: '#0a0a0a',
+  surface: '#161616',
+  text: '#ffffff',
+  textSecondary: '#a0a0a0',
+  border: '#2a2a2a',
+  blue: '#4a90e2',
+  danger: '#ff4d4d'
 };
 
-// Juntamos TODO en el StyleSheet.create
-const styles = StyleSheet.create({
+export default StyleSheet.create({
+  // CONTENEDOR RAIZ RESPONSIVE
     alineadoPersonal: {
-        flex: 1,
-        backgroundColor: colors.background,
-        width: '100%',
-        ...Platform.select({
-            web: { display: 'flex', minHeight: '100vh' as any, overflowY: 'auto' as any },
-            default: { minHeight: '100%' }
-        })
+    flex: 1,
+    backgroundColor: colors.background,
+    width: '100%',
+    minHeight: Platform.OS === 'web' ? ('100vh' as any) : '100%', 
     },
-    centeredContent: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 40,
+    fullWidthContainer: {
+    width: '100%',
+    flex: 1,
+    alignSelf: 'stretch', 
     },
-    contendorLogoTitulos: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 20
-    },
-    logo: {
-        width: 80,
-        height: 80,
-    },
-    contenedorWritter: {
-        marginLeft: 15,
-    },
-    tituloHero: {
-        fontSize: isWeb && width > 768 ? 60 : 40,
-        fontWeight: '900',
-        color: colors.primary,
-    },
-    tituloHeroDesktop: {
-        fontSize: 80,
-    },
-    destaqueAzul: {
-        color: colors.secondary,
-    },
-    caja: {
-        backgroundColor: '#161616',
-        borderRadius: 20,
-        padding: 25,
-        width: '90%',
-        maxWidth: 450,
-        alignItems: 'center',
-    },
-    cajaDesktop: {
-        maxWidth: 500,
-        padding: 40,
-    },
-    mainText: {
-        color: colors.white,
-        fontSize: 28,
-        fontWeight: 'bold',
-    },
-    texto: {
-        color: '#b0b0b0',
-        fontSize: 16,
-    },
-    textoChico: {
-        color: '#888',
-        fontSize: 13,
-    },
-    blueText: {
-        color: colors.secondary,
-    },
-    row: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
+  // ESTILOS DE TEXTO GENERALES
+  tituloHero: {
+    color: colors.text,
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center', 
+  },
+  tituloHeroDesktop: {
+    fontSize: 42,
+  },
+  destaqueAzul: {
+    color: colors.primary,
+  },
+  mainText: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  texto: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  textoChico: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    textAlign: 'center', // Centramos la descripción
+  },
+  blueText: {
+    color: colors.blue,
+  },
 
-    // --- ESTILOS PARA LA LISTA DE ENCUESTAS ---
-    cajaEncuestas: {
-        backgroundColor: '#1c1c1c',
-        borderRadius: 15,
-        padding: 25,
-        marginBottom: 15,
-        borderWidth: 1,
-        borderColor: '#333',
-        // Esto añade el puntero de ratón en Web
-        ...Platform.select({
-            web: { cursor: 'pointer' as any }
-        })
-    },
+  // AUTH / LOGIN COMPONENTS
+  contendorLogoTitulos: {
+    alignItems: 'center',
+    marginBottom: 40,
+    width: '100%',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    resizeMode: 'contain',
+  },
+  contenedorWritter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  cajaDesktop: {
+    width: '100%',
+    maxWidth: 500, // Limita el ancho en PC para que no se vea gigante
+    padding: 32,
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    alignSelf: 'center', // Centra la caja en la pantalla
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
 
-    tittleTextSurvey: {
-        color: '#ffffff',
-        fontSize: 18,
-        fontWeight: 'bold',
-        letterSpacing: 0.5,
-    },
+  // DASHBOARD / CARDS
+  cajaEncuestas: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    width: '100%',
+    // Sombra sutil para Web/iOS
+    ...Platform.select({
+      web: { cursor: 'pointer' },
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
+      android: { elevation: 3 }
+    })
+  },
+  tittleTextSurvey: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  botonResultados: {
+    backgroundColor: 'rgba(91, 85, 192, 0.15)',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8
+  },
+  textoBotonResultados: {
+    color: colors.primary,
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
 
-    // Si usas tittleTextSurveyDesktop en el código, añádela también:
-    tittleTextSurveyDesktop: {
-        fontSize: 24,
-    },
+  // FORMULARIOS / CREATOR
+  inputTitulo: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.text,
+    paddingVertical: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+    marginBottom: 20,
+    width: '100%',
+  },
+  btnPrimary: {
+    backgroundColor: colors.primary,
+    paddingVertical: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    width: '100%',
+    justifyContent: 'center',
+  },
+  btnPrimaryText: {
+    color: colors.text,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  btnSecondary: {
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 10,
+    width: '100%',
+    backgroundColor: 'transparent',
+  },
 
+  // UTILIDADES RESPONSIVE / MÁRGENES
+  margen2: {
+    marginVertical: 20,
+  },
+  centeredContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  fullWidth: {
+    width: '100%',
+  }
 });
-
-export default styles; // Exportación única

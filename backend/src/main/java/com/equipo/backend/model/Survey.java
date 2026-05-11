@@ -87,6 +87,7 @@ public class Survey {
     @ToString.Exclude
     private List<UserSurveys> userSurveysList = new ArrayList<>();
 
+    private String urlGraficoSuperset;
 
     public void setCreationDate(LocalDateTime timestamp) {
         // TODO Auto-generated method stub
@@ -201,11 +202,18 @@ public class Survey {
     }
 
 
+    public String getUrlGraficoSuperset() {
+        return this.urlGraficoSuperset;
+    }
+
+    public void setUrlGraficoSuperset(String urlGraficoSuperset) {
+        this.urlGraficoSuperset = urlGraficoSuperset;
+    }
+
     public Survey() {
     }
 
-
-    public Survey(Long id, Integer numQuestions, Integer numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList) {
+    public Survey(Long id, Integer numQuestions, Integer numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList, List<Category> categoryList, Client client, List<UserSurveys> userSurveysList, String urlGraficoSuperset) {
         this.id = id;
         this.numQuestions = numQuestions;
         this.numUsers = numUsers;
@@ -216,6 +224,12 @@ public class Survey {
         this.questionList = questionList;
         this.pagoPanelista = pagoPanelista;
         this.genereList = genereList;
+        this.categoryList = categoryList;
+        this.client = client;
+        this.userSurveysList = userSurveysList;
+        this.urlGraficoSuperset = urlGraficoSuperset;
     }
+
+
 
 }

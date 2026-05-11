@@ -1,22 +1,17 @@
 import React, { useState } from "react";
-import { View, Text, Alert, Platform, ActivityIndicator, ScrollView } from "react-native";
-import { useAuth } from "./Auth/AuthContext"; // Importante para el token
+import { View, Text, Alert, Platform, ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
+import { useAuth } from "./Auth/AuthContext"; 
 import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
 import CustomButton from "@/app/components/CustomButton/CustomButton";
-import styles from "./stylesGlobal";
+import styles, { colors } from "./stylesGlobal";
 
 export default function ConnectSteamScreen({ navigation }: any) {
-    // ERROR 1 SOLUCIONADO: Extraemos 'token' y 'user' del hook useAuth
     const { user, token } = useAuth(); 
-    
     const [steamId, setSteamId] = useState("");
-    
-    // ERROR 3 SOLUCIONADO: Unificamos el nombre a 'loading' para que coincida con el error de TS
     const [loading, setLoading] = useState(false);
 
     const baseUrl = Platform.OS === "web" ? "http://localhost:8080" : "http://10.0.2.2:8080";
 
-    // ERROR 2 SOLUCIONADO: Definimos la función que guarda la conexión
     const handleFinalize = async () => {
         if (!steamId) {
             Alert.alert("Error", "Por favor, introduce tu Steam ID.");
@@ -25,19 +20,19 @@ export default function ConnectSteamScreen({ navigation }: any) {
 
         setLoading(true);
         try {
-            // Llamamos al paso 3 del backend (complete-steam-registration)
+            // Este endpoint debe ser el que gatilla la asignación de encuestas en el backend
             const response = await fetch(`${baseUrl}/api/auth2/complete-profile-steam/${user?.id}?steamId=${steamId}`, {
                 method: "PUT",
                 headers: { 
-                    "Authorization": `Bearer ${token}`, // Usamos el token aquí
+                    "Authorization": `Bearer ${token}`, 
                     "Content-Type": "application/json" 
                 }
             });
 
             if (response.ok) {
-                Alert.alert("¡Éxito!", "Cuenta vinculada y encuestas asignadas.");
-                // Una vez terminado el flujo, lo mandamos al Home o Dashboard
-                navigation.replace("Home"); 
+                Alert.alert("¡Configuración Completa!", "Hemos analizado tu perfil y asignado las encuestas disponibles.");
+                // Navegamos a la pantalla donde el usuario ve sus encuestas
+                navigation.replace("SurveyList"); 
             } else {
                 const errorMsg = await response.text();
                 Alert.alert("Error", errorMsg || "No se pudo validar el Steam ID.");
@@ -50,13 +45,17 @@ export default function ConnectSteamScreen({ navigation }: any) {
     };
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0e0d0df1', padding: 20 }}>
-            <View style={[styles.caja, { alignSelf: 'center', width: '100%', maxWidth: 500 }]}>
-                <Text style={styles.mainText}>Paso Final: Conecta Steam</Text>
+        <ScrollView 
+            style={styles.alineadoPersonal} 
+            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}
+        >
+            <View style={styles.cajaDesktop}>
+                <Text style={styles.tituloHero}>
+                    Paso Final: <Text style={styles.destaqueAzul}>Conecta Steam</Text>
+                </Text>
                 
-                <Text style={[styles.texto, { marginBottom: 20, color: '#ccc' }]}>
-                    Para personalizar tu experiencia, necesitamos tu SteamID64 (el número de 17 dígitos). 
-                    Esto nos permitirá asignarte encuestas basadas en tus juegos.
+                <Text style={[styles.textoChico, { marginVertical: 20, lineHeight: 20 }]}>
+                    Al vincular tu ID, nuestro sistema te asignará automáticamente todas las encuestas de los juegos que ya tienes en tu biblioteca.
                 </Text>
 
                 <CustomInputText 
@@ -66,20 +65,34 @@ export default function ConnectSteamScreen({ navigation }: any) {
                     onChangeText={setSteamId} 
                 />
 
-                <View style={{ marginTop: 30 }}>
+                <View style={{ marginTop: 30, gap: 12 }}>
                     {loading ? (
-                        <ActivityIndicator size="large" color="#007AFF" />
+                        <ActivityIndicator size="large" color={colors.primary} />
                     ) : (
-                        <CustomButton title="VINCULAR Y FINALIZAR" onPress={handleFinalize} />
+                        <>
+                            <CustomButton title="VINCULAR Y ASIGNAR ENCUESTAS" onPress={handleFinalize} />
+                            
+                            {/* BOTÓN DE TEST PARA DESARROLLO */}
+                            <TouchableOpacity 
+                                style={[styles.btnSecondary, { borderStyle: 'solid', marginTop: 10 }]} 
+                                onPress={() => navigation.navigate("SurveyList")} 
+                            >
+                                <Text style={{ color: colors.text, fontWeight: 'bold' }}>
+                                    DEBUG: SALTAR A ENCUESTAS (TEST)
+                                </Text>
+                            </TouchableOpacity>
+                        </>
                     )}
                 </View>
 
-                <Text 
-                    style={{ color: '#555', fontSize: 12, marginTop: 15, textAlign: 'center' }}
-                    onPress={() => Alert.alert("Ayuda", "Puedes encontrar tu ID en la configuración de tu perfil de Steam o en webs como steamid.io")}
+                <TouchableOpacity 
+                    onPress={() => Alert.alert("Ayuda", "Tu SteamID64 es un número único. Puedes obtenerlo en steamid.io pegando el link de tu perfil.")}
+                    style={{ marginTop: 25 }}
                 >
-                    ¿Dónde encuentro mi Steam ID?
-                </Text>
+                    <Text style={[styles.textoChico, { textAlign: 'center', textDecorationLine: 'underline', opacity: 0.7 }]}>
+                        ¿Dónde encuentro mi Steam ID?
+                    </Text>
+                </TouchableOpacity>
             </View>
         </ScrollView>
     );
