@@ -18,6 +18,8 @@ import TakeSurveyScreen from "./screens/TakeSurveyScreen";
 import SurveyListScreen from "./screens/SurveyListScreen";
 import HomeScreen from "./screens/Home/HomeScreen";
 import ClientDashboard from "./screens/ClientDashboard";
+import CompleteProfile from "./screens/CompleteProfileScreen"
+import ConnectSteam from "./screens/ConnectSteamScreen"
 import ProfileScreen from "./screens/Profile/ProfileScreen";
 
 
@@ -27,6 +29,8 @@ import Index from "./screens/index";
 
 import AdminScreen from "./screens/Admin/AdminScreen";
 import AdminUserScreen from "./screens/Admin/AdminUserScreen";
+
+
 
 // 2. INTERRUPTOR DIRECTO
 // Cambia a true para ver Storybook, false para la App normal
@@ -70,6 +74,8 @@ function App() {
 						<Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen} />
 						<Stack.Screen name="SurveyList" component={SurveyListScreen} />
 						<Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
+					<Stack.Screen name="CompleteProfile" component={CompleteProfile} />
+					<Stack.Screen name="ConnectSteam" component={ConnectSteam} />
 						<Stack.Screen name="Profile" component={ProfileScreen} />
 					</Stack.Navigator>
 				</NavigationContainer>

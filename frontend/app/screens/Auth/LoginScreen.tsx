@@ -36,11 +36,9 @@ export default function LoginScreen() {
         }
 
         setIsSubmitting(true);
-        // Ajuste de IP para emuladores Android vs Web
         const baseUrl = Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080';
         
         try {
-            // Llamada al nuevo AuthService2
             const response = await fetch(`${baseUrl}/api/auth2/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -57,19 +55,28 @@ export default function LoginScreen() {
                 return;
             }
 
-            // Guardamos en el AuthContext (User/Client + Token)
-            await login(data.user, data.token);
+            // 1. Guardamos todo en el AuthContext
+            // Pasamos: data.user, data.token, data.role y data.registrationStep
+            await login(data.user, data.token, data.role, data.registrationStep);
 
-            // --- LÓGICA DE REDIRECCIÓN ---
-            // Si el objeto tiene 'cuentaBancaria', es un Cliente
-            const isClient = data.user.hasOwnProperty('cuentaBancaria');
-
-            if (isClient) {
-                console.log("Acceso como Empresa detectado");
+            // 2. --- LÓGICA DE REDIRECCIÓN POR PASOS ---
+            if (data.role === 'CLIENT') {
                 navigation.replace("ClientDashboard"); 
             } else {
-                console.log("Acceso como Jugador detectado");
-                navigation.replace("SurveyList");
+                // Es un USER, miramos su paso de registro
+                switch (data.registrationStep) {
+                    case 1:
+                        navigation.replace("CompleteProfile"); // Paso 2: Datos personales
+                        break;
+                    case 2:
+                        navigation.replace("ConnectSteam");    // Paso 3: Steam ID
+                        break;
+                    case 3:
+                        navigation.replace("SurveyList");      // Registro completo
+                        break;
+                    default:
+                        navigation.replace("SurveyList");
+                }
             }
 
         } catch (error) {
