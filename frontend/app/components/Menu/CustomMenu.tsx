@@ -4,6 +4,7 @@ import styles from './styles';
 import strings from "../../../assets/supportFiles/strings.json";
 import globalStyles from '@/assets/globalStyles/globalStyles';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '@/app/screens/Auth/AuthContext';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -36,6 +37,7 @@ const SteamMenuItem = ({ label, onPress }: SteamMenuItemProps) => {
 export default function MenuLateral({ visible, onClose }: any) {
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current; // Inicia fuera a la izquierda
   const navigation = useNavigation();
+  const { logout } = useAuth();
 
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -60,11 +62,31 @@ export default function MenuLateral({ visible, onClose }: any) {
         <View style={styles.linea} />
         
         {/* Aquí tus opciones de menú */}
-        <SteamMenuItem label={strings.adminScreen} onPress={() => navigation.navigate("Admin" as never)}/>
-        <SteamMenuItem label={strings.usersScreen} onPress={() => navigation.navigate("AdminUser" as never)}/>
-        <SteamMenuItem label={strings.perfil} />
+        <SteamMenuItem 
+          label={strings.inicio} 
+          onPress={() => { onClose(); navigation.navigate("Home" as never); }}
+        />
+        <SteamMenuItem 
+          label={strings.adminScreen} 
+          onPress={() => { onClose(); navigation.navigate("Admin" as never); }}
+        />
+        <SteamMenuItem 
+          label={strings.usersScreen} 
+          onPress={() => { onClose(); navigation.navigate("AdminUser" as never); }}
+        />
+        <SteamMenuItem 
+          label={strings.perfil} 
+          onPress={() => { onClose(); navigation.navigate("Profile" as never); }}
+        />
         <SteamMenuItem label={strings.configuracion} />
-        <SteamMenuItem label={strings.cerrarSesion} />
+        <SteamMenuItem 
+          label={strings.cerrarSesion} 
+          onPress={async () => {
+            onClose();
+            await logout();
+            navigation.navigate("Login" as never);
+          }}
+        />
       </Animated.View>
     </View>
   );

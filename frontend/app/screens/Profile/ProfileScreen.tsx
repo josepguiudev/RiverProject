@@ -19,16 +19,26 @@ import type { SavePayload } from '@/app/components/Profile/SettingsTab';
 
 const BASE_URL = 'http://localhost:8080';
 
-// La Screen del Perfil es la que se encarga de llamar a la API y a la BD.
-// Por lo tanto, es la que se encarga de obtener los datos y pasarlos a los componentes.
-// Los componentes solo se encargan de mostrar los datos.
+// ── Mockup de datos en caso de fallo de la API ──
+const MOCK_PROFILE = {
+    personaName: "Usuario (Modo Offline)",
+    steamId: "00000000000000000",
+    avatarFull: "https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg",
+    personastate: 0
+};
 
-/* Por lo tanto, las responsabilidades de esta screen son:
-1. Hablar con Java (fetch o axios).
-2. Almacenar los datos en su memoria (useState).
-3. Decidir cuándo mostrar las ruedas de carga (loading).
-4. Repartir el trabajo a los componentes hijos inyectándoles los datos a través de las **props**.
-*/
+const MOCK_GAMES = [
+    { appid: 440, name: "Team Fortress 2" },
+    { appid: 570, name: "Dota 2" },
+    { appid: 730, name: "Counter-Strike 2" }
+];
+
+const MOCK_SURVEYS = [
+    { id_survey: 1, name: "Tu experiencia en el juego", creationDate: new Date().toISOString() },
+    { id_survey: 2, name: "Encuesta de hardware", creationDate: new Date().toISOString() }
+];
+
+// La Screen del Perfil es la que se encarga de llamar a la API y a la BD.
 
 // ── Sub-pestañas del perfil ──
 type ProfileTab = 'perfil' | 'configuracion';
@@ -42,79 +52,82 @@ export default function ProfileScreen({ navigation }: any) {
     const steamId = strings.idPlayerJoako || '76561199167008828';
     const apiKey = Constants.expoConfig?.extra?.STEAM_API_KEY || '';
 
-    // useEffect tiene problemas ocultos se ve, así que por eso usé TanStack Query. Los problemas son:
-    // 1. No siempre se ejecuta cuando debería.
-    // 2. A veces se ejecuta más veces de las que debería.
-    // 3. Si el componente se desmonta y se vuelve a montar, se ejecuta de nuevo y gasta aún más recursos.
-    // De lado los problemas, con useEffect hay que crear variables useState a mano para los datos, errores y loadings.
-
-    // TanStack Query te permite gestionar el estado de la petición (loading, error, data) de forma automática.
-    // Por lo tanto, no es necesario crear variables useState a mano para los datos, errores y loadings.
-
-    // profileData es un objeto que contiene los datos del perfil (steamProfile, topGames, surveys) que devuelve la función esta.
-    // isLoading es un booleano que indica si los datos se están cargando. Con esto no hace falta 
-    // crear variables manualmente de loading :)). Btw, isLoading funciona como una promesa de que 
-    // no hará nada hasta tener todos los datos.
     const { data: profileData, isLoading: loading } = useQuery({
-        // querykey identifica que un usuario está en perfil así que muestra los datos de x usuario, y así con todos.
-        // Por lo tanto, si cambia el steamId, se ejecuta de nuevo la query.
         queryKey: ['profile', steamId],
-        // queryFn es la función que se encarga de obtener los datos (ay lupita) de Java.
         queryFn: async () => {
-            // 1. Sincronizar (opcional si ya está en DB, pero lo mantenemos como pediste)
-            await fetch(`${BASE_URL}/api/games/sync-library?steamid=${steamId}&apiKey=${apiKey}`);
-
-            // 2. Cargar Perfil desde la DB de Java (Cambiado a by-bd-steamid que es @PathVariable)
-            const profileRes = await fetch(`${BASE_URL}/api/usersteam/by-bd-steamid/${steamId}`);
-            const profileJson = await profileRes.json();
-
-            // 3. Cargar Juegos (Top 3)
-            const gamesRes = await fetch(`${BASE_URL}/api/games/top3/${steamId}`);
-            const gamesJson = await gamesRes.json();
-
-            // 4. Cargar Encuestas (Usando el id_user de la DB que viene dentro del perfil)
-            const userId = profileJson.id;
-            let surveysData = [];
-            if (userId) {
-                const surveysRes = await axios.get(`${BASE_URL}/api/surveys/user/${userId}`);
-                surveysData = surveysRes.data;
-            }
-
-            // 5. Cargar Géneros top 5 del usuario (a partir de sus juegos)
-            // Ruta real: GET /api/games/top-genres/{steamid}
-            // Respuesta esperada: [{ name: "Shooter", percentage: 35 }, ...]
-            // Fallback: si el backend no responde, el componente DonutGenresCard usa sus datos mock.
-            let genresData: { name: string; percentage: number }[] = [];
             try {
-                const genresRes = await fetch(`${BASE_URL}/api/games/top-genres/${steamId}`);
-                if (genresRes.ok) {
-                    genresData = await genresRes.json();
-                }
-            } catch {
-                // Fallback: el backend no respondió — DonutGenresCard usará mock
-            }
+                // Limpiamos el steamId por si tiene espacios invisibles
+                const cleanSteamId = steamId.trim();
 
-            // 6. Cargar datos del usuario de la BD (para Settings)
-            // Ruta real: GET /api/users/{id}
-            let userDbData = null;
-            if (user?.id) {
+                // 1. Sincronizar
+                await fetch(`${BASE_URL}/api/games/sync-library?steamid=${cleanSteamId}&apiKey=${apiKey}`).catch(() => { });
+
+                // 2. Cargar Perfil
+                let profileJson = MOCK_PROFILE;
                 try {
-                    const userRes = await apiFetch(`/api/users/${user.id}`);
-                    if (userRes.ok) {
-                        userDbData = await userRes.json();
+                    const profileRes = await fetch(`${BASE_URL}/api/usersteam/by-bd-steamid/${cleanSteamId}`);
+                    if (profileRes.ok) {
+                        profileJson = await profileRes.json();
+                    } else {
+                        console.log("Error en by-bd-steamid:", profileRes.status);
                     }
-                } catch {
-                    // Fallback: no se pudo cargar datos del usuario de la BD
-                }
-            }
+                } catch (e) { console.log("Fallo conexión perfil"); }
 
-            return {
-                steamProfile: profileJson,
-                topGames: gamesJson,
-                surveys: surveysData,
-                genres: genresData,
-                userDb: userDbData,
-            };
+                // 3. Cargar Juegos (Top 3)
+                let gamesJson = MOCK_GAMES;
+                try {
+                    const gamesRes = await fetch(`${BASE_URL}/api/games/top3/${cleanSteamId}`);
+                    if (gamesRes.ok) gamesJson = await gamesRes.json();
+                } catch (e) { console.log("Fallo conexión juegos"); }
+
+                // 4. Cargar Encuestas (SOLO si tenemos un userId válido)
+                const userId = user?.id; // Intentamos sacar el ID real
+                let surveysData = MOCK_SURVEYS;
+
+                // IMPORTANTE: Solo llamamos si userId es un número válido
+                if (userId && !isNaN(Number(userId))) {
+                    try {
+                        const surveysRes = await axios.get(`${BASE_URL}/api/surveys/user/${userId}`);
+                        surveysData = surveysRes.data;
+                    } catch (e) { console.log("Fallo conexión encuestas"); }
+                } else {
+                    console.log("Usando encuestas mock porque el userId es:", userId);
+                }
+
+                // 5. Cargar Géneros
+                let genresData: { name: string; percentage: number }[] = [];
+                try {
+                    const genresRes = await fetch(`${BASE_URL}/api/games/top-genres/${cleanSteamId}`);
+                    if (genresRes.ok) genresData = await genresRes.json();
+                } catch (e) { }
+
+                // 6. Cargar datos del usuario de la BD (para Settings)
+                let userDbData = null;
+                if (user?.id) {
+                    try {
+                        const userRes = await apiFetch(`/api/users/${user.id}`);
+                        if (userRes.ok) {
+                            userDbData = await userRes.json();
+                        }
+                    } catch (e) { }
+                }
+
+                return {
+                    steamProfile: profileJson,
+                    topGames: gamesJson,
+                    surveys: surveysData,
+                    genres: genresData,
+                    userDb: userDbData,
+                };
+            } catch (error) {
+                return {
+                    steamProfile: MOCK_PROFILE,
+                    topGames: MOCK_GAMES,
+                    surveys: MOCK_SURVEYS,
+                    genres: [],
+                    userDb: null,
+                };
+            }
         }
     });
 
@@ -266,7 +279,7 @@ export default function ProfileScreen({ navigation }: any) {
                         initialData={{
                             // Primero intenta con los datos reales de la BD (GET /api/users/{id})
                             // Fallback: usa lo que tenga del AuthContext o del perfil Steam
-                            name: userDb?.name || user?.name || steamProfile?.personaName || steamProfile?.personaname || '',
+                            name: userDb?.name || user?.name || steamProfile?.personaName || steamProfile?.personaName || '',
                             apellido1: userDb?.apellido1 || '',
                             apellido2: userDb?.apellido2 || '',
                             email: userDb?.email || user?.email || '',

@@ -53,10 +53,10 @@ function App() {
 			<AuthProvider>
 				<NavigationContainer>
 					<Stack.Navigator
-						initialRouteName="Login"
+						initialRouteName="Home"
 						screenOptions={{ headerShown: false }}
 					>
-						<Stack.Screen //Ruta vieja de login/register. la dejo por el lore
+						<Stack.Screen
 							name="Index"
 							component={Index}
 							options={{ headerShown: false }}

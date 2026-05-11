@@ -91,7 +91,7 @@ export default function CompleteProfileScreen({ navigation }: any) {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0e0d0df1', padding: 20 }}>
-      <View style={[styles.caja, { alignSelf: 'center', width: '100%', maxWidth: 500 }]}>
+      <View style={[styles.cajaDesktop, { alignSelf: 'center', width: '100%', maxWidth: 500 }]}>
         <Text style={styles.mainText}>Paso 2: Completa tu Perfil</Text>
 
         <CustomInputText 

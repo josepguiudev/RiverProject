@@ -16,50 +16,39 @@ export default StyleSheet.create({
         borderColor: 'orange',
         borderStyle: 'solid',
     },
-    container: {
+    alineadoPersonal: {
         flex: 1,
+        paddingHorizontal: 20,
+        paddingTop: 40,
     },
-    containerDesktop: {
-        padding: 40,
+    contendorLogoTitulos: {
+        alignItems: 'center',
+        marginBottom: 30,
     },
-    cajaHome: {
-        width: '90%',
-        height: '95%',
-    },
-    cajaHomeDesktop: {
-        width: '70%',
-        maxHeight: '90%',
-    },
-    cajaEncuestas: {
-        width: '100%',
-        height: 180,
-        backgroundColor: '#0e0d0df1',
-        borderRadius: 20,
-        marginBottom: 15,
-    },
-    cajaEncuestasTablet: {
-        width: '48%', // Dos columnas en tablet si se usara flex-wrap
-    },
-    cajaTextoEncuestas: {
-        width: '100%',
+    contenedorWritter: {
         height: 40,
-        paddingLeft: 10,
-        display: 'flex',
-        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    caja: {
+        backgroundColor: '#161616',
+        borderRadius: 10,
+        padding: 20,
+        minHeight: 300,
+    },
+    menuButton: {
+        position: 'absolute',
+        top: 40,
+        right: 20,
+        zIndex: 10,
+        backgroundColor: '#5b55c0',
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
         alignItems: 'center',
     },
-    cajaComponentesEncuestas: {
-        width: '100%',
-        height: '85%'  
-    },
-    tittleTextSurvey: {
+    menuButtonText: {
         color: '#fff',
-        fontSize: 12,
-        fontWeight: 'bold',
-        textAlign: 'left',
-        fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed',
-    },
-    tittleTextSurveyDesktop: {
-        fontSize: 16,
+        fontSize: 30,
     }
 });
