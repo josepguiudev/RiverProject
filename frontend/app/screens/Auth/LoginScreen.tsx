@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Image, Animated, Platform, Alert, ScrollView, SafeAreaView, KeyboardAvoidingView } from "react-native";
+import { View, Text, TouchableOpacity, Image, Animated, Platform, Alert, ScrollView, ActivityIndicator } from "react-native";
 import TypeWriter from "react-native-typewriter";
 import { useNavigation } from "@react-navigation/native";
 
 import CustomButton from "@/app/components/CustomButton/CustomButton";
 import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
 import strings from "../../../assets/supportFiles/strings.json";
-import styles, {colors} from "../stylesGlobal"; // Tu archivo de estilos unificado
+import styles, { colors } from "../stylesGlobal"; 
 import { useLayout } from "@/app/utils/useLayout";
 import { useAuth } from "../Auth/AuthContext"; 
 import { isWeb } from "@/app/utils/device";
@@ -15,20 +15,10 @@ export default function LoginScreen() {
     const navigation = useNavigation<any>();
     const { isDesktopView } = useLayout();
     const { login } = useAuth();
-    const cursorOpacity = React.useRef(new Animated.Value(1)).current;
-
+    
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    useEffect(() => {
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(cursorOpacity, { toValue: 0, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
-                Animated.timing(cursorOpacity, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
-            ]),
-        ).start();
-    }, []);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -46,7 +36,6 @@ export default function LoginScreen() {
         }
         
         try {
-            // Llamada al nuevo AuthService2
             const response = await fetch(`${baseUrl}/api/auth2/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -56,17 +45,14 @@ export default function LoginScreen() {
                 }),
             });
 
-            const textResponse = await response.text();
-            console.log("Respuesta cruda del servidor:", textResponse);
-            
+            // Si el backend devuelve un string simple en vez de JSON cuando hay error
+            const contentType = response.headers.get("content-type");
             let data;
-            try {
-                data = JSON.parse(textResponse);
-            } catch (jsonError) {
-                // Si falla, la app no explota. Te mostramos qué mandó el servidor.
-                console.error("El servidor no devolvió JSON. Devolvió:", textResponse);
-                Alert.alert("Error del servidor", textResponse.substring(0, 100)); // Mostramos los primeros 100 caracteres
-                return;
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await response.json();
+            } else {
+                const textError = await response.text();
+                data = { error: textError };
             }
 
             if (!response.ok) {
@@ -74,57 +60,67 @@ export default function LoginScreen() {
                 return;   
             }
 
-            // Guardamos en el AuthContext (User/Client + Token)
-            await login(data.user, data.token);
+            await login(data.user, data.token, data.role, data.registrationStep);
 
-            // --- LÓGICA DE REDIRECCIÓN ---
-            // Si el objeto tiene 'cuentaBancaria', es un Cliente
-            const isClient = data.user.hasOwnProperty('cuentaBancaria');
-
-            if (isClient) {
-                console.log("Acceso como Empresa detectado");
+            // Lógica de redirección (se mantiene igual)
+            if (data.role === 'CLIENT') {
                 navigation.replace("ClientDashboard"); 
             } else {
-                console.log("Acceso como Jugador detectado");
-                navigation.replace("SurveyList");
+                switch (data.registrationStep) {
+                    case 1: navigation.replace("CompleteProfile"); break;
+                    case 2: navigation.replace("ConnectSteam"); break;
+                    default: navigation.replace("SurveyList");
+                }
             }
 
         } catch (error) {
             console.error("Login Error:", error);
-            Alert.alert("Error de conexión", "No se pudo contactar con el servidor");
+            Alert.alert("Error de conexión", "Servidor no disponible");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    if (isWeb){
-        return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0e0d0df1' }}>
-            <View style={styles.alineadoPersonal}>
-                
-                {/* Header con Logo y Título Animado */}
-                <View style={styles.contendorLogoTitulos}>
-                    <Image source={require("../../../assets/images/logo.png")} style={styles.logo} />
+    return (
+        // El View raíz usa alineadoPersonal para el fondo y minHeight
+        <View style={styles.alineadoPersonal}>
+            <ScrollView 
+                contentContainerStyle={styles.centeredContent}
+                showsVerticalScrollIndicator={false}
+            >
+                {/* Header Animado */}
+                <View style={[styles.contendorLogoTitulos, { marginBottom: 40 }]}>
+                    <Image 
+                        source={require("../../../assets/images/logo.png")} 
+                        style={styles.logo}
+                        resizeMode="contain" // Corregido el warning de resizeMode
+                    />
                     <View style={styles.contenedorWritter}>
                         <Text style={[styles.tituloHero, isDesktopView && styles.tituloHeroDesktop]}>
                             {strings.nameMayus}{" "}
-                            <TypeWriter typing={1} style={styles.destaqueAzul}>{strings.appMayus}</TypeWriter>
+                            <TypeWriter typing={1} style={styles.destaqueAzul}>
+                                {strings.appMayus}
+                            </TypeWriter>
                         </Text>
                     </View>
                 </View>
 
-                {/* Caja de Login */}
+                {/* Caja de Login principal */}
                 <View style={[styles.caja, isDesktopView && styles.cajaDesktop]}>
-                    <Text style={[styles.mainText, { marginBottom: 30 }]}>Iniciar Sesión</Text>
+                    <Text style={[styles.mainText, { marginBottom: 10 }]}>Bienvenido</Text>
+                    <Text style={[styles.texto, { marginBottom: 30 }]}>Introduce tus credenciales para continuar</Text>
                     
-                    <View style={{ width: '100%', maxWidth: 400 }}>
+                    <View style={{ width: '100%' }}>
                         <CustomInputText
                             label={strings.direccionEmail}
                             placeholder={strings.placeEmail}
                             onChangeText={setEmail}
                             value={email}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
                         />
-                        <View style={{ marginTop: 10 }}>
+                        
+                        <View style={{ marginTop: 20 }}>
                             <CustomInputText
                                 label={strings.contrasenia}
                                 placeholder={strings.placePassword}
@@ -133,6 +129,13 @@ export default function LoginScreen() {
                                 value={password}
                             />
                         </View>
+
+                        {/* Olvidé mi contraseña */}
+                        <TouchableOpacity style={{ alignSelf: 'flex-end', marginTop: 10 }}>
+                            <Text style={[styles.textoChico, { color: colors.secondary }]}>
+                                ¿Has olvidado tu contraseña?
+                            </Text>
+                        </TouchableOpacity>
                         
                         <View style={{ marginTop: 30, justifyContent: 'center', alignItems: 'center'}}>
                             <CustomButton 
@@ -142,19 +145,24 @@ export default function LoginScreen() {
                             />
                         </View>
 
-                        <TouchableOpacity 
-                            onPress={() => navigation.navigate("Register")} 
-                            style={{ marginTop: 25, alignItems: 'center' }}
-                        >
-                            <Text style={styles.texto}>
-                                ¿No tienes cuenta? <Text style={styles.blueText}>Regístrate aquí</Text>
-                            </Text>
-                        </TouchableOpacity>
+                        {/* Footer de Registro */}
+                        <View style={[styles.row, { marginTop: 25, justifyContent: 'center' }]}>
+                            <Text style={styles.texto}>¿No tienes cuenta? </Text>
+                            <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+                                <Text style={[styles.texto, styles.blueText, { fontWeight: 'bold' }]}>
+                                    Regístrate aquí
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
-
-            </View>
-        </ScrollView>
+                
+                {/* Texto de ayuda o copyright al final */}
+                <Text style={[styles.textoChico, { marginTop: 40, opacity: 0.5 }]}>
+                    River Project © 2024 - Todos los derechos reservados
+                </Text>
+            </ScrollView>
+        </View>
     );
     } else {
         return (    

@@ -1,5 +1,8 @@
 import { isWeb } from './../utils/device';
 import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform, Dimensions } from 'react-native';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 export const colors = {
     background: '#0e0d0df1',      // Tu negro principal
@@ -12,57 +15,61 @@ export const colors = {
     white: '#ffffff',
     darkCard: '#161616',          // Fondo para items
     borderDark: 'rgba(255, 255, 255, 0.1)'
+  primary: '#5b55c0',
+  secondary: '#7c4dff',
+  background: '#0a0a0a',
+  surface: '#161616',
+  text: '#ffffff',
+  textSecondary: '#a0a0a0',
+  border: '#2a2a2a',
+  blue: '#4a90e2',
+  danger: '#ff4d4d'
 };
 
-export const inputStyles = {
-    inputStandard: {
-        backgroundColor: '#1A1A1A',
-        color: '#FFF',
-        fontSize: 16,
-        padding: 12,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: '#333',
-    }
-}
-
 export default StyleSheet.create({
-    // --- LAYOUT Y CONTENEDORES ---
+  // CONTENEDOR RAIZ RESPONSIVE
     alineadoPersonal: {
-        flex: 1,
-        backgroundColor: colors.background,
-        alignItems: 'center',
-        justifyContent: "center",
-        width: '100%',
-        ...Platform.select({
-            web: { minHeight: '100vh' as any },
-            default: { minHeight: '100%' as any }
-        })
+    flex: 1,
+    backgroundColor: colors.background,
+    width: '100%',
+    minHeight: Platform.OS === 'web' ? ('100vh' as any) : '100%', 
     },
-    caja: {
-        backgroundColor: colors.background,
-        borderRadius: 20,
-        padding: 20,
-        width: '85%',
-        alignItems: 'center',
-        justifyContent: "center",
+    fullWidthContainer: {
+    width: '100%',
+    flex: 1,
+    alignSelf: 'stretch', 
     },
-    cajaDesktop: {
-        width: '40%',
-        maxWidth: 500,
-        padding: 40,
-    },
-    maxWidth: { width: '100%' },
-    maxHeigth: { height: '100%' },
-    noJustify: { justifyContent: 'flex-start' },
-    row: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    margen1: { marginTop: 5 },
-    margen2: { marginTop: 20 },
+  // ESTILOS DE TEXTO GENERALES
+  tituloHero: {
+    color: colors.text,
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center', 
+  },
+  tituloHeroDesktop: {
+    fontSize: 42,
+  },
+  destaqueAzul: {
+    color: colors.primary,
+  },
+  mainText: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  texto: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  textoChico: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    textAlign: 'center', // Centramos la descripción
+  },
+  blueText: {
+    color: colors.blue,
+  },
 
     // --- CABECERA Y LOGO ---
     contendorLogoTitulos: {
@@ -83,6 +90,32 @@ export default StyleSheet.create({
         resizeMode: 'contain',
         marginBottom: isWeb ? 0 : 10,
     },
+  // AUTH / LOGIN COMPONENTS
+  contendorLogoTitulos: {
+    alignItems: 'center',
+    marginBottom: 40,
+    width: '100%',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    resizeMode: 'contain',
+  },
+  contenedorWritter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  cajaDesktop: {
+    width: '100%',
+    maxWidth: 500, // Limita el ancho en PC para que no se vea gigante
+    padding: 32,
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    alignSelf: 'center', // Centra la caja en la pantalla
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
 
     // --- TEXTOS HERO Y TYPEWRITER ---
     tituloHero: {
@@ -132,17 +165,80 @@ export default StyleSheet.create({
         marginTop: 5,
         color: 'white',
     },
+  // DASHBOARD / CARDS
+  cajaEncuestas: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    width: '100%',
+    // Sombra sutil para Web/iOS
+    ...Platform.select({
+      web: { cursor: 'pointer' },
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
+      android: { elevation: 3 }
+    })
+  },
+  tittleTextSurvey: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  botonResultados: {
+    backgroundColor: 'rgba(91, 85, 192, 0.15)',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8
+  },
+  textoBotonResultados: {
+    color: colors.primary,
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
 
-    // --- CURSOR ANIMADO ---
-    cursor: {
-        width: 4,
-        height: 36,
-        backgroundColor: colors.primary,
-        marginLeft: 5,
-    },
-    cursorDesktop: {
-        height: 52,
-    },
+  // FORMULARIOS / CREATOR
+  inputTitulo: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.text,
+    paddingVertical: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+    marginBottom: 20,
+    width: '100%',
+  },
+  btnPrimary: {
+    backgroundColor: colors.primary,
+    paddingVertical: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    width: '100%',
+    justifyContent: 'center',
+  },
+  btnPrimaryText: {
+    color: colors.text,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  btnSecondary: {
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 10,
+    width: '100%',
+    backgroundColor: 'transparent',
+  },
 
     // --- BOTONES Y FORMULARIOS ---
     btnPrimary: {
@@ -319,4 +415,19 @@ export default StyleSheet.create({
     borde: { borderWidth: 1, borderColor: 'red' },
     borde2: { borderWidth: 1, borderColor: 'green' },
     borde3: { borderWidth: 1, borderColor: 'orange' },
+  // UTILIDADES RESPONSIVE / MÁRGENES
+  margen2: {
+    marginVertical: 20,
+  },
+  centeredContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  fullWidth: {
+    width: '100%',
+  }
 });

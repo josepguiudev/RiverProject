@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import { colors } from "../../screens/stylesGlobal";
+// Asumiendo que colors tiene: destaqueAzul, fondoCaja, bordes, etc.
+import { colors } from "../../screens/stylesGlobal"; 
 
 interface Props {
     label: string;
@@ -11,8 +12,9 @@ interface Props {
 
 export const CustomDatePicker = ({ label, value, onChange }: Props) => {
     const [show, setShow] = useState(false);
+    const [isFocused, setIsFocused] = useState(false); // Para el efecto visual en Web
 
-    // Si estamos en Web, usamos el input nativo de HTML5 porque el picker de RN no es compatible
+    // --- RENDER WEB ---
     if (Platform.OS === 'web') {
         return (
             <View style={styles.container}>
@@ -20,23 +22,33 @@ export const CustomDatePicker = ({ label, value, onChange }: Props) => {
                 <input
                     type="date"
                     value={value ? value.split("T")[0] : ""}
-                    onChange={(e) => onChange(new Date(e.target.value).toISOString())}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    onChange={(e) => {
+                        if (e.target.value) {
+                            onChange(new Date(e.target.value).toISOString());
+                        }
+                    }}
                     style={{
                         backgroundColor: "#1a1a1a",
                         color: "#fff",
-                        padding: "10px",
+                        padding: "12px",
                         borderRadius: "8px",
-                        border: "1px solid #333",
+                        border: `1px solid ${isFocused ? "#007AFF" : "#333"}`, // Cambio de color dinámico
                         width: "100%",
-                        outline: "none"
+                        outline: "none",
+                        fontSize: "14px",
+                        transition: "border-color 0.2s ease-in-out", // Suavizado
+                        fontFamily: "inherit"
                     }}
                 />
             </View>
         );
     }
 
+    // --- LÓGICA MOBILE ---
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-        setShow(Platform.OS === 'ios'); // En iOS no se cierra solo
+        setShow(Platform.OS === 'ios'); 
         if (selectedDate) {
             onChange(selectedDate.toISOString());
         }
@@ -45,8 +57,15 @@ export const CustomDatePicker = ({ label, value, onChange }: Props) => {
     return (
         <View style={styles.container}>
             <Text style={styles.label}>{label}</Text>
-            <TouchableOpacity style={styles.dateButton} onPress={() => setShow(true)}>
-                <Text style={styles.dateText}>
+            <TouchableOpacity 
+                activeOpacity={0.7}
+                style={[
+                    styles.dateButton, 
+                    value ? { borderColor: "#007AFF" } : { borderColor: "#333" }
+                ]} 
+                onPress={() => setShow(true)}
+            >
+                <Text style={[styles.dateText, !value && { color: "#777" }]}>
                     {value ? new Date(value).toLocaleDateString() : "Seleccionar fecha"}
                 </Text>
             </TouchableOpacity>
@@ -56,6 +75,7 @@ export const CustomDatePicker = ({ label, value, onChange }: Props) => {
                     value={value ? new Date(value) : new Date()}
                     mode="date"
                     display="default"
+                    maximumDate={new Date()} // No permite fechas futuras
                     onChange={handleDateChange}
                 />
             )}
@@ -64,8 +84,27 @@ export const CustomDatePicker = ({ label, value, onChange }: Props) => {
 };
 
 const styles = StyleSheet.create({
-    container: { marginBottom: 15 },
-    label: { color: "#888", fontSize: 11, fontWeight: "bold", marginBottom: 8, textTransform: "uppercase" },
-    dateButton: { backgroundColor: "#1a1a1a", padding: 12, borderRadius: 8, borderWidth: 1, borderColor: "#333" },
-    dateText: { color: "#fff", fontSize: 14 },
+    container: { 
+        marginBottom: 20,
+        width: '100%' 
+    },
+    label: { 
+        color: "#aaa", // Un gris suave para el label
+        fontSize: 12, 
+        fontWeight: "600", 
+        marginBottom: 8, 
+        textTransform: "uppercase",
+        letterSpacing: 0.5
+    },
+    dateButton: { 
+        backgroundColor: "#1a1a1a", 
+        padding: 14, 
+        borderRadius: 8, 
+        borderWidth: 1, 
+        // El color del borde lo manejamos dinámico en el componente
+    },
+    dateText: { 
+        color: "#fff", 
+        fontSize: 15 
+    },
 });
