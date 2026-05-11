@@ -10,6 +10,8 @@ export const colors = {
     cta: '#8BC34A',               // Verde Lima botones
     textMain: '#F0F2F5',          // Blanco/Gris claro
     white: '#ffffff',
+    darkCard: '#161616',          // Fondo para items
+    borderDark: 'rgba(255, 255, 255, 0.1)'
 };
 
 export const inputStyles = {
@@ -67,18 +69,16 @@ export default StyleSheet.create({
         alignItems: 'center',
         flexDirection: isWeb ? 'row' : 'column',
         justifyContent: 'center',
-        // 'auto' permite que en móvil la caja crezca según el tamaño del logo y el texto
         height: isWeb ? 120 : 'auto', 
         padding: 10,
         marginBottom: isWeb ? 0 : 20,
     },
     containerFoto: {
         width: 80,
-        height: 80, // Evita porcentajes aquí si el padre es 'auto'
+        height: 80,
     },
     logo: {
-        // En móvil le damos un tamaño fijo de 100x100. En web puede mantener su lógica.
-        width: isWeb ? 100 : 100, 
+        width: 100, 
         height: isWeb ? '100%' : 100, 
         resizeMode: 'contain',
         marginBottom: isWeb ? 0 : 10,
@@ -125,7 +125,6 @@ export default StyleSheet.create({
         alignItems: 'center',
     },
     contenedorWritter: {
-        
         alignItems: 'center',
         padding: 20,
     },
@@ -170,21 +169,19 @@ export default StyleSheet.create({
    // --- ENCUESTAS (SURVEY LIST) ---
     contenedorListado: {
         width: '100%',
-        maxWidth: 1000,           // Limita el ancho en monitores para que no se vea infinito
-        alignSelf: 'center',      // Centra el listado en el monitor
+        maxWidth: 1000,
+        alignSelf: 'center',
         paddingHorizontal: 20,
         marginTop: 20,
     },
-
     cajaEncuestas: {
         backgroundColor: '#161616', 
         borderRadius: 16,
         marginBottom: 20,
         borderWidth: 1,
         borderColor: 'rgba(91, 85, 192, 0.2)', 
-        padding: 35,              // Mucho más aire interno para monitores
+        padding: 35,
         width: '100%',
-        // Efecto de elevación sutil para que no parezca plano en PC
         ...Platform.select({
             web: {
                 cursor: 'pointer',
@@ -193,36 +190,133 @@ export default StyleSheet.create({
             }
         })
     },
-
     cajaEncuestasCompletada: {
         backgroundColor: '#0a0a0a', 
         borderColor: 'rgba(40, 167, 69, 0.3)',
         opacity: 0.8,
     },
-
     tittleTextSurvey: {
         color: colors.white,
-        fontSize: 20,             // Texto más grande para monitor
+        fontSize: 20,
         fontWeight: 'bold',
         letterSpacing: 0.5,
     },
-
     tittleTextSurveyDesktop: {
-        fontSize: 24,             // Aún más grande en modo desktop real
+        fontSize: 24,
     },
-
-    textoEstado: {               // Nueva clase para los textos de "Pendiente/Completada"
+    textoEstado: {
         fontSize: 15,
         marginTop: 8,
         letterSpacing: 0.3,
     },
 
+    // --- NUEVOS ESTILOS PARA DASHBOARD ANDROID (MODIFICADOS MÍNIMAMENTE) ---
+    headerAndroid: {
+        marginBottom: 25,
+        paddingTop: 10
+    },
+    saludoAndroid: {
+        color: colors.textMain,
+        opacity: 0.6,
+        fontSize: 16,
+        marginBottom: 4
+    },
+    containerStats: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 30,
+    },
+    // --- cardStat: modificado (padding reducido, marginHorizontal reducido) ---
+    cardStat: {
+        flex: 1,
+        backgroundColor: colors.darkCard,
+        padding: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: colors.borderDark,
+        marginHorizontal: 4,
+        elevation: 4,
+    },
+    statNumber: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: colors.white,
+    },
+    statLabel: {
+        fontSize: 12,
+        color: colors.textMain,
+        opacity: 0.5,
+        marginTop: 4,
+        textTransform: 'uppercase',
+        letterSpacing: 1
+    },
+    
+    // --- cajaEncuestasAndroid: mejorada para Android (con Platform.select) ---
+    cajaEncuestasAndroid: {
+        backgroundColor: '#1A1A1A',
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.08)',
+        flexDirection: 'row',
+        alignItems: 'center',
+        elevation: 5,
+        ...Platform.select({
+            ios: {
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4.65,
+            },
+            android: {
+                backgroundColor: '#1A1A1A',
+            }
+        })
+    },
+    iconContainerAndroid: {
+        width: 45,
+        height: 45,
+        borderRadius: 12,
+        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+    },
+    badgeAndroid: {
+        backgroundColor: 'rgba(139, 195, 74, 0.15)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(139, 195, 74, 0.3)',
+    },
+    // --- floatingBtnContainer: modificado (bottom, right, tamaño y elevation) ---
+    floatingBtnContainer: {
+        position: 'absolute',
+        bottom: 20,
+        right: 20,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: colors.cta,
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 8,
+        ...Platform.select({
+            android: { elevation: 10 }
+        })
+    },
+    dot: {
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: colors.secondary,
+        marginHorizontal: 8
+    },
+    
     // --- BORDES DE DEPURACIÓN (Debug) ---
     borde: { borderWidth: 1, borderColor: 'red' },
     borde2: { borderWidth: 1, borderColor: 'green' },
     borde3: { borderWidth: 1, borderColor: 'orange' },
-
-
-
-
 });

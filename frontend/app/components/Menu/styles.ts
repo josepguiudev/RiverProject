@@ -1,14 +1,15 @@
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform, Dimensions } from 'react-native';
+import { isWeb } from './../../utils/device';
 
 export default StyleSheet.create({
-   overlay: {
+    overlay: {
         position: 'absolute',
         top: 0,
         left: 0,
-        bottom: 0, // Asegura que llegue hasta el final de la pantalla
+        bottom: 0,
         right: 0,
-        backgroundColor: 'rgba(0,0,0,0.8)', // Oscurece el fondo del home
-        zIndex: 1000,
+        backgroundColor: 'rgba(0,0,0,0.85)',
+        zIndex: 9999,
         flexDirection: 'row',
     },
     background: {
@@ -17,30 +18,55 @@ export default StyleSheet.create({
         height: '100%',
     },
     menuContainer: {
-        width: '15%',
         height: '100%',
-        backgroundColor: '#171a21', // Un gris muy oscuro casi negro (opaco)
-        padding: 10,
-        paddingTop: 50,
-        borderRightWidth: 1,
-        borderRightColor: '#1b2838', // Opcional: línea amarilla como tus bordes
+        backgroundColor: '#171a21',
+        padding: isWeb ? 15 : 20,
+        paddingTop: isWeb ? 50 : Platform.OS === 'android' ? 40 : 60,
+        borderRightWidth: 1.5,
+        borderRightColor: '#1b2838',
+        ...Platform.select({
+            android: {
+                elevation: 15,
+            },
+            default: {
+                elevation: 10,
+            }
+        }),
     },
-    title: { color: 'white', fontSize: 18, fontWeight: 'bold', paddingLeft: 10, fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed' },
-    linea: { height: 1, backgroundColor: '#333', marginVertical: 15, fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed' },
+    title: {
+        color: 'white',
+        fontSize: isWeb ? 18 : 22,
+        fontWeight: 'bold',
+        fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed'
+    },
+    linea: {
+        height: 1,
+        backgroundColor: '#333',
+        marginVertical: isWeb ? 15 : 20,
+    },
     itemContenedor: {
-        paddingVertical: 12,
-        paddingHorizontal: 10,
-        borderRadius: 4,
-        marginVertical: 2,
+        paddingVertical: isWeb ? 12 : 16,
+        paddingHorizontal: 15,
+        borderRadius: 8,
+        marginVertical: 4,
+        ...Platform.select({
+            android: {
+                paddingVertical: 14, // más alto para dedos
+                marginVertical: 6,
+            }
+        })
     },
     itemHover: {
-        backgroundColor: '#2a475e', // El azul cuando pasas el ratón en Steam
+        backgroundColor: '#3b6bbf33',
+        borderLeftWidth: 3,
+        borderLeftColor: '#66c0f4',
     },
-    item: { color: 'white', fontSize: 12},
+    item: {
+        color: '#dcdedf',
+        fontSize: isWeb ? 13 : 16,
+        fontWeight: '500',
+    },
     itemTextHover: {
-        color: '#66c0f4', // Azul brillante de Steam al hacer hover
-    }, 
-    maxHeight:{
-        height: '100%',
+        color: '#ffffff',
     },
 });

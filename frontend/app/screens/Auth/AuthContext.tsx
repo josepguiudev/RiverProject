@@ -1,11 +1,12 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Definimos qué datos tiene un usuario
+// Añadimos cuentaBancaria (opcional, solo para clientes)
 interface User {
   id: number;
   name: string;
   email: string;
+  cuentaBancaria?: string;  // ← esto permite detectar si es cliente
 }
 
 interface AuthContextData {
@@ -22,7 +23,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Al abrir la app, miramos si ya había alguien logueado
     async function loadStorageData() {
       const storageUser = await AsyncStorage.getItem('@River:user');
       if (storageUser) {
@@ -51,7 +51,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// Este es el "hook" que usamos en TakeSurvey y SurveyList
 export function useAuth() {
   return useContext(AuthContext);
 }

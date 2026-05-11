@@ -37,7 +37,7 @@ function App() {
 
 	// Si no, devolvemos tu navegación normal
 	return (
-		<AuthProvider> {
+		<AuthProvider> 
 			<NavigationContainer>
 				<Stack.Navigator
 					initialRouteName="Login"
@@ -59,7 +59,7 @@ function App() {
 					<Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
 				</Stack.Navigator>
 			</NavigationContainer>
-		} </AuthProvider>
+		 </AuthProvider>
 	);
 }
 export default App;
