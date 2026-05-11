@@ -32,7 +32,7 @@ public class AuthService2 {
     private final JwtService jwtService;
 
 
-    @Value("${steam.api.baseurl:https://api.steampowered.com}")
+    @Value("${steam.api.baseurl:https://api.steampowered.com/ISteamUser}")
     private String steamBaseUrl;
 
     // Aquí es obligatorio que esté en el YAML o fallará
@@ -144,51 +144,61 @@ public class AuthService2 {
         return userRepository.save(user);
     }
 
-     //PASO 3: Finalizar con Steam y asignar encuestas
+    // PASO 3: Finalizar con Steam y asignar encuestas
     @Transactional
     public User completeSteamRegistration(Long userId, String steamId) {
-        
-        // 1. Buscamos el ENDPOINT en la base de datos (Type 1: GetPlayerSummaries)
-        String playerSummaryEndpoint = queriesRepository.findByType(1).stream()
-                .filter(q -> q.getQuery().contains("GetPlayerSummaries"))
-                .findFirst()
-                .map(UserSteamQueries::getQuery)
-                .orElse("ISteamUser/GetPlayerSummaries/v2/"); // Fallback de seguridad
+        // 1. Llamamos al método de validación
+        boolean exists = verifySteamIdExists(steamId);
 
-        // 2. Construimos la URL completa
-        String finalUrl = steamBaseUrl + "/" + playerSummaryEndpoint + "?key=" + steamApiKey + "&steamids=" + steamId;
-
-        try {
-            // 3. Validamos contra Steam
-            Map<String, Object> response = restTemplate.getForObject(finalUrl, Map.class);
-            
-            // Navegamos por el JSON de respuesta de Steam: response -> players -> [0]
-            Map<?, ?> responseBody = (Map<?, ?>) response.get("response");
-            List<?> players = (List<?>) responseBody.get("players");
-
-            if (players == null || players.isEmpty()) {
-                throw new RuntimeException("El ID de Steam no existe o el perfil es privado.");
-            }
-
-            // 4. Si es válido, actualizamos el usuario en nuestra DB
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado en la base de datos"));
-
-            user.setUrlIdStream(steamId);
-            user.setRegistrationStep(3); // Marcamos que ha completado el registro
-            
-            User savedUser = userRepository.save(user);
-            
-            // 5. Disparamos la lógica para asignarle encuestas basadas en su perfil
-            asignarEncuestasDisponibles(savedUser);
-
-            return savedUser;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error en la validación de Steam: " + e.getMessage());
+        if (!exists) {
+            throw new RuntimeException("El ID de Steam no es válido, no existe o el perfil es privado.");
         }
+
+        // 2. Si existe, buscamos al usuario en nuestra DB
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado en la base de datos"));
+
+        // 3. Actualizamos los datos del usuario
+        user.setUrlIdStream(steamId);
+        user.setRegistrationStep(3); // Registro completado
+        
+        User savedUser = userRepository.save(user);
+        
+        // 4. Disparamos la lógica para asignarle encuestas
+        asignarEncuestasDisponibles(savedUser);
+
+        return savedUser;
     }
 
+    // MÉTODO DE APOYO: Solo valida contra la API de Steam
+    public boolean verifySteamIdExists(String steamId) {
+        try {
+            // Construimos la URL completa manualmente para evitar errores de 404
+            // IMPORTANTE: Mantenemos la estructura exacta que Steam requiere
+            String url = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/" 
+                        + "?key=" + steamApiKey 
+                        + "&steamids=" + steamId;
+            
+            System.out.println("DEBUG - Validando en Steam: " + url);
+
+            // Realizamos la petición
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            
+            if (response == null || !response.containsKey("response")) {
+                return false;
+            }
+
+            Map<?, ?> responseBody = (Map<?, ?>) response.get("response");
+            List<?> players = (List<?>) responseBody.get("players");
+            
+            // Steam devuelve una lista vacía si el ID no existe
+            return players != null && !players.isEmpty();
+
+        } catch (Exception e) {
+            System.err.println("Error en la llamada física a Steam: " + e.getMessage());
+            return false;
+        }
+    }
 
     private void asignarEncuestasDisponibles(User user) {
         List<Survey> allSurveys = surveyRepository.findAll();
@@ -202,26 +212,6 @@ public class AuthService2 {
         }).collect(Collectors.toList());
 
         userSurveysRepository.saveAll(assignments);
-    }
-
-   public boolean verifySteamIdExists(String steamId) {
-        try {
-            // Usamos las piezas de la DB para ser coherentes con el resto del service
-            String playerSummaryEndpoint = queriesRepository.findByType(1).stream()
-                    .filter(q -> q.getQuery().contains("GetPlayerSummaries"))
-                    .findFirst()
-                    .map(UserSteamQueries::getQuery)
-                    .orElse("ISteamUser/GetPlayerSummaries/v2/");
-
-            String url = steamBaseUrl + "/" + playerSummaryEndpoint + "?key=" + steamApiKey + "&steamids=" + steamId;
-            
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-            Map<?, ?> responseBody = (Map<?, ?>) response.get("response");
-            List<?> players = (List<?>) responseBody.get("players");
-            return players != null && !players.isEmpty();
-        } catch (Exception e) {
-            return false;
-        }
     }
 
    @Transactional

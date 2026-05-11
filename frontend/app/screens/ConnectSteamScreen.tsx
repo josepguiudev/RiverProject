@@ -4,6 +4,7 @@ import { useAuth } from "./Auth/AuthContext";
 import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
 import CustomButton from "@/app/components/CustomButton/CustomButton";
 import styles, { colors } from "./stylesGlobal";
+import Constants from 'expo-constants';
 
 export default function ConnectSteamScreen({ navigation }: any) {
     const { user, token } = useAuth(); 
@@ -20,8 +21,18 @@ export default function ConnectSteamScreen({ navigation }: any) {
 
         setLoading(true);
         try {
-            // Este endpoint debe ser el que gatilla la asignación de encuestas en el backend
-            const response = await fetch(`${baseUrl}/api/auth2/complete-profile-steam/${user?.id}?steamId=${steamId}`, {
+            // Buscamos la clave en el objeto 'extra' que definiste en app.config.js
+            const apiKey = Constants.expoConfig?.extra?.STEAM_API_KEY;
+
+            if (!apiKey) {
+                console.error("No se encontró STEAM_API_KEY en app.config.js");
+            }
+
+            const url = `${baseUrl}/api/auth2/complete-profile-steam/${user?.id}?steamId=${steamId}&steamApiKey=${apiKey}`;
+
+            console.log("Enviando a:", url);
+
+            const response = await fetch(url, {
                 method: "PUT",
                 headers: { 
                     "Authorization": `Bearer ${token}`, 
@@ -30,14 +41,14 @@ export default function ConnectSteamScreen({ navigation }: any) {
             });
 
             if (response.ok) {
-                Alert.alert("¡Configuración Completa!", "Hemos analizado tu perfil y asignado las encuestas disponibles.");
-                // Navegamos a la pantalla donde el usuario ve sus encuestas
+                Alert.alert("¡Configuración Completa!", "Perfil vinculado correctamente.");
                 navigation.replace("SurveyList"); 
             } else {
                 const errorMsg = await response.text();
                 Alert.alert("Error", errorMsg || "No se pudo validar el Steam ID.");
             }
         } catch (error) {
+            console.error("Error en conexión:", error);
             Alert.alert("Error", "Error de conexión con el servidor.");
         } finally {
             setLoading(false);
