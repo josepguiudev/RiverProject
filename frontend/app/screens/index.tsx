@@ -21,7 +21,7 @@ const IndexScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
-      
+
       <View style={styles.mainContainer}>
         <View style={styles.card}>
           <View style={styles.heroSection}>
@@ -30,15 +30,15 @@ const IndexScreen = ({ navigation }: any) => {
           </View>
 
           <View style={styles.actionSection}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.btnPrimary}
-              onPress={() => setIsLoginOpen(true)} 
+              onPress={() => setIsLoginOpen(true)}
             >
               <Text style={styles.btnPrimaryText}>Iniciar Sesión</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.btnSecondary} 
+            <TouchableOpacity
+              style={styles.btnSecondary}
               onPress={() => setIsSignUpOpen(true)}
             >
               <Text style={styles.btnSecondaryText}>Crear una cuenta</Text>
@@ -48,19 +48,19 @@ const IndexScreen = ({ navigation }: any) => {
       </View>
 
       {/* Modal de Inicio de Sesión */}
-      <SignIn 
-        isVisible={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
+      <SignIn
+        isVisible={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
         onSwitchToRegister={openRegister}
-        navigation={navigation} 
+        navigation={navigation}
       />
 
       {/* Modal de Registro */}
-      <SignUp 
-        isVisible={isSignUpOpen} 
-        onClose={() => setIsSignUpOpen(false)} 
+      <SignUp
+        isVisible={isSignUpOpen}
+        onClose={() => setIsSignUpOpen(false)}
         onSwitchToLogin={openLogin}
-        navigation={navigation} 
+        navigation={navigation}
       />
     </SafeAreaView>
   );

@@ -222,9 +222,7 @@ public class AuthService2 {
         } catch (Exception e) {
             return false;
         }
-    }
-
-        throw new RuntimeException("Credenciales incorrectas");
+        
     }
 
     /**

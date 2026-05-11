@@ -53,10 +53,10 @@ function App() {
 			<AuthProvider>
 				<NavigationContainer>
 					<Stack.Navigator
-						initialRouteName="Admin"
+						initialRouteName="Login"
 						screenOptions={{ headerShown: false }}
 					>
-						<Stack.Screen
+						<Stack.Screen //Ruta vieja de login/register. la dejo por el lore
 							name="Index"
 							component={Index}
 							options={{ headerShown: false }}
@@ -74,8 +74,8 @@ function App() {
 						<Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen} />
 						<Stack.Screen name="SurveyList" component={SurveyListScreen} />
 						<Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
-					<Stack.Screen name="CompleteProfile" component={CompleteProfile} />
-					<Stack.Screen name="ConnectSteam" component={ConnectSteam} />
+						<Stack.Screen name="CompleteProfile" component={CompleteProfile} />
+						<Stack.Screen name="ConnectSteam" component={ConnectSteam} />
 						<Stack.Screen name="Profile" component={ProfileScreen} />
 					</Stack.Navigator>
 				</NavigationContainer>

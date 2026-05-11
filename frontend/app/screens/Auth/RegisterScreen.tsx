@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Image, Animated, Platform, ScrollView, Alert } from "react-native";
 import TypeWriter from "react-native-typewriter";
-import styles from "./styles"; 
+import styles from "./styles";
 import CustomButton from "@/app/components/CustomButton/CustomButton";
 import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
 import strings from "../../../assets/supportFiles/strings.json";
 import { useLayout } from "@/app/utils/useLayout";
 
-export default function RegisterScreen({ navigation }: any) {
+export default function RegisterScreen({ navigation, route }: any) {
   const { isDesktopView } = useLayout();
   const cursorOpacity = React.useRef(new Animated.Value(1)).current;
 
   // --- ESTADOS SIMPLIFICADOS (Solo Paso 1) ---
-  const [type, setType] = useState<"USER" | "CLIENT">("USER");
+  const initialType = route?.params?.type || "USER";
+  const [type, setType] = useState<"USER" | "CLIENT">(initialType);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repassword, setRepassword] = useState("");
@@ -48,7 +49,7 @@ export default function RegisterScreen({ navigation }: any) {
       type,
       email: email.trim(),
       password,
-      name, 
+      name,
       ...(type === "CLIENT" && { cuentaBancaria }) // Solo si es empresa enviamos el IBAN ahora
     };
 
@@ -68,7 +69,7 @@ export default function RegisterScreen({ navigation }: any) {
       // Si es USER, el backend ha creado el registro con registrationStep: 1
       Alert.alert("¡Éxito!", "Cuenta creada. Ahora inicia sesión para completar tu perfil.");
       navigation.navigate("Login");
-      
+
     } catch (error) {
       Alert.alert("Error", "No se pudo conectar con el servidor");
     }
@@ -77,7 +78,7 @@ export default function RegisterScreen({ navigation }: any) {
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0e0d0df1' }}>
       <View style={styles.alineadoPersonal}>
-        
+
         <View style={styles.contendorLogoTitulos}>
           <Image source={require('../../../assets/images/logo.png')} style={styles.logo} />
           <View style={styles.contenedorWritter}>
@@ -92,12 +93,12 @@ export default function RegisterScreen({ navigation }: any) {
 
           {/* SELECTOR TIPO */}
           <View style={styles.selectorContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setType("USER")}
               style={[styles.selectorBtn, type === "USER" && styles.selectorBtnActive]}>
               <Text style={[styles.selectorText, type === "USER" && styles.selectorTextActive]}>Soy Jugador</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setType("CLIENT")}
               style={[styles.selectorBtn, type === "CLIENT" && styles.selectorBtnActive]}>
               <Text style={[styles.selectorText, type === "CLIENT" && styles.selectorTextActive]}>Soy Empresa</Text>
@@ -107,12 +108,12 @@ export default function RegisterScreen({ navigation }: any) {
           {/* FORMULARIO PASO 1 */}
           <View style={styles.formStack}>
             <CustomInputText label="Email" placeholder="ejemplo@correo.com" onChangeText={setEmail} value={email} />
-            
-            <CustomInputText 
-              label={type === "USER" ? "Nombre" : "Nombre de la Empresa"} 
-              placeholder="¿Cómo te llamas?" 
-              onChangeText={setName} 
-              value={name} 
+
+            <CustomInputText
+              label={type === "USER" ? "Nombre" : "Nombre de la Empresa"}
+              placeholder="¿Cómo te llamas?"
+              onChangeText={setName}
+              value={name}
             />
 
             {type === "CLIENT" && (
@@ -123,11 +124,11 @@ export default function RegisterScreen({ navigation }: any) {
             <CustomInputText label="Confirmar Contraseña" placeholder="****" secureTextEntry onChangeText={setRepassword} value={repassword} />
           </View>
 
-          <View style={{ width: '100%', marginTop: 25 }}>
+          <View style={{ width: '100%', marginTop: 25, alignItems: "center" }}>
             <CustomButton title="CREAR CUENTA" onPress={handleRegister} />
           </View>
 
-          <TouchableOpacity onPress={() => navigation.navigate("Login")} style={{ marginTop: 20 }}>
+          <TouchableOpacity onPress={() => navigation.navigate("Login")} style={{ marginTop: 20, alignItems: 'center' }}>
             <Text style={styles.texto}>¿Ya tienes cuenta? <Text style={styles.blueText}>Inicia sesión</Text></Text>
           </TouchableOpacity>
         </View>

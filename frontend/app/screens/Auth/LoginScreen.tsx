@@ -99,7 +99,7 @@ export default function LoginScreen() {
                 </View>
 
                 {/* Caja de Login principal */}
-                <View style={[styles.caja, isDesktopView && styles.cajaDesktop]}>
+                <View style={[isDesktopView && styles.cajaDesktop]}>
                     <Text style={[styles.mainText, { marginBottom: 10 }]}>Bienvenido</Text>
                     <Text style={[styles.texto, { marginBottom: 30 }]}>Introduce tus credenciales para continuar</Text>
                     
@@ -130,7 +130,7 @@ export default function LoginScreen() {
                             </Text>
                         </TouchableOpacity>
                         
-                        <View style={{ marginTop: 30 }}>
+                        <View style={{ marginTop: 30, alignItems: 'center' }}>
                             <CustomButton 
                                 title={isSubmitting ? "Entrando..." : strings.login} 
                                 onPress={handleLogin} 
@@ -152,7 +152,7 @@ export default function LoginScreen() {
                 
                 {/* Texto de ayuda o copyright al final */}
                 <Text style={[styles.textoChico, { marginTop: 40, opacity: 0.5 }]}>
-                    River Project © 2024 - Todos los derechos reservados
+                    River Project © 2026 - Todos los derechos reservados
                 </Text>
             </ScrollView>
         </View>

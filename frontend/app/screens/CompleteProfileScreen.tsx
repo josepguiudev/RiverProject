@@ -21,7 +21,7 @@ export default function CompleteProfileScreen({ navigation }: any) {
     { label: "Masculino", value: 0 },
     { label: "Femenino", value: 1 },
     { label: "No Binario", value: 2 },
-    { label: "Otro", value: 3 },
+    { label: "Helicoptero", value: 3 },
   ];
 
   // Función de cálculo de edad corregida
