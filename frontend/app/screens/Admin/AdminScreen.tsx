@@ -116,202 +116,121 @@ export default function AdminScreen({ navigation }: any) {
 
         {/* 2. AREA DE COLUMNAS (Ocupa el resto de la pantalla) */}
         <View style={{ flex: 1, flexDirection: 'row', padding: 15, gap: 15 }}>
-    
-        {/* IMPORTANTE: flex: 1 para que el contenedor se estire y deje ver el contenido */}
-        {/* --- COLUMNA 1: USUARIOS --- */}
-        <View style={{ flex: 1, marginHorizontal: 5 }}>
-            <CustomInputCard 
-                title='Extraer Users' 
-                value={1} 
-                onResultFound={(data) => {
+            {/* IMPORTANTE: flex: 1 para que el contenedor se estire y deje ver el contenido */}
+            {/* --- COLUMNA 1: USUARIOS --- */}
+            <View style={{ flex: 1, marginHorizontal: 8, height: '100%' }}>
+                <CustomInputCard title='Extraer Users' value={1} onResultFound={(data) => {
                     const listaFinal = data.response?.players ? data.response.players : (Array.isArray(data) ? data : []); 
                     setUsuariosEncontrados([...listaFinal]);
-                }}
-            />
-            
-            <View style={{ flex: 1, backgroundColor: '#0d1117', marginTop: 10, borderRadius: 8, borderWidth: 1, borderColor: '#30363d' }}>
-                <Text style={[styles.label, { padding: 10, textAlign: 'center' }]}>Resultado de búsqueda</Text>
-                
-                <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 10 }}>
-                    {usuariosEncontrados.map((user: any, index: number) => (
-                        <View key={user.steamid || index} style={{ 
-                            padding: 15, 
-                            backgroundColor: '#1b2838', 
-                            borderRadius: 8, 
-                            marginBottom: 15,
-                            borderWidth: 1,
-                            borderColor: '#2a475e'
-                        }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                {/* Avatar con borde de estado */}
-                                <Image 
-                                    source={{ uri: user.avatarfull }} 
-                                    style={{ 
-                                        width: 80, height: 80, borderRadius: 5, 
-                                        borderWidth: 2, 
-                                        borderColor: user.personastate === 1 ? '#66c0f4' : '#888' 
-                                    }} 
-                                />
-                                <View style={{ marginLeft: 15, flex: 1 }}>
-                                    <Text style={{ color: 'gold', fontWeight: 'bold', fontSize: 18 }}>{user.personaname}</Text>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                                        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: user.personastate === 1 ? '#66c0f4' : '#888', marginRight: 6 }} />
-                                        <Text style={{ color: user.personastate === 1 ? '#66c0f4' : '#888', fontSize: 13 }}>
-                                            {user.personastate === 1 ? 'En línea' : 'Desconectado'}
-                                        </Text>
+                }}/>
+
+                <View style={{ flex: 1, backgroundColor: '#0d1117', marginTop: 10, borderRadius: 12, borderWidth: 1, borderColor: '#30363d', overflow: 'hidden' }}>
+                    <View style={{ backgroundColor: '#1b2838', padding: 12 }}>
+                        <Text style={{ textAlign: 'center', color: 'gold', fontWeight: 'bold', fontSize: 12, letterSpacing: 1, textTransform: 'uppercase' }}>
+                            Resultado de búsqueda
+                        </Text>
+                    </View>
+                    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 10 }}>
+                        {usuariosEncontrados.map((user: any, index: number) => (
+                            <View key={user.steamid || index} style={{ padding: 15, backgroundColor: '#1b2838', borderRadius: 8, marginBottom: 15, borderWidth: 1, borderColor: '#2a475e' }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <Image source={{ uri: user.avatarfull }} style={{ width: 80, height: 80, borderRadius: 5, borderWidth: 2, borderColor: user.personastate === 1 ? '#66c0f4' : '#888' }} />
+                                    <View style={{ marginLeft: 15, flex: 1 }}>
+                                        <Text style={{ color: 'gold', fontWeight: 'bold', fontSize: 18 }}>{user.personaname}</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                                            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: user.personastate === 1 ? '#66c0f4' : '#888', marginRight: 6 }} />
+                                            <Text style={{ color: user.personastate === 1 ? '#66c0f4' : '#888', fontSize: 13 }}>{user.personastate === 1 ? 'En línea' : 'Desconectado'}</Text>
+                                        </View>
+                                        <Text style={{ color: '#aaa', fontSize: 11, marginTop: 5 }}>ID: {user.steamid}</Text>
                                     </View>
-                                    <Text style={{ color: '#aaa', fontSize: 11, marginTop: 5 }}>ID: {user.steamid}</Text>
+                                </View>
+                                <View style={{ marginTop: 15, borderTopWidth: 1, borderTopColor: '#2a475e', paddingTop: 10 }}>
+                                    <Text style={{ color: '#ccc', fontSize: 12 }}>País: {user.loccountrycode || 'N/A'}</Text>
+                                    <Text style={{ color: '#ccc', fontSize: 12 }}>Creado el: {new Date(user.timecreated * 1000).toLocaleDateString()}</Text>
                                 </View>
                             </View>
-
-                            {/* Línea divisoria y detalles adicionales */}
-                            <View style={{ marginTop: 15, borderTopWidth: 1, borderTopColor: '#2a475e', paddingTop: 10 }}>
-                                <Text style={{ color: '#ccc', fontSize: 12, marginBottom: 4 }}>
-                                    <Text style={{ fontWeight: 'bold' }}>País:</Text> {user.loccountrycode || 'N/A'}
-                                </Text>
-                                <Text style={{ color: '#ccc', fontSize: 12, marginBottom: 8 }}>
-                                    <Text style={{ fontWeight: 'bold' }}>Creado el:</Text> {new Date(user.timecreated * 1000).toLocaleDateString()}
-                                </Text>
-                                <Text style={{ color: '#66c0f4', fontSize: 11, textDecorationLine: 'underline' }} numberOfLines={1}>
-                                    {user.profileurl}
-                                </Text>
-                            </View>
-                        </View>
-                    ))}
-                </ScrollView>
-
-                <View style={{ padding: 10 }}>
-                    <CustomButton title="Guardar usuario/s" onPress={guardarUsers} isAdmin={true} />
+                        ))}
+                    </ScrollView>
+                    <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#30363d', backgroundColor: '#0d1117' }}>
+                        <CustomButton title="Guardar usuario/s" onPress={guardarUsers} isAdmin={true} />
+                    </View>
                 </View>
             </View>
-        </View>
 
-        {/* --- COLUMNA 2: BIBLIOTECAS --- */}
-        <View style={{ flex: 1, marginHorizontal: 5 }}>
-            <CustomInputCard 
-                title='Extraer Bibliotecas' 
-                value={3} 
-                onResultFound={(data) => {
-                    setJuegosEncontrados([]);
+            {/* --- COLUMNA 2: BIBLIOTECAS --- */}
+            <View style={{ flex: 1, marginHorizontal: 8, height: '100%' }}>
+                <CustomInputCard title='Extraer Bibliotecas' value={3} onResultFound={(data) => {
                     const listaJuegos = data.response?.games || (Array.isArray(data) ? data : []);
-                    setJuegosEncontrados([...listaJuegos])
-                }}
-            />
+                    setJuegosEncontrados([...listaJuegos]);
+                }}/>
 
-            <View style={{ flex: 1, backgroundColor: '#0d1117', marginTop: 10, borderRadius: 8, borderWidth: 1, borderColor: '#30363d' }}>
-                <Text style={[styles.label, { padding: 10, textAlign: 'center' }]}>Resultado biblioteca</Text>
-                
-                <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 10 }}>
-                    {Array.isArray(juegosEncontrados) && juegosEncontrados.map((game: any, index: number) => {
-                        const iconUrl = `http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`;
-
-                        return (
-                            <View key={game.appid || index} style={{ 
-                                flexDirection: 'row', 
-                                alignItems: 'center',
-                                padding: 10, 
-                                backgroundColor: '#1b2838', 
-                                borderRadius: 6, 
-                                marginBottom: 8,
-                                borderLeftWidth: 4,
-                                borderLeftColor: '#66c0f4'
-                            }}>
+                <View style={{ flex: 1, backgroundColor: '#0d1117', marginTop: 10, borderRadius: 12, borderWidth: 1, borderColor: '#30363d', overflow: 'hidden' }}>
+                    <View style={{ backgroundColor: '#1b2838', padding: 12 }}>
+                        <Text style={{ textAlign: 'center', color: 'gold', fontWeight: 'bold', fontSize: 12, letterSpacing: 1, textTransform: 'uppercase' }}>
+                            Resultado biblioteca
+                        </Text>
+                    </View>
+                    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 10 }}>
+                        {juegosEncontrados.map((game: any, index: number) => (
+                            <View key={game.appid || index} style={{ flexDirection: 'row', alignItems: 'center', padding: 10, backgroundColor: '#1b2838', borderRadius: 8, marginBottom: 8, borderLeftWidth: 4, borderLeftColor: '#66c0f4' }}>
                                 <Image 
-                                    source={{ uri: iconUrl }} 
-                                    style={{ width: 42, height: 42, borderRadius: 4, backgroundColor: '#171a21' }}
-                                    resizeMode="cover"
+                                    source={{ uri: `http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg` }} 
+                                    style={{ width: 32, height: 32, borderRadius: 4 }} 
                                 />
                                 <View style={{ marginLeft: 12, flex: 1 }}>
-                                    <Text style={{ color: '#ffffff', fontWeight: 'bold', fontSize: 13 }} numberOfLines={1}>
+                                    <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }} numberOfLines={1}>
                                         {game.name}
                                     </Text>
-                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
-                                        <Text style={{ color: '#888', fontSize: 10 }}>ID: {game.appid}</Text>
-                                        {game.playtime_forever !== undefined && (
-                                            <Text style={{ color: '#66c0f4', fontSize: 10, fontWeight: '600' }}>
-                                                {Math.floor(game.playtime_forever / 60)}h
-                                            </Text>
-                                        )}
+                                    
+                                    {/* Añadimos el ID del juego aquí abajo */}
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
+                                        <Text style={{ color: '#888', fontSize: 10 }}>
+                                            ID: {game.appid}
+                                        </Text>
+                                        <Text style={{ color: '#66c0f4', fontSize: 10 }}>
+                                            {Math.floor(game.playtime_forever / 60)}h jugadas
+                                        </Text>
                                     </View>
                                 </View>
                             </View>
-                        );
-                    })}
-                </ScrollView>
-
-                <View style={{ padding: 10 }}>
-                    <CustomButton title="Guardar juegos" onPress={guardarBiblio} isAdmin={true} />
+                        ))}
+                    </ScrollView>
+                    <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#30363d', backgroundColor: '#0d1117' }}>
+                        <CustomButton title="Guardar biblioteca" onPress={guardarBiblio} isAdmin={true} />
+                    </View>
                 </View>
             </View>
-            
-        </View>
 
-        {/* --- COLUMNA 3: JUEGO EXTRAÍDO --- */}
-        <View style={{ flex: 1, marginHorizontal: 8, height: '100%' }}>
-            {/* BUSCADOR */}
-            <CustomInputCard title='Extraer Juegos' value={2} onResultFound={(data) => setJuegoDetalle(data)}/>
-
-            {/* RESULTADO (Un solo contenedor principal) */}
-            <View style={{ 
-                flex: 1, 
-                backgroundColor: '#0d1117', 
-                borderRadius: 12, 
-                borderWidth: 1, 
-                borderColor: '#30363d', 
-                overflow: 'hidden' 
-            }}>
-                <Text style={{ 
-                    padding: 12, 
-                    textAlign: 'center', 
-                    backgroundColor: '#1b2838', // Color sólido para el encabezado
-                    color: 'gold',
-                    fontWeight: 'bold',
-                    fontSize: 12,
-                    letterSpacing: 1
-                }}>
-                    JUEGO EXTRAÍDO
-                </Text>
-                
-                <ScrollView style={{ flex: 1 }}>
-                    {juegoDetalle && Object.keys(juegoDetalle).map((key) => {
-                        const gameData = juegoDetalle[key].data;
-                        if (!gameData) return null;
-                        return (
-                            <View key={key} style={{ backgroundColor: '#171d25' }}>
-                                <Image 
-                                    source={{ uri: gameData.header_image }} 
-                                    style={{ width: '100%', aspectRatio: 460 / 215, borderBottomWidth: 1, borderBottomColor: '#2a475e' }}
-                                    resizeMode="contain"
-                                />
-                                <View style={{ padding: 20 }}>
-                                    <Text style={{ color: '#fff', fontWeight: '900', fontSize: 22 }}>{gameData.name}</Text>
-                                    <Text style={{ color: '#66c0f4', fontSize: 12, marginBottom: 15 }}>APP ID: {gameData.steam_appid}</Text>
-                                    
-                                    {/* Géneros */}
-                                    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                                        {gameData.genres?.map((g: any, i: number) => (
-                                            <View key={i} style={{ backgroundColor: '#2a475e', padding: 6, borderRadius: 4, marginRight: 6, marginBottom: 6 }}>
-                                                <Text style={{ color: '#66c0f4', fontSize: 11, fontWeight: 'bold' }}>{g.description}</Text>
-                                            </View>
-                                        ))}
+            {/* --- COLUMNA 3: JUEGO EXTRAÍDO --- */}
+            <View style={{ flex: 1, marginHorizontal: 8, height: '100%' }}>
+                <CustomInputCard title='Extraer Juegos' value={2} onResultFound={(data) => setJuegoDetalle(data)}/>
+                <View style={{ flex: 1, backgroundColor: '#0d1117', marginTop: 10, borderRadius: 12, borderWidth: 1, borderColor: '#30363d', overflow: 'hidden' }}>
+                    <View style={{ backgroundColor: '#1b2838', padding: 12 }}>
+                        <Text style={{ textAlign: 'center', color: 'gold', fontWeight: 'bold', fontSize: 12, letterSpacing: 1, textTransform: 'uppercase' }}>
+                            Juego Extraído
+                        </Text>
+                    </View>
+                    <ScrollView style={{ flex: 1 }}>
+                        {juegoDetalle && Object.keys(juegoDetalle).map((key) => {
+                            const gameData = juegoDetalle[key].data;
+                            if (!gameData) return null;
+                            return (
+                                <View key={key} style={{ backgroundColor: '#171d25' }}>
+                                    <Image source={{ uri: gameData.header_image }} style={{ width: '100%', aspectRatio: 460 / 215, borderBottomWidth: 1, borderBottomColor: '#2a475e' }} resizeMode="contain" />
+                                    <View style={{ padding: 20 }}>
+                                        <Text style={{ color: '#fff', fontWeight: '900', fontSize: 22 }}>{gameData.name}</Text>
+                                        <Text style={{ color: '#66c0f4', fontSize: 12, marginBottom: 15 }}>APP ID: {gameData.steam_appid}</Text>
+                                        <Text style={{ color: '#dcdedf', fontSize: 13, lineHeight: 20 }}>{gameData.short_description?.replace(/<[^>]*>?/gm, '')}</Text>
                                     </View>
-                                    
-                                    <View style={{ height: 1, backgroundColor: '#30363d', marginVertical: 15 }} />
-                                    <Text style={{ color: '#dcdedf', fontSize: 13, lineHeight: 20, fontStyle: 'italic' }}>
-                                        {gameData.short_description?.replace(/<[^>]*>?/gm, '')}
-                                    </Text>
                                 </View>
-                            </View>
-                        );
-                    })}
-                </ScrollView>
-
-                <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#30363d', backgroundColor: '#0d1117' }}>
-                    <CustomButton title="Guardar juego en BD" onPress={guardarJuego} isAdmin={true} />
+                            );
+                        })}
+                    </ScrollView>
+                    <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#30363d', backgroundColor: '#0d1117' }}>
+                        <CustomButton title="Guardar juego en BD" onPress={guardarJuego} isAdmin={true} />
+                    </View>
                 </View>
-            </View>
-        </View>
-
+            </View>                       
         </View>
 
         <MenuPrincipal visible={menuVisible} onClose={() => setMenuVisible(false)} navigation={navigation} />

@@ -20,11 +20,11 @@ public class BackendApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(BackendApplication.class, args);
 	}
-	/* 
-		@Bean jajaja salu2
+	 
+		@Bean
 		CommandLineRunner initSteamQueries(UserSteamQueriesRepository repository) {
 			return args -> {
-				/*System.out.println("--- Insertando datos de user_steam_queries ---");
+				System.out.println("--- Insertando datos de user_steam_queries ---");
 
 				UserSteamQueries q0 = new UserSteamQueries();
 				q0.setQuery("https://api.steampowered.com/ISteamUser/");
@@ -72,7 +72,7 @@ public class BackendApplication {
 				System.out.println("--- Datos de user_steam_queries insertados con éxito ---");
 			};
 		}
-
+/*
 
 		//probas moha
 		@Bean
