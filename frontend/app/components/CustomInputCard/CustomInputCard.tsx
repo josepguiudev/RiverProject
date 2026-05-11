@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Alert, ActivityIndicator } from "react-native";
+import { View, Alert, ActivityIndicator, ViewStyle, TextStyle, Text } from "react-native";
 import styles from "./styles";
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import TypeWriter from "react-native-typewriter";
@@ -28,6 +28,31 @@ type SteamQuery = {
     type: number;
 };
 
+const containerCard: ViewStyle = {
+    backgroundColor: '#1b2838',
+    padding: 18,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#2a475e',
+    marginBottom: 10,
+    width: '100%',
+};
+
+const labelEstilo: TextStyle = { 
+    color: '#66c0f4', 
+    fontSize: 10, 
+    fontWeight: '800', 
+    marginBottom: 8, 
+    letterSpacing: 1,
+    textTransform: 'uppercase'
+};
+
+const filaControles: ViewStyle = { 
+    flexDirection: 'row', 
+    alignItems: 'flex-end', // Esto hace que el botón y los inputs se alineen por abajo
+    gap: 12 
+};
+
 const CustomInputCard = ({ title, value, onResultFound}: Props) => {
     const [queries, setQueries] = useState<SteamQuery[]>([]);
     const [queries2, setQueries2] = useState<SteamQuery[]>([]);
@@ -36,6 +61,7 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
     const [selectedOption, setSelectedOption] = useState<Option | null>(null);
     const [inputUserId, setInputUserId] = useState("");
     const [inputGameId, setInputGameId] = useState("");
+    const [usuariosBD, setUsuariosBD] = useState<Option[]>([]);
 
     useEffect(() => {
         const cargarQueries = async () => {
@@ -50,6 +76,14 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
 
                 //const soloStrings = data.map(item => item.query);
                 setQueries(data);
+
+                if (data.length > 0) {
+                    setSelectedOption({
+                        id: data[0].id,
+                        label: data[0].description,
+                        value: data[0].query
+                    });
+                }
 
             } catch (error) {
                 console.error(error);
@@ -90,6 +124,29 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
                 setLoading(false);
             }
         };
+
+        const cargarUsuariosRegistrados = async () => {
+            try {
+                // Ajusta esta URL a tu endpoint que devuelve los usuarios guardados
+                const response = await fetch(`${strings.parte2Desktop}api/usersteam/allUsers`); 
+                const data = await response.json();
+                
+                // Mapeamos a formato Option para el Dropdown
+                if (data && data.content && Array.isArray(data.content)) {
+                    const options = data.content.map((u: any) => ({
+                        id: u.id,
+                        label: `${u.personaName} (${u.steamId})`, // Usamos personaName como está en tu DTO
+                        value: u.steamId
+                    }));
+                    setUsuariosBD(options);
+                } else {
+                    console.error("No se encontró la lista de usuarios en 'content':", data);
+                }
+            } catch (error) {
+                console.log("Error cargando usuarios de la BD", error);
+            }
+        };
+        cargarUsuariosRegistrados();
 
         if(value === 1){
             cargarQueries();
@@ -248,132 +305,133 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
     }
 
     let content; 
+    // Estilos internos rápidos para limpieza
+    const titleStyle: TextStyle = { 
+        color: '#66c0f4', 
+        fontSize: 11, 
+        fontWeight: '800', 
+        marginBottom: 10, 
+        letterSpacing: 1,
+        textTransform: 'uppercase'
+    };
+    const filaControles: ViewStyle = { 
+        flexDirection: 'row', 
+        alignItems: 'flex-end', // Alineación perfecta por la base
+        gap: 12 
+    };
 
     switch (value) {
         case 1: 
             content = (
-                <View style={[styles.cardSize, styles.back,, {marginTop: "1%"}]}>
-                    <View style={[styles.contenedorWritter]}>
-                        <View style={[styles.textWrapper]}>
-                            <TypeWriter 
-                                typing={1}  
-                                maxDelay={50}
-                                style={styles.mainText}
-                            >
-                                {title}
-                            </TypeWriter>
+                <View>
+                    <TypeWriter typing={1} maxDelay={50} style={titleStyle}>{title}</TypeWriter>
+                    <View style={filaControles}>
+                        {/* 1. SELECTOR DE CONSULTA (Mantenemos igual) */}
+                        <View style={{ flex: 1 }}>
+                            <Text style={labelEstilo}>Consulta</Text>
+                            <CustomDropdown 
+                                label="" 
+                                options={queries.map(q => ({ id: q.id, label: q.description, value: q.query }))} 
+                                onSelect={item => setSelectedOption(item)}
+                            />
                         </View>
-                    </View>
 
-                    <View style={[styles.contenedorSecundario, globalStyles.alineadoPersonalHorizontal]}>
-                        <View style={[styles.contenedorInterno]}>
-                            {loading ? (
-                                <ActivityIndicator size="small" color="#FFFFFF" />
-                            ) : (
-                                <CustomDropdown label="Seleccione una consulta" options={queries.map(q => ({
-                                    id: q.id,
-                                    label: q.description,   //  LO QUE SE MUESTRA
-                                    value: q.query          //  LO QUE REALMENTE USAS
-                                }))} 
-                                onSelect={item => setSelectedOption(item)}/>
-                            )}
+                        {/* 2. SELECTOR DE USUARIOS BD (NUEVO) */}
+                        <View style={{ flex: 1 }}>
+                            <Text style={labelEstilo}>Elegir Guardado</Text>
+                            <CustomDropdown 
+                                label="" 
+                                options={usuariosBD} 
+                                onSelect={item => setInputUserId(item.value)} // Al seleccionar, rellena el input
+                            />
                         </View>
-                        <View style={[styles.contenedorInterno2]}>
-                            <CustomInputText placeholder="Inserta el id del usuario" isAdmin={true} onChangeText={setInputUserId}/>
+
+                        {/* 3. INPUT MANUAL (Por si no está en la BD) */}
+                        <View style={{ flex: 1 }}>
+                            <Text style={labelEstilo}>O escribir ID</Text>
+                            <CustomInputText 
+                                placeholder="SteamID..." 
+                                value={inputUserId} // Vinculamos el valor
+                                isAdmin={true} 
+                                onChangeText={setInputUserId}
+                            />
                         </View>
-                    </View>
 
-                    <View style={[styles.contenedorTerciario, globalStyles.alineadoPersonal]}>
-                        <CustomButton title="Buscar" onPress={buscarPeticion} isAdmin={true}  />
+                        <CustomButton title="BUSCAR" onPress={buscarPeticion} isAdmin={true} />
                     </View>
-
                 </View>
             );
             break;
         case 2:
             content = (
-                <View style={[styles.cardSize, styles.back, {marginTop: "1%"}]}>
-                    <View style={[styles.contenedorWritter]}>
-                        <View style={[styles.textWrapper]}>
-                            <TypeWriter 
-                                typing={1}  
-                                maxDelay={50}
-                                style={styles.mainText}
-                            >
-                                {title}
-                            </TypeWriter>
-                        </View>
-                    </View>
-
-                    <View style={[styles.contenedorSecundario, globalStyles.alineadoPersonalHorizontal]}>
-                        <View style={[styles.contenedorInterno]}>
+                <View>
+                    <TypeWriter typing={1} maxDelay={50} style={titleStyle}>{title}</TypeWriter>
+                    <View style={filaControles}>
+                        <View style={{ flex: 2 }}>
                             {loading ? (
-                                <ActivityIndicator size="small" color="#FFFFFF" />
+                                <ActivityIndicator size="small" color="#66c0f4" />
                             ) : (
-                                <CustomDropdown label="Seleccione una consulta" options={queries2.map(q => ({
-                                    id: q.id,
-                                    label: q.description,   //  LO QUE SE MUESTRA
-                                    value: q.query          //  LO QUE REALMENTE USAS
-                                }))} 
-                                onSelect={item => setSelectedOption(item)}/>
+                                <CustomDropdown 
+                                    label="Seleccione una consulta" 
+                                    options={queries2.map(q => ({ id: q.id, label: q.description, value: q.query }))} 
+                                    onSelect={item => setSelectedOption(item)}
+                                />
                             )}
                         </View>
-                        <View style={[styles.contenedorInterno2]}>
-                            <CustomInputText placeholder="Inserta el id del juego" isAdmin={true} onChangeText={setInputGameId}/>
+                        <View style={{ flex: 1 }}>
+                            <CustomInputText placeholder="AppID Juego" isAdmin={true} onChangeText={setInputGameId}/>
                         </View>
+                        <CustomButton title="BUSCAR" onPress={buscarPeticion3} isAdmin={true} />
                     </View>
-
-                    <View style={[styles.contenedorTerciario, globalStyles.alineadoPersonal]}>
-                        <CustomButton title="Buscar" onPress={buscarPeticion3} isAdmin={true}  />
-                    </View>
-
                 </View>
             );
             break;
-            case 3:
+        case 3:
             content = (
-                <View style={[styles.cardSize, styles.back, {marginTop: "1%"}]}>
-                    <View style={[styles.contenedorWritter]}>
-                        <View style={[styles.textWrapper]}>
-                            <TypeWriter 
-                                typing={1}  
-                                maxDelay={50}
-                                style={styles.mainText}
-                            >
-                                {title}
-                            </TypeWriter>
-                        </View>
-                    </View>
-
-                    <View style={[styles.contenedorSecundario, globalStyles.alineadoPersonalHorizontal]}>
-                        <View style={[styles.contenedorInterno]}>
+                <View>
+                    <TypeWriter typing={1} maxDelay={50} style={titleStyle}>{title}</TypeWriter>
+                    <View style={filaControles}>
+                        <View style={{ flex: 2 }}>
                             {loading ? (
-                                <ActivityIndicator size="small" color="#FFFFFF" />
+                                <ActivityIndicator size="small" color="#66c0f4" />
                             ) : (
-                                <CustomDropdown label="Seleccione una consulta" options={queries3.map(q => ({
-                                    id: q.id,
-                                    label: q.description,   //  LO QUE SE MUESTRA
-                                    value: q.query          //  LO QUE REALMENTE USAS
-                                }))} 
-                                onSelect={item => setSelectedOption(item)}/>
+                                <CustomDropdown 
+                                    label="Seleccione una consulta" 
+                                    options={queries3.map(q => ({ id: q.id, label: q.description, value: q.query }))} 
+                                    onSelect={item => setSelectedOption(item)}
+                                />
                             )}
                         </View>
-                        <View style={[styles.contenedorInterno2]}>
-                            <CustomInputText placeholder="Inserta el id del jugador" isAdmin={true} onChangeText={setInputUserId}/>
+                        <View style={{ flex: 1 }}>
+                            <CustomInputText placeholder="ID Jugador" isAdmin={true} onChangeText={setInputUserId}/>
                         </View>
+                        <CustomButton title="BUSCAR" onPress={buscarPeticion2} isAdmin={true} />
                     </View>
-
-                    <View style={[styles.contenedorTerciario, globalStyles.alineadoPersonal]}>
-                        <CustomButton title="Buscar" onPress={buscarPeticion2} isAdmin={true}  />
-                    </View>
-
                 </View>
             );
             break;
         default: 
             content = <View/>
-        }
-        return (content);
+    }
+
+    return (
+        <View style={{ 
+            backgroundColor: '#1b2838', // Azul marino de Steam
+            padding: 15, 
+            borderRadius: 12, 
+            borderWidth: 1, 
+            borderColor: '#2a475e', // Borde azul sutil
+            marginBottom: 10,
+            width: '100%',
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4.65,
+            elevation: 8,
+        }}>
+            {content}
+        </View>
+    );
 }
 
 export default CustomInputCard;
