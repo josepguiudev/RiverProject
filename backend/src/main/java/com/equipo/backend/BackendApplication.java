@@ -73,6 +73,6 @@ public class BackendApplication {
 				System.out.println("--- Datos de user_steam_queries insertados con éxito ---");
 			};
 		}
-        
+    
         
 	}
