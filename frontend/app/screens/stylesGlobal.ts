@@ -16,23 +16,23 @@ export const colors = {
 
 export default StyleSheet.create({
   // CONTENEDOR RAIZ RESPONSIVE
-    alineadoPersonal: {
+  alineadoPersonal: {
     flex: 1,
     backgroundColor: colors.background,
     width: '100%',
-    minHeight: Platform.OS === 'web' ? ('100vh' as any) : '100%', 
-    },
-    fullWidthContainer: {
+    minHeight: Platform.OS === 'web' ? ('100vh' as any) : '100%',
+  },
+  fullWidthContainer: {
     width: '100%',
     flex: 1,
-    alignSelf: 'stretch', 
-    },
+    alignSelf: 'stretch',
+  },
   // ESTILOS DE TEXTO GENERALES
   tituloHero: {
     color: colors.text,
     fontSize: 28,
     fontWeight: 'bold',
-    textAlign: 'center', 
+    textAlign: 'center',
   },
   tituloHeroDesktop: {
     fontSize: 42,
@@ -53,7 +53,7 @@ export default StyleSheet.create({
   textoChico: {
     color: colors.textSecondary,
     fontSize: 14,
-    textAlign: 'center', // Centramos la descripción
+    textAlign: 'center', 
   },
   blueText: {
     color: colors.blue,
@@ -77,11 +77,22 @@ export default StyleSheet.create({
   },
   cajaDesktop: {
     width: '100%',
-    maxWidth: 500, // Limita el ancho en PC para que no se vea gigante
+    maxWidth: 500, 
     padding: 32,
     backgroundColor: colors.surface,
     borderRadius: 24,
-    alignSelf: 'center', // Centra la caja en la pantalla
+    alignSelf: 'center', 
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  // Nueva propiedad para evitar error en pantallas que usen cajaDesktop2
+  cajaDesktop2: {
+    width: '100%',
+    maxWidth: 600, 
+    padding: 30,
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    alignSelf: 'center',
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -95,9 +106,14 @@ export default StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     width: '100%',
-    // Sombra sutil para Web/iOS
+    // Ajuste para evitar solapamiento en Dashboard
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap', 
+    gap: 10,
     ...Platform.select({
-      web: { cursor: 'pointer' },
+      web: { cursor: 'default' as any }, // Corregido para TS
       ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
       android: { elevation: 3 }
     })

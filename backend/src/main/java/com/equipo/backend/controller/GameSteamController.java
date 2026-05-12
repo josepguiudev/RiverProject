@@ -91,13 +91,9 @@ public class GameSteamController {
         }
     }
 
-        @PutMapping("/{id}")
-        public Game update(@PathVariable Long id, @RequestBody Game game) {
-            return gameService.update(id, game);
-        }
+    @PutMapping("/{id}")
+    public Game update(@PathVariable Long id, @RequestBody Game game) {
+        return gameService.update(id, game);
+    }
 
-        @DeleteMapping("/{id}")
-        public void delete(@PathVariable Long id) {
-            gameService.delete(id);
-        }
 }
