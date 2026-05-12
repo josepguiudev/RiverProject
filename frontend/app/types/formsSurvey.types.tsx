@@ -4,43 +4,61 @@ export interface QuestionOption {
 }
 
 export interface Question {
-  id?: number;              // Opcional para creación
-  textQuestion: string;     // Coincide con Java 'textQuestion'
-  typeName: 'SHORT_TEXT' | 'NUMERIC' | 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE';
+  id?: number;
+  textQuestion: string;
   
-  // Usamos 'option' (singular) para que Jackson lo mapee directo a tu List<Option> option
+  config: {
+    typeName: 'SHORT_TEXT' | 'NUMERIC' | 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE';
+    isMultiple: boolean;
+    attributes?: string | null;
+  };
+
   option?: QuestionOption[]; 
-  
-  // Mantenemos 'options' solo si lo usas internamente en el estado de React
   options?: QuestionOption[]; 
 }
 
 export interface Survey {
-  id?: number;              // Opcional para creación
+  id?: number;
   name: string;
-  numUsers: number;             // Coincide con Java 'name'
-  numQuestions: number;     // Coincide con Java 'numQuestions'
-  questionList: Question[]; // Coincide con Java 'questionList'
-  idPagoPanelista?: number; 
+  numQuestions: number;
+  numUsers: number;
+  questionList: Question[];
   
-  // Campos opcionales para que TypeScript no bloquee el POST
+  // Campos de Tracking y Relaciones
+  categoryList: Category[]; 
+  genereList: Genere[];
   launchDate?: string; 
-  genereList?: Genere[];
+  closeDate?: string;
+  
+  // Metadatos de Negocio
+  creationDate?: string;
   SurveyReward?: number;
+  idPagoPanelista?: number;
   completada?: boolean;
+  supersetID?:string;
 }
 
 // --- Tipos de Apoyo ---
 
+export interface CategoryOption {
+  textOpcion: string;
+}
 export interface GenereOption { 
   textOpcion: string; 
 }
 
-export interface Genere {
-  genere: string;
-  typeName: 'Global' | 'Shooters' | 'Acción-Aventura' | 'RPGs';
-  options?: GenereOption[]; 
+export interface Category {
+  id: number;
+  name: string;      // Este es el que debes mostrar
+  typeName?: string; // Esto suele ser interno (ej: 'steam_cat')
 }
+
+export interface Genere {
+  id: number;
+  genere: string;    // Este es el que debes mostrar (Action, Adventure...)
+  typeName: 'Global' | 'Shooters' | 'Acción-Aventura' | 'RPGs';
+}
+
 
 // --- DTOs para envío de respuestas ---
 

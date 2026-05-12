@@ -1,13 +1,14 @@
 package com.equipo.backend.controller;
 
-
 import com.equipo.backend.dto.EncuestaParcialDTO;
 import com.equipo.backend.dto.EncuestaRespuestaDTO;
 import com.equipo.backend.dto.SurveySummaryDTO;
+import com.equipo.backend.model.Category; // Importar tu modelo
+import com.equipo.backend.model.Genere;   // Importar tu modelo
 import com.equipo.backend.model.Survey;
-import com.equipo.backend.model.UserSurveys;
+import com.equipo.backend.repository.CategoryRepository; // Importar tu repo
+import com.equipo.backend.repository.GenereRepository;   // Importar tu repo
 import com.equipo.backend.repository.UserSurveysRepository;
-import com.equipo.backend.model.Respuesta;
 import com.equipo.backend.service.EncuestaService;
 import com.equipo.backend.service.FormSurveyService;
 import org.springframework.http.HttpStatus;
@@ -18,22 +19,40 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/surveys") // Ruta base única para todo
+@RequestMapping("/api/surveys")
 @CrossOrigin(origins = "*")
 public class SurveyAllUrlLogicController {
 
-private final FormSurveyService formSurveyService;
+    private final FormSurveyService formSurveyService;
     private final EncuestaService encuestaService;
     private final UserSurveysRepository userSurveysRepository;
+    private final CategoryRepository categoryRepository; // Inyectado
+    private final GenereRepository genereRepository;     // Inyectado
 
-    // CORRECCIÓN: Cambiamos UserSurveys por UserSurveysRepository en los parámetros
     public SurveyAllUrlLogicController(FormSurveyService formSurveyService, 
                                        EncuestaService encuestaService, 
-                                       UserSurveysRepository userSurveysRepository) {
+                                       UserSurveysRepository userSurveysRepository,
+                                       CategoryRepository categoryRepository,
+                                       GenereRepository genereRepository) {
         this.formSurveyService = formSurveyService;
         this.encuestaService = encuestaService;
-        this.userSurveysRepository = userSurveysRepository; 
+        this.userSurveysRepository = userSurveysRepository;
+        this.categoryRepository = categoryRepository;
+        this.genereRepository = genereRepository;
     }
+
+    // --- NUEVOS MÉTODOS PARA METADATOS (CATEGORÍAS Y GÉNEROS) ---
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<Category>> getCategories() {
+        return ResponseEntity.ok(categoryRepository.findAll());
+    }
+
+    @GetMapping("/generes")
+    public ResponseEntity<List<Genere>> getGeneres() {
+        return ResponseEntity.ok(genereRepository.findAll());
+    }
+
     // --- MÉTODOS DE PLANTILLAS (FormSurvey) ---
 
     @GetMapping("/all")
@@ -44,19 +63,14 @@ private final FormSurveyService formSurveyService;
     @PostMapping("/submit")
     public ResponseEntity<?> submitForm(
             @RequestBody Survey encuesta, 
-            @RequestParam Long idClient) { // <--- Capturamos el ID desde la URL (?idClient=XX)
+            @RequestParam Long idClient) {
         try {
-            // 1. Validación preventiva
             if (encuesta.getName() == null || encuesta.getName().trim().isEmpty()) {
                 return ResponseEntity.badRequest()
                     .body(Map.of("error", "El nombre de la encuesta es obligatorio"));
             }
 
-            // 2. Llamada al servicio pasando el ID real del cliente
-            // El servicio que corregimos antes buscará al Cliente en la DB y lo asignará
             Survey guardada = formSurveyService.guardarEncuesta(encuesta, idClient);
-
-            // 3. Retornar 201 Created
             return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
 
         } catch (Exception e) {
@@ -105,7 +119,7 @@ private final FormSurveyService formSurveyService;
     @GetMapping("/{idEncuesta}/responses")
     public ResponseEntity<EncuestaParcialDTO> cargarRespuestas(
             @PathVariable Long idEncuesta, 
-            @RequestParam(name = "idUser") Long idUser) { // Especificamos el nombre explícitamente
+            @RequestParam(name = "idUser") Long idUser) {
         return ResponseEntity.ok(encuestaService.cargarRespuestas(idEncuesta, idUser));
     }
 
@@ -116,8 +130,6 @@ private final FormSurveyService formSurveyService;
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<SurveySummaryDTO>> getSurveysByUser(@PathVariable Long userId) {
-        // El Service ahora usa findByUserIdWithSurvey internamente
         return ResponseEntity.ok(encuestaService.obtenerResumenEncuestasPorUsuario(userId));
     }
 }
-

@@ -16,10 +16,11 @@ public class RegisterRequest {
     private String apellido1;
     private String apellido2;
     private Integer edad;
-    private Byte genero;
+    private String genero;
     private String localizacion;
     private String urlIdStream;
     private String urlImgUsuario;
+    private Integer step;
 
     // Campos específicos de CLIENT (Empresa/Organizador)
     private String cuentaBancaria;
@@ -51,8 +52,8 @@ public class RegisterRequest {
     public Integer getEdad() { return edad; }
     public void setEdad(Integer edad) { this.edad = edad; }
 
-    public Byte getGenero() { return genero; }
-    public void setGenero(Byte genero) { this.genero = genero; }
+    public String getGenero() { return genero; }
+    public void setGenero(String genero) { this.genero = genero; }
 
     public String getLocalizacion() { return localizacion; }
     public void setLocalizacion(String localizacion) { this.localizacion = localizacion; }
@@ -63,6 +64,11 @@ public class RegisterRequest {
     public String getUrlImgUsuario() { return urlImgUsuario; }
     public void setUrlImgUsuario(String urlImgUsuario) { this.urlImgUsuario = urlImgUsuario; }
 
+
+    public Integer getStep() { return this.step; }
+    public void setStep(Integer step) { this.step = step;}
+
+
     // --- GETTERS Y SETTERS DE CLIENTE (CLIENT) ---
 
     public String getCuentaBancaria() { return cuentaBancaria; }
@@ -70,4 +76,7 @@ public class RegisterRequest {
 
     public String getUrlImagen() { return urlImagen; }
     public void setUrlImagen(String urlImagen) { this.urlImagen = urlImagen; }
+
+
+
 }

@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from 'react';
-import { View, FlatList, Text, ActivityIndicator, Alert, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, FlatList, Text, ActivityIndicator, Alert, RefreshControl, TouchableOpacity, Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { FormApiService } from '../services/api/service';
 import { UserSurveyRel } from '../types/formsSurvey.types';
 import { ResponsiveLayout } from '../components/ResponsiveLayout';
 import { useAuth } from "../screens/Auth/AuthContext";
 import { useLayout } from '@/app/utils/useLayout';
-import stylesGlobal from './stylesGlobal';
+import stylesGlobal, { colors } from './stylesGlobal';
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import strings from "../../../frontend/assets/supportFiles/strings.json";
 import MenuPrincipal from '@/app/components/Menu/CustomMenu';
@@ -50,130 +50,157 @@ const SurveyListScreen = ({ navigation }: any) => {
     );
 
     return (
-            <View style={[ globalStyles.padre, globalStyles.tamanoCajaPadre ]}>
-
-                {/* 1. HEADER / BOTÓN MENU */}
-            <View style={[globalStyles.cajaMenu, globalStyles.borde, globalStyles.alineadoPersonalVertical]}>
-                <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ padding: isDesktopView ? 30 : 20 }}>
-                    <Text style={{ color: 'white' }}>{strings.menu}</Text>
+        <View style={stylesGlobal.alineadoPersonal}>
+            {/* 1. HEADER / BOTÓN MENU - Fijo arriba */}
+            <View style={{ 
+                width: '100%', 
+                flexDirection: 'row', 
+                justifyContent: 'flex-start', 
+                zIndex: 10,
+                paddingTop: Platform.OS === 'ios' ? 50 : 20, // Margen para notch en iOS
+                paddingHorizontal: 20 
+            }}>
+                <TouchableOpacity 
+                    onPress={() => setMenuVisible(true)} 
+                    style={{ 
+                        padding: 10, 
+                        backgroundColor: 'rgba(255,255,255,0.05)', 
+                        borderRadius: 8 
+                    }}
+                >
+                    <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu}</Text>
                 </TouchableOpacity>
             </View>
-                
-                <View style={{ width: '100%', maxWidth: 1000, alignItems: 'center', justifyContent: 'center', marginTop: 50 }}>
-                    <Text style={[
-                        stylesGlobal.tituloHero, 
-                        isDesktopView && stylesGlobal.tituloHeroDesktop,
-                        { marginBottom: 40, fontSize: isDesktopView ? 60 : 40 }
-                    ]}>
-                        Mis Encuestas
-                    </Text>
-                </View>
 
-                <View style={{ 
-                    width: '100%', 
-                    maxWidth: 900, 
-                    paddingHorizontal: 20,
-                    flex: 1 
-                }}>
-                    <FlatList
-                        data={surveys}
-                        // CORRECCIÓN AQUÍ: KeyExtractor robusto
-                        keyExtractor={(item, index) => 
-                            item?.id?.toString() || 
-                            item?.survey?.id?.toString() || 
-                            `survey-${index}`
-                        }
-                        contentContainerStyle={{ paddingBottom: 60 }}
-                        renderItem={({ item }) => {
-                            // VALIDACIÓN: Si no hay datos de encuesta, no renderizamos nada para evitar errores
-                            if (!item || !item.survey) return null;
+            {/* 2. LISTADO DE ENCUESTAS */}
+            <FlatList
+                data={surveys}
+                // KeyExtractor robusto para evitar avisos de duplicados
+                keyExtractor={(item, index) => 
+                    item?.id?.toString() || 
+                    item?.survey?.id?.toString() || 
+                    `survey-${index}`
+                }
+                // Estilo del contenedor de la lista para que se centre en Web
+                contentContainerStyle={{ 
+                    alignItems: 'center', 
+                    paddingBottom: 60,
+                    width: '100%',
+                    paddingHorizontal: 15
+                }}
+                // Título de la pantalla como cabecera de la lista (mejor para el scroll)
+                ListHeaderComponent={
+                    <View style={{ width: '100%', maxWidth: 800, marginVertical: 40 }}>
+                        <Text style={[
+                            stylesGlobal.tituloHero, 
+                            isDesktopView && stylesGlobal.tituloHeroDesktop,
+                            { textAlign: 'center' }
+                        ]}>
+                            Mis Encuestas
+                        </Text>
+                    </View>
+                }
+                renderItem={({ item }) => {
+                    if (!item || !item.survey) return null;
 
-                            const isCompleted = Number(item.isRespondida) === 1;
+                    const isCompleted = Number(item.isRespondida) === 1;
 
-                            return (
-                                <TouchableOpacity 
-                                    activeOpacity={0.7}
-                                    disabled={isCompleted}
-                                    onPress={() => navigation.navigate('TakeSurvey', { surveyId: item.survey.id })}
-                                    style={[
-                                        stylesGlobal.cajaEncuestas,
-                                        { 
-                                            flexDirection: 'row', 
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            padding: isDesktopView ? 35 : 20,
-                                            backgroundColor: isCompleted ? '#0a0a0a' : '#141414',
-                                            borderColor: isCompleted ? '#28a745' : '#333',
-                                            borderWidth: 1.5,
-                                            borderRadius: 15,
-                                            marginBottom: 15,
-                                            opacity: isCompleted ? 0.7 : 1
-                                        }
-                                    ]}
-                                >
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                        <View style={{
-                                            width: 18,
-                                            height: 18,
-                                            borderRadius: 9,
-                                            backgroundColor: isCompleted ? '#28a745' : '#fd7e14',
-                                            marginRight: 20,
-                                            shadowColor: isCompleted ? '#28a745' : '#fd7e14',
-                                            shadowRadius: 8,
-                                            shadowOpacity: 0.5,
-                                            elevation: 5
-                                        }} />
-
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={[
-                                                stylesGlobal.tittleTextSurvey, 
-                                                { fontSize: isDesktopView ? 22 : 18 },
-                                                isCompleted && { color: '#666' }
-                                            ]}>
-                                                {item.survey.name || "Encuesta sin nombre"}
-                                            </Text>
-                                            
-                                            <Text style={{ 
-                                                fontSize: 14, 
-                                                color: isCompleted ? '#28a745' : '#888', 
-                                                marginTop: 6,
-                                                fontWeight: isCompleted ? 'bold' : 'normal'
-                                            }}>
-                                                {isCompleted ? "Completada ✓" : `Pendiente • ${item.survey.numQuestions || 0} preguntas`}
-                                            </Text>
-                                        </View>
-                                    </View>
-
+                    return (
+                        <View style={{ width: '100%', maxWidth: 800 }}>
+                            <TouchableOpacity 
+                                activeOpacity={0.7}
+                                disabled={isCompleted}
+                                onPress={() => navigation.navigate('TakeSurvey', { surveyId: item.survey.id })}
+                                style={[
+                                    stylesGlobal.cajaEncuestas,
+                                    { 
+                                        flexDirection: 'row', 
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: isDesktopView ? 30 : 20,
+                                        backgroundColor: isCompleted ? '#0a0a0a' : '#141414',
+                                        borderColor: isCompleted ? '#28a745' : '#333',
+                                        borderWidth: 1.5,
+                                        opacity: isCompleted ? 0.7 : 1,
+                                        marginBottom: 15
+                                    }
+                                ]}
+                            >
+                                {/* Lado izquierdo: Indicador y Textos */}
+                                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                    {/* Círculo de estado */}
                                     <View style={{
-                                        paddingVertical: 6,
-                                        paddingHorizontal: 15,
-                                        borderRadius: 8,
-                                        backgroundColor: isCompleted ? 'rgba(40,167,69,0.1)' : 'transparent',
-                                        borderWidth: 1,
-                                        borderColor: isCompleted ? '#28a745' : '#5b55c0'
-                                    }}>
-                                        <Text style={{ color: isCompleted ? '#28a745' : '#5b55c0', fontWeight: 'bold', fontSize: 11 }}>
-                                            {isCompleted ? "FINALIZADA" : "RESPONDER"}
+                                        width: 14,
+                                        height: 14,
+                                        borderRadius: 7,
+                                        backgroundColor: isCompleted ? '#28a745' : '#fd7e14',
+                                        marginRight: 15,
+                                    }} />
+
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={[
+                                            stylesGlobal.tittleTextSurvey, 
+                                            isDesktopView && stylesGlobal.tittleTextSurveyDesktop,
+                                            isCompleted && { color: '#666' }
+                                        ]}>
+                                            {item.survey.name || "Encuesta sin nombre"}
+                                        </Text>
+                                        
+                                        <Text style={{ 
+                                            fontSize: 14, 
+                                            color: isCompleted ? '#28a745' : '#888', 
+                                            marginTop: 4,
+                                            fontWeight: isCompleted ? 'bold' : 'normal'
+                                        }}>
+                                            {isCompleted ? "Completada ✓" : `Pendiente • ${item.survey.numQuestions || 0} preguntas`}
                                         </Text>
                                     </View>
-                                </TouchableOpacity>
-                            );
-                        }}
-                        refreshControl={
-                            <RefreshControl refreshing={refreshing} onRefresh={loadSurveys} tintColor="#5b55c0" />
-                        }
+                                </View>
+
+                                {/* Lado derecho: Badge de acción */}
+                                <View style={{
+                                    paddingVertical: 6,
+                                    paddingHorizontal: 12,
+                                    borderRadius: 6,
+                                    backgroundColor: isCompleted ? 'rgba(40,167,69,0.1)' : 'rgba(91, 85, 192, 0.1)',
+                                    borderWidth: 1,
+                                    borderColor: isCompleted ? '#28a745' : '#5b55c0',
+                                    marginLeft: 10
+                                }}>
+                                    <Text style={{ 
+                                        color: isCompleted ? '#28a745' : '#5b55c0', 
+                                        fontWeight: 'bold', 
+                                        fontSize: 10 
+                                    }}>
+                                        {isCompleted ? "FINALIZADA" : "RESPONDER"}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    );
+                }}
+                // Control de actualización (pull to refresh)
+                refreshControl={
+                    <RefreshControl 
+                        refreshing={refreshing} 
+                        onRefresh={loadSurveys} 
+                        tintColor={colors.primary} 
                     />
-                </View>
+                }
+                // Mensaje si no hay encuestas
+                ListEmptyComponent={
+                    <View style={{ marginTop: 50 }}>
+                        <Text style={[stylesGlobal.texto, { opacity: 0.5 }]}>No tienes encuestas asignadas por ahora.</Text>
+                    </View>
+                }
+            />
 
-
-                {/* 3. MENU AL FINAL (FUERA DE TODO) */}
-                <MenuPrincipal
-                    visible={menuVisible}
-                    onClose={() => setMenuVisible(false)}
-                />
-
-
-            </View>
+            {/* 3. MENÚ LATERAL / OVERLAY */}
+            <MenuPrincipal
+                visible={menuVisible}
+                onClose={() => setMenuVisible(false)}
+            />
+        </View>
     );
 };
 
