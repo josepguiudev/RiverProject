@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { 
-    View, Text, FlatList, TouchableOpacity, ActivityIndicator, 
-    RefreshControl, SafeAreaView, StatusBar, Platform   // ← añadido Platform
+import {
+    View, Text, FlatList, TouchableOpacity, ActivityIndicator,
+    RefreshControl, SafeAreaView, StatusBar, Platform, Alert
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"; 
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { FormApiService } from "../services/api/service";
 import { useAuth } from "./Auth/AuthContext";
@@ -17,9 +17,9 @@ import { isWeb } from "../utils/device";
 
 export default function ClientDashboard() {
     const navigation = useNavigation<any>();
-    const { user, token } = useAuth(); // Extraemos token para la petición
+    const { user, token } = useAuth();
     const { isDesktopView } = useLayout();
-    
+
     const [surveys, setSurveys] = useState<Survey[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -49,17 +49,15 @@ export default function ClientDashboard() {
         fetchMySurveys();
     };
 
-    // Función para asignar masivamente
     const handleAssignToUsers = async (surveyId: number, numUsers: number) => {
         if (!surveyId) return;
-        
+
         setAssigningId(surveyId);
         try {
-            // Asumimos que el endpoint es /api/auth2/assign-survey (ajusta según tu Controller)
             const baseUrl = Platform.OS === "web" ? "http://localhost:8080" : "http://10.0.2.2:8080";
             const response = await fetch(`${baseUrl}/api/auth2/assign-survey/${surveyId}?limit=${numUsers}`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
@@ -67,7 +65,7 @@ export default function ClientDashboard() {
 
             if (response.ok) {
                 Alert.alert("Éxito", `Encuesta asignada correctamente a los usuarios.`);
-                fetchMySurveys(); // Recargamos para ver si numUsers cambió
+                fetchMySurveys();
             } else {
                 Alert.alert("Error", "No se pudo realizar la asignación masiva.");
             }
@@ -79,117 +77,77 @@ export default function ClientDashboard() {
         }
     };
 
-    const renderSurveyItem = ({ item }: { item: Survey }) => (
-        <View style={styles.cajaEncuestas}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{ flex: 1, paddingRight: 15 }}>
-                    <Text style={styles.tittleTextSurvey}>{item.name}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 12 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                            <Ionicons name="list" size={14} color={colors.primary} />
-                            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{item.numQuestions} Qs</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                            <Ionicons name="people" size={14} color={colors.primary} />
-                            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{item.numUsers || 0} objetivo</Text>
-                        </View>
-                    </View>
-                </View>
-
-                <View style={{ flexDirection: isDesktopView ? 'row' : 'column', gap: 10 }}>
-                    {/* BOTÓN ASIGNAR */}
-                    <TouchableOpacity 
-                        style={[styles.botonResultados, { borderColor: colors.blue, backgroundColor: 'rgba(74, 144, 226, 0.1)' }]}
-                        onPress={() => {
-                            if (item.id !== undefined) {
-                                handleAssignToUsers(item.id, item.numUsers || 0);
-                            } else {
-                                console.warn("No se puede asignar: El ID de la encuesta no existe.");
-                            }
-                        }}
-                        disabled={assigningId === item.id}
-                    >
-                        {assigningId === item.id ? (
-                            <ActivityIndicator size="small" color={colors.blue} />
-                        ) : (
-                            <>
-                                <Ionicons name="person-add-outline" size={18} color={colors.blue} />
-                                <Text style={[styles.textoBotonResultados, { color: colors.blue }]}>ASIGNAR</Text>
-                            </>
-                        )}
-                    </TouchableOpacity>
-
-                    {/* BOTÓN ANÁLISIS */}
-                    <TouchableOpacity 
-                        style={styles.botonResultados}
-                        onPress={() => {
-                            if (item.supersetID) {
-                                navigation.navigate("SurveyAnalytics", { supersetID: item.supersetID, title: item.name });
-                            } else {
-                                Alert.alert("Aviso", "Esta encuesta no tiene un dashboard vinculado.");
-                            }
-                        }}
-                    >
-                        <MaterialCommunityIcons name="chart-box-outline" size={18} color={colors.primary} />
-                        <Text style={styles.textoBotonResultados}>ANÁLISIS</Text>
-                    </TouchableOpacity>
-                </View>
-    // --- FUNCIÓN DE RENDERIZADO PARA ANDROID (Súper Estilizada) ---
-    const renderSurveyItemAndroid = ({ item }: { item: Survey }) => (
-        <TouchableOpacity 
-            activeOpacity={0.8}
-            style={styles.cajaEncuestasAndroid}
-            onPress={() => console.log("Click en", item.name)}
-        >
-            <View style={styles.iconContainerAndroid}>
-                <Ionicons name="document-text" size={22} color={colors.secondary} />
-            </View>
-
-            <View style={{ flex: 1 }}>
-                <Text style={[styles.tittleTextSurvey, { fontSize: 17, marginBottom: 4 }]}>
-                    {item.name}
-                </Text>
-                
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ color: colors.textMain, opacity: 0.5, fontSize: 12 }}>
-                        {item.numQuestions} Qs
-                    </Text>
-                    <View style={styles.dot} />
-                    <View style={styles.badgeAndroid}>
-                        <Text style={{ color: colors.cta, fontSize: 10, fontWeight: '700' }}>
-                            {item.numUsers || 0} RESPUESTAS
-                        </Text>
-                    </View>
-                </View>
-            </View>
-        </View>
-
-            <Ionicons name="chevron-forward-outline" size={20} color="rgba(255,255,255,0.2)" />
-        </TouchableOpacity>
-    );
-
-    // --- RENDER WEB ---
+    // ------------------------------------------------------------
+    //  VERSIÓN WEB (nuevo diseño de tu compañero)
+    // ------------------------------------------------------------
     if (isWeb) {
+        const renderSurveyItemWeb = ({ item }: { item: Survey }) => (
+            <View style={styles.cajaEncuestas}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flex: 1, paddingRight: 15 }}>
+                        <Text style={styles.tittleTextSurvey}>{item.name}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 12 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                <Ionicons name="list" size={14} color={colors.primary} />
+                                <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{item.numQuestions} Qs</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                <Ionicons name="people" size={14} color={colors.primary} />
+                                <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{item.numUsers || 0} objetivo</Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    <View style={{ flexDirection: isDesktopView ? 'row' : 'column', gap: 10 }}>
+                        {/* Botón ASIGNAR */}
+                        <TouchableOpacity
+                            style={[styles.botonResultados, { borderColor: colors.blue, backgroundColor: 'rgba(74, 144, 226, 0.1)' }]}
+                            onPress={() => {
+                                if (item.id !== undefined) {
+                                    handleAssignToUsers(item.id, item.numUsers || 0);
+                                } else {
+                                    console.warn("No se puede asignar: El ID de la encuesta no existe.");
+                                }
+                            }}
+                            disabled={assigningId === item.id}
+                        >
+                            {assigningId === item.id ? (
+                                <ActivityIndicator size="small" color={colors.blue} />
+                            ) : (
+                                <>
+                                    <Ionicons name="person-add-outline" size={18} color={colors.blue} />
+                                    <Text style={[styles.textoBotonResultados, { color: colors.blue }]}>ASIGNAR</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+
+                        {/* Botón ANÁLISIS */}
+                        <TouchableOpacity
+                            style={styles.botonResultados}
+                            onPress={() => {
+                                if (item.supersetID) {
+                                    navigation.navigate("SurveyAnalytics", { supersetID: item.supersetID, title: item.name });
+                                } else {
+                                    Alert.alert("Aviso", "Esta encuesta no tiene un dashboard vinculado.");
+                                }
+                            }}
+                        >
+                            <MaterialCommunityIcons name="chart-box-outline" size={18} color={colors.primary} />
+                            <Text style={styles.textoBotonResultados}>ANÁLISIS</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        );
+
         return (
             <ResponsiveLayout fullWidth={true}>
-                <View style={{ padding: 20 }}>
-                     <Text style={styles.tituloHero}>Panel Web</Text>
-                </View>
-            </ResponsiveLayout>
-        );
-    }
-
-    // --- RENDER ANDROID CON LOS CAMBIOS MÍNIMOS ---
-    return (
-        <View style={styles.alineadoPersonal}>
-            <ResponsiveLayout fullWidth={true}>
                 <View style={{ padding: isDesktopView ? 40 : 20, width: '100%' }}>
-                    
-                    <View style={{ 
-                        width: '100%', 
-                        marginBottom: 30, 
-                        flexDirection: isDesktopView ? 'row' : 'column', 
-                        justifyContent: 'space-between', 
+                    <View style={{
+                        width: '100%',
+                        marginBottom: 30,
+                        flexDirection: isDesktopView ? 'row' : 'column',
+                        justifyContent: 'space-between',
                         alignItems: isDesktopView ? 'center' : 'flex-start',
                         gap: 20
                     }}>
@@ -201,38 +159,13 @@ export default function ClientDashboard() {
                                 Gestiona tus encuestas y lanza campañas masivas.
                             </Text>
                         </View>
-        <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-            
-            <View style={{ flex: 1, paddingHorizontal: 20 }}>
-                {/* Header */}
-                <View style={styles.headerAndroid}>
-                    <Text style={styles.saludoAndroid}>Hola, {user?.name}</Text>
-                    <Text style={[styles.tituloHero, { textAlign: 'left', fontSize: 32 }]}>
-                        Mis <Text style={styles.destaqueAzul}>Proyectos</Text>
-                    </Text>
-                </View>
-
                         <View style={{ width: isDesktopView ? 240 : '100%' }}>
-                            <CustomButton 
-                                title="+ NUEVO PROYECTO" 
-                                onPress={() => navigation.navigate("SurveyCreator")} 
+                            <CustomButton
+                                title="+ NUEVO PROYECTO"
+                                onPress={() => navigation.navigate("SurveyCreator")}
                             />
                         </View>
                     </View>
-                {/* Stats */}
-                <View style={styles.containerStats}>
-                    <View style={styles.cardStat}>
-                        <Text style={styles.statNumber}>{surveys.length}</Text>
-                        <Text style={styles.statLabel}>Activos</Text>
-                    </View>
-                    <View style={styles.cardStat}>
-                        <Text style={[styles.statNumber, { color: colors.cta }]}>
-                            {surveys.reduce((acc, curr) => acc + (curr.numUsers || 0), 0)}
-                        </Text>
-                        <Text style={styles.statLabel}>Respuestas</Text>
-                    </View>
-                </View>
 
                     <View style={{ width: '100%' }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
@@ -246,8 +179,8 @@ export default function ClientDashboard() {
                             <FlatList
                                 data={surveys}
                                 keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
-                                renderItem={renderSurveyItem}
-                                scrollEnabled={Platform.OS === 'web' ? false : true}
+                                renderItem={renderSurveyItemWeb}
+                                scrollEnabled={false}
                                 refreshControl={
                                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
                                 }
@@ -265,7 +198,68 @@ export default function ClientDashboard() {
                     </View>
                 </View>
             </ResponsiveLayout>
-        </View>
+        );
+    }
+
+    // ------------------------------------------------------------
+    //  VERSIÓN ANDROID (diseño táctil original)
+    // ------------------------------------------------------------
+    const renderSurveyItemAndroid = ({ item }: { item: Survey }) => (
+        <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.cajaEncuestasAndroid}
+            onPress={() => console.log("Click en", item.name)}
+        >
+            <View style={styles.iconContainerAndroid}>
+                <Ionicons name="document-text" size={22} color={colors.secondary} />
+            </View>
+            <View style={{ flex: 1 }}>
+                <Text style={[styles.tittleTextSurvey, { fontSize: 17, marginBottom: 4 }]}>
+                    {item.name}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ color: colors.textMain, opacity: 0.5, fontSize: 12 }}>
+                        {item.numQuestions} Qs
+                    </Text>
+                    <View style={styles.dot} />
+                    <View style={styles.badgeAndroid}>
+                        <Text style={{ color: colors.cta, fontSize: 10, fontWeight: '700' }}>
+                            {item.numUsers || 0} RESPUESTAS
+                        </Text>
+                    </View>
+                </View>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={20} color="rgba(255,255,255,0.2)" />
+        </TouchableOpacity>
+    );
+
+    return (
+        <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
+            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+
+            <View style={{ flex: 1, paddingHorizontal: 20 }}>
+                {/* Header Android */}
+                <View style={styles.headerAndroid}>
+                    <Text style={styles.saludoAndroid}>Hola, {user?.name}</Text>
+                    <Text style={[styles.tituloHero, { textAlign: 'left', fontSize: 32 }]}>
+                        Mis <Text style={styles.destaqueAzul}>Proyectos</Text>
+                    </Text>
+                </View>
+
+                {/* Stats */}
+                <View style={styles.containerStats}>
+                    <View style={styles.cardStat}>
+                        <Text style={styles.statNumber}>{surveys.length}</Text>
+                        <Text style={styles.statLabel}>Activos</Text>
+                    </View>
+                    <View style={styles.cardStat}>
+                        <Text style={[styles.statNumber, { color: colors.cta }]}>
+                            {surveys.reduce((acc, curr) => acc + (curr.numUsers || 0), 0)}
+                        </Text>
+                        <Text style={styles.statLabel}>Respuestas</Text>
+                    </View>
+                </View>
+
                 {/* Lista */}
                 {loading ? (
                     <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
@@ -278,17 +272,17 @@ export default function ClientDashboard() {
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.secondary} />
                         }
                         renderItem={renderSurveyItemAndroid}
-                        contentContainerStyle={{ paddingBottom: 100 }}  // ← cambiado de 120 a 100
-                        keyboardShouldPersistTaps="handled"             // ← nuevo
-                        removeClippedSubviews={Platform.OS === 'android'} // ← nuevo
-                        maxToRenderPerBatch={10}                        // ← nuevo
+                        contentContainerStyle={{ paddingBottom: 100 }}
+                        keyboardShouldPersistTaps="handled"
+                        removeClippedSubviews={Platform.OS === 'android'}
+                        maxToRenderPerBatch={10}
                     />
                 )}
             </View>
 
-            {/* Botón Flotante */}
+            {/* Botón flotante para nuevo proyecto */}
             <View style={styles.floatingBtnContainer}>
-                <TouchableOpacity 
+                <TouchableOpacity
                     onPress={() => navigation.navigate("SurveyCreator")}
                     style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
                     activeOpacity={0.7}
