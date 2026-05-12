@@ -96,4 +96,13 @@ public class GameSteamController {
         return gameService.update(id, game);
     }
 
+        @DeleteMapping("/{id}")
+        public void delete(@PathVariable Long id) {
+            gameService.delete(id);
+        }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Game>> getAllGames() {
+        return ResponseEntity.ok(gameService.findAll());
+    }
 }

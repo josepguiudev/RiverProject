@@ -62,6 +62,11 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
     const [inputUserId, setInputUserId] = useState("");
     const [inputGameId, setInputGameId] = useState("");
     const [usuariosBD, setUsuariosBD] = useState<Option[]>([]);
+    const [juegosBD, setJuegosBD] = useState<Option[]>([]);
+
+    const [estaCargando, setEstaCargando] = useState(false);
+    const [estaCargandoUsers, setEstaCargandoUsers] = useState(false);
+    const [estaCargandoJuegos, setEstaCargandoJuegos] = useState(false);
 
     useEffect(() => {
         const cargarQueries = async () => {
@@ -101,6 +106,14 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
                 }
                 const data: SteamQuery[] = await response.json();
                 setQueries2(data);
+
+                if (data.length > 0) {
+                    setSelectedOption({
+                        id: data[0].id,
+                        label: data[0].description,
+                        value: data[0].query
+                    });
+                }
             } catch (error) {
                 console.error(error);
                 Alert.alert("Error", "No se pudieron cargar las consultas");
@@ -126,6 +139,7 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
         };
 
         const cargarUsuariosRegistrados = async () => {
+            setEstaCargandoUsers(true);
             try {
                 // Ajusta esta URL a tu endpoint que devuelve los usuarios guardados
                 const response = await fetch(`${strings.parte2Desktop}api/usersteam/allUsers`); 
@@ -144,9 +158,35 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
                 }
             } catch (error) {
                 console.log("Error cargando usuarios de la BD", error);
+            }finally {
+                setEstaCargandoUsers(false);
             }
         };
         cargarUsuariosRegistrados();
+
+        const cargarJuegosRegistrados = async () => {
+            setEstaCargandoJuegos(true);
+            try {
+                const response = await fetch(`${strings.parte2Desktop}api/games/all`); 
+                if (!response.ok) return;
+
+                const data = await response.json();
+
+                if (Array.isArray(data)) {
+                    const options = data.map((g: any) => ({
+                        id: g.id_game || g.id, // Revisa cómo se llama tu PK en la entidad Game
+                        label: `${g.title} (${g.appid})`, // Usamos 'title' porque así lo seteas en el Service
+                        value: g.appid.toString()
+                    }));
+                    setJuegosBD(options);
+                }
+            } catch (error) {
+                console.error("Error al cargar juegos:", error);
+            }finally {
+                setEstaCargandoJuegos(false);
+            }
+        };
+        cargarJuegosRegistrados();
 
         if(value === 1){
             cargarQueries();
@@ -158,6 +198,7 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
     }, []);
 
     const buscarPeticion = async () => {
+        setEstaCargando(true);
         console.log("clic")
         if (!selectedOption || !inputUserId) {
         Alert.alert("Error", "Selecciona una consulta e introduce un ID");
@@ -240,10 +281,13 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
         }catch(error){
             console.error(error);
             Alert.alert("Error", "No se pudo obtener el usuario");
+        }finally {
+            setEstaCargando(false);
         }
     }
 
     const buscarPeticion2 = async () => {
+        setEstaCargando(true);
         console.log("clic 2222222222222222222222222222222222")
         console.log(inputUserId)
         if (!selectedOption) {
@@ -270,6 +314,8 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
         }catch(error){
             console.log("Error", error);
             Alert.alert("Error", "No se pudo extraer la biblioteca del servidor local.");
+        }finally {
+            setEstaCargando(false);
         }
 
         console.log("ID Query:", selectedOption.id);
@@ -280,6 +326,7 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
     }
 
     const buscarPeticion3 = async () => {
+        setEstaCargando(true);
         if (!inputGameId) return;
 
         try {
@@ -301,6 +348,8 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
         } catch (error) {
             console.error(error);
             Alert.alert("Error", "No se pudo obtener el detalle del juego.");
+        }finally {
+            setEstaCargando(false);
         }
     }
 
@@ -320,92 +369,224 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
         gap: 12 
     };
 
+    const containerCard: ViewStyle = {
+        backgroundColor: '#1b2838',
+        padding: 20,
+        borderRadius: 15,
+        borderWidth: 1,
+        borderColor: '#2a475e',
+        marginBottom: 15,
+        width: '100%',
+    };
+
+    const labelEstilo2: TextStyle = { 
+        color: '#66c0f4', 
+        fontSize: 10, 
+        fontWeight: '800', 
+        marginBottom: 6, 
+        letterSpacing: 1,
+        textTransform: 'uppercase'
+    };
+
+    const gridContenedor: ViewStyle = { 
+        flexDirection: 'row', 
+        flexWrap: 'wrap', // Permite que los elementos bajen si no caben
+        justifyContent: 'space-between',
+        gap: 15 
+    };
+
     switch (value) {
         case 1: 
             content = (
-                <View>
-                    <TypeWriter typing={1} maxDelay={50} style={titleStyle}>{title}</TypeWriter>
-                    <View style={filaControles}>
-                        {/* 1. SELECTOR DE CONSULTA (Mantenemos igual) */}
-                        <View style={{ flex: 1 }}>
-                            <Text style={labelEstilo}>Consulta</Text>
-                            <CustomDropdown 
-                                label="" 
-                                options={queries.map(q => ({ id: q.id, label: q.description, value: q.query }))} 
-                                onSelect={item => setSelectedOption(item)}
-                            />
+                <View style={{ padding: 0 }}>
+                    <TypeWriter typing={1} maxDelay={50} style={[titleStyle, { marginBottom: 5 }]}>
+                        {title.toUpperCase()}
+                    </TypeWriter>
+
+                    {/* 1. CONSULTA */}
+                    <View style={{ marginBottom: 10 }}>
+                        <Text style={[labelEstilo2, { marginBottom: 4 }]}>TIPO DE PETICIÓN</Text>
+                        <CustomDropdown 
+                            label="" 
+                            options={queries.map(q => ({ id: q.id, label: q.description, value: q.query }))} 
+                            onSelect={item => setSelectedOption(item)}
+                        />
+                    </View>
+
+                    {/* 2. FILA DE PARÁMETROS: La clave es alignItems: 'flex-end' */}
+                    <View style={{ 
+                        flexDirection: 'row', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'flex-end', // Esto alinea las bases de los dos inputs
+                        marginBottom: 15,
+                        width: '100%'
+                    }}>
+                        <View style={{ width: '48%' }}>
+                            <Text style={[labelEstilo2, { marginBottom: 4 }]}>ELEGIR GUARDADO</Text>
+                            {estaCargandoUsers ? (
+                                <ActivityIndicator color="gold" size="small" />
+                            ) : (
+                                <CustomDropdown 
+                                    label="" 
+                                    options={usuariosBD} 
+                                    onSelect={item => setInputUserId(item.value)} 
+                                />
+                            )}
                         </View>
 
-                        {/* 2. SELECTOR DE USUARIOS BD (NUEVO) */}
-                        <View style={{ flex: 1 }}>
-                            <Text style={labelEstilo}>Elegir Guardado</Text>
-                            <CustomDropdown 
-                                label="" 
-                                options={usuariosBD} 
-                                onSelect={item => setInputUserId(item.value)} // Al seleccionar, rellena el input
-                            />
-                        </View>
-
-                        {/* 3. INPUT MANUAL (Por si no está en la BD) */}
-                        <View style={{ flex: 1 }}>
-                            <Text style={labelEstilo}>O escribir ID</Text>
+                        <View style={{ width: '48%' }}>
+                            <Text style={[labelEstilo2, { marginBottom: 4 }]}>O ESCRIBIR ID</Text>
                             <CustomInputText 
                                 placeholder="SteamID..." 
-                                value={inputUserId} // Vinculamos el valor
+                                value={inputUserId} 
                                 isAdmin={true} 
                                 onChangeText={setInputUserId}
+                                // Si puedes, añade style={{ height: 45 }} dentro del componente
                             />
                         </View>
+                    </View>
 
-                        <CustomButton title="BUSCAR" onPress={buscarPeticion} isAdmin={true} />
+                    {/* 3. BOTÓN */}
+                    <View style={{ width: '100%' }}>
+                        {estaCargando ? (
+                            <ActivityIndicator color="gold" size="small" />
+                        ) : (
+                            <CustomButton 
+                                title="EJECUTAR BÚSQUEDA" 
+                                onPress={buscarPeticion} 
+                                isAdmin={true} 
+                            />
+                        )}
                     </View>
                 </View>
             );
             break;
         case 2:
             content = (
-                <View>
-                    <TypeWriter typing={1} maxDelay={50} style={titleStyle}>{title}</TypeWriter>
-                    <View style={filaControles}>
-                        <View style={{ flex: 2 }}>
-                            {loading ? (
-                                <ActivityIndicator size="small" color="#66c0f4" />
+                <View style={{ padding: 0 }}>
+                    {/* TÍTULO ARRIBA */}
+                    <TypeWriter typing={1} maxDelay={50} style={[titleStyle, { marginBottom: 5 }]}>
+                        {title.toUpperCase()}
+                    </TypeWriter>
+
+                    {/* 1. CONSULTA (Fila Superior al 100%) */}
+                    <View style={{ marginBottom: 10 }}>
+                        <Text style={[labelEstilo2, { marginBottom: 4 }]}>TIPO DE PETICIÓN</Text>
+                        <CustomDropdown 
+                            label="" 
+                            options={queries2.map(q => ({ id: q.id, label: q.description, value: q.query }))} 
+                            onSelect={setSelectedOption}
+                        />
+                    </View>
+
+                    {/* 2. FILA DE PARÁMETROS (Alineados por la base al 48% cada uno) */}
+                    <View style={{ 
+                        flexDirection: 'row', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'flex-end', 
+                        marginBottom: 15,
+                        width: '100%'
+                    }}>
+                        <View style={{ width: '48%' }}>
+                            <Text style={[labelEstilo2, { marginBottom: 4 }]}>ELEGIR GUARDADO</Text>
+                            {estaCargandoJuegos ? (
+                                <ActivityIndicator color="gold" size="small" />
                             ) : (
                                 <CustomDropdown 
-                                    label="Seleccione una consulta" 
-                                    options={queries2.map(q => ({ id: q.id, label: q.description, value: q.query }))} 
-                                    onSelect={item => setSelectedOption(item)}
+                                    label="" 
+                                    options={juegosBD} 
+                                    onSelect={(item) => setInputGameId(item.value)} 
                                 />
                             )}
                         </View>
-                        <View style={{ flex: 1 }}>
-                            <CustomInputText placeholder="AppID Juego" isAdmin={true} onChangeText={setInputGameId}/>
+
+                        <View style={{ width: '48%' }}>
+                            <Text style={[labelEstilo2, { marginBottom: 4 }]}>O ESCRIBIR APPID</Text>
+                            <CustomInputText 
+                                placeholder="Ej: 22380" 
+                                value={inputGameId} 
+                                isAdmin={true} 
+                                onChangeText={setInputGameId}
+                            />
                         </View>
-                        <CustomButton title="BUSCAR" onPress={buscarPeticion3} isAdmin={true} />
+                    </View>
+
+                    {/* 3. BOTÓN (Fila Inferior al 100% para cerrar el diseño) */}
+                    <View style={{ width: '100%' }}>
+                        {estaCargando ? (
+                            <ActivityIndicator color="gold" size="small" />
+                        ) : (
+                            <CustomButton 
+                                title="EJECUTAR BÚSQUEDA" 
+                                onPress={buscarPeticion3} 
+                                isAdmin={true} 
+                            />
+                        )}
                     </View>
                 </View>
             );
             break;
         case 3:
             content = (
-                <View>
-                    <TypeWriter typing={1} maxDelay={50} style={titleStyle}>{title}</TypeWriter>
-                    <View style={filaControles}>
-                        <View style={{ flex: 2 }}>
-                            {loading ? (
-                                <ActivityIndicator size="small" color="#66c0f4" />
+                <View style={{ padding: 0 }}>
+                    {/* TÍTULO */}
+                    <TypeWriter typing={1} maxDelay={50} style={[titleStyle, { marginBottom: 5 }]}>
+                        {title.toUpperCase()}
+                    </TypeWriter>
+
+                    {/* 1. CONSULTA (Fila Superior al 100%) */}
+                    <View style={{ marginBottom: 10 }}>
+                        <Text style={[labelEstilo2, { marginBottom: 4 }]}>TIPO DE PETICIÓN</Text>
+                        <CustomDropdown 
+                            label="" 
+                            options={queries3.map(q => ({ id: q.id, label: q.description, value: q.query }))} 
+                            onSelect={setSelectedOption}
+                        />
+                    </View>
+
+                    {/* 2. FILA DE PARÁMETROS (Alineados por la base al 48% cada uno) */}
+                    <View style={{ 
+                        flexDirection: 'row', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'flex-end', 
+                        marginBottom: 15,
+                        width: '100%'
+                    }}>
+                        <View style={{ width: '48%' }}>
+                            <Text style={[labelEstilo2, { marginBottom: 4 }]}>ELEGIR USUARIO</Text>
+                            {estaCargandoUsers ? (
+                                <ActivityIndicator color="gold" size="small" />
                             ) : (
                                 <CustomDropdown 
-                                    label="Seleccione una consulta" 
-                                    options={queries3.map(q => ({ id: q.id, label: q.description, value: q.query }))} 
-                                    onSelect={item => setSelectedOption(item)}
+                                    label="" 
+                                    options={usuariosBD} 
+                                    onSelect={(item) => setInputUserId(item.value)} 
                                 />
                             )}
                         </View>
-                        <View style={{ flex: 1 }}>
-                            <CustomInputText placeholder="ID Jugador" isAdmin={true} onChangeText={setInputUserId}/>
+
+                        <View style={{ width: '48%' }}>
+                            <Text style={[labelEstilo2, { marginBottom: 4 }]}>O ESCRIBIR ID</Text>
+                            <CustomInputText 
+                                placeholder="SteamID..." 
+                                value={inputUserId} 
+                                isAdmin={true} 
+                                onChangeText={setInputUserId}
+                            />
                         </View>
-                        <CustomButton title="BUSCAR" onPress={buscarPeticion2} isAdmin={true} />
+                    </View>
+
+                    {/* 3. BOTÓN (Fila Inferior al 100%) */}
+                    <View style={{ width: '100%' }}>
+                        {estaCargando ? (
+                            <ActivityIndicator color="gold" size="small" />
+                        ) : (
+                            <CustomButton 
+                                title="EJECUTAR BÚSQUEDA" 
+                                onPress={buscarPeticion2} 
+                                isAdmin={true} 
+                            />
+                        )}
                     </View>
                 </View>
             );

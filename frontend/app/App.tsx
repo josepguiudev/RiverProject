@@ -18,7 +18,6 @@ import ConnectSteam from "./screens/ConnectSteamScreen"
 
 
 import LoginScreen from "./screens/Auth/LoginScreen";
-import Index from "./screens/index";
 
 import AdminScreen from "./screens/Admin/AdminScreen";
 import AdminUserScreen from "./screens/Admin/AdminUserScreen";
@@ -42,17 +41,13 @@ function App() {
 
 	// Si no, devolvemos tu navegación normal
 	return (
-		<AuthProvider> {
+		<AuthProvider> 
 			<NavigationContainer>
 				<Stack.Navigator
 					initialRouteName="Login"
 					screenOptions={{ headerShown: false }}
 				>
-					<Stack.Screen
-						name="Index"
-						component={Index}
-						options={{ headerShown: false }}
-					/>
+					
 					<Stack.Screen
 						name="Login"
 						component={LoginScreen}
@@ -71,7 +66,7 @@ function App() {
 
 				</Stack.Navigator>
 			</NavigationContainer>
-		} </AuthProvider>
+		 </AuthProvider>
 	);
 }
 export default App;
