@@ -6,9 +6,10 @@ import { useNavigation } from "@react-navigation/native";
 import CustomButton from "@/app/components/CustomButton/CustomButton";
 import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
 import strings from "../../../assets/supportFiles/strings.json";
-import styles, { colors } from "../stylesGlobal"; 
+import styles, { colors } from "./styles"; 
 import { useLayout } from "@/app/utils/useLayout";
 import { useAuth } from "../Auth/AuthContext"; 
+import client from "../../api/client";
 
 export default function LoginScreen() {
     const navigation = useNavigation<any>();
@@ -26,49 +27,23 @@ export default function LoginScreen() {
         }
 
         setIsSubmitting(true);
-        const baseUrl = Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080';
         
         try {
-            const response = await fetch(`${baseUrl}/api/auth2/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    email: email.trim(), 
-                    password: password 
-                }),
+            const response = await client.post("/api/auth2/login", {
+                email: email.trim(), 
+                password: password 
             });
 
-            // Si el backend devuelve un string simple en vez de JSON cuando hay error
-            const contentType = response.headers.get("content-type");
-            let data;
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                data = await response.json();
-            } else {
-                const textError = await response.text();
-                data = { error: textError };
-            }
-
-            if (!response.ok) {
-                Alert.alert("Error de acceso", data.error || "Credenciales incorrectas");
-                return;
-            }
-
+            const data = response.data;
             await login(data.user, data.token, data.role, data.registrationStep);
 
-            // Lógica de redirección (se mantiene igual)
-            if (data.role === 'CLIENT') {
-                navigation.replace("ClientDashboard"); 
-            } else {
-                switch (data.registrationStep) {
-                    case 1: navigation.replace("CompleteProfile"); break;
-                    case 2: navigation.replace("ConnectSteam"); break;
-                    default: navigation.replace("SurveyList");
-                }
-            }
+            // Nota: App.tsx se encargará de la redirección automática 
+            // al cambiar el estado del usuario en el AuthContext.
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Login Error:", error);
-            Alert.alert("Error de conexión", "Servidor no disponible");
+            const errorMsg = error.response?.data?.error || error.response?.data || "Error de conexión";
+            Alert.alert("Error de acceso", typeof errorMsg === 'string' ? errorMsg : "Credenciales incorrectas");
         } finally {
             setIsSubmitting(false);
         }
@@ -99,7 +74,7 @@ export default function LoginScreen() {
                 </View>
 
                 {/* Caja de Login principal */}
-                <View style={[isDesktopView && styles.cajaDesktop]}>
+                <View style={[styles.caja, isDesktopView && styles.cajaDesktop]}>
                     <Text style={[styles.mainText, { marginBottom: 10 }]}>Bienvenido</Text>
                     <Text style={[styles.texto, { marginBottom: 30 }]}>Introduce tus credenciales para continuar</Text>
                     

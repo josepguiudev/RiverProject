@@ -1,17 +1,27 @@
 import React, { useState } from "react";
 import { View, Text, Alert, Platform, ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
 import { useAuth } from "./Auth/AuthContext"; 
+import client from "../api/client";
 import CustomInputText from "../components/CustomInputText/CustomInputText";
 import CustomButton from "../components/CustomButton/CustomButton";
 import styles, { colors } from "./stylesGlobal";
 
+/**
+ * Pantalla final de onboarding: Conexión con Steam.
+ * Permite al usuario vincular su Steam ID para que el sistema le asigne encuestas basadas en sus juegos.
+ */
 export default function ConnectSteamScreen({ navigation }: any) {
-    const { user, token } = useAuth(); 
+    // Extraemos los datos del usuario y la función para finalizar el onboarding
+    const { user, updateRegistrationStep } = useAuth(); 
     const [steamId, setSteamId] = useState("");
     const [loading, setLoading] = useState(false);
 
     const baseUrl = Platform.OS === "web" ? "http://localhost:8080" : "http://10.0.2.2:8080";
 
+    /**
+     * Envía el Steam ID al backend para finalizar el registro.
+     * Si la validación es correcta, marca el onboarding como completado.
+     */
     const handleFinalize = async () => {
         if (!steamId) {
             Alert.alert("Error", "Por favor, introduce tu Steam ID.");
@@ -20,25 +30,17 @@ export default function ConnectSteamScreen({ navigation }: any) {
 
         setLoading(true);
         try {
-            // Este endpoint debe ser el que gatilla la asignación de encuestas en el backend
-            const response = await fetch(`${baseUrl}/api/auth2/complete-profile-steam/${user?.id}?steamId=${steamId}`, {
-                method: "PUT",
-                headers: { 
-                    "Authorization": `Bearer ${token}`, 
-                    "Content-Type": "application/json" 
-                }
-            });
+            // Usamos el cliente centralizado
+            const response = await client.put(`/api/auth2/complete-profile-steam/${user?.id}?steamId=${steamId}`);
 
-            if (response.ok) {
+            if (response.status === 200) {
                 Alert.alert("¡Configuración Completa!", "Hemos analizado tu perfil y asignado las encuestas disponibles.");
-                // Navegamos a la pantalla donde el usuario ve sus encuestas
-                navigation.replace("SurveyList"); 
-            } else {
-                const errorMsg = await response.text();
-                Alert.alert("Error", errorMsg || "No se pudo validar el Steam ID.");
+                // Actualizamos el paso de registro a 3 (Completado)
+                await updateRegistrationStep(3);
             }
-        } catch (error) {
-            Alert.alert("Error", "Error de conexión con el servidor.");
+        } catch (error: any) {
+            const errorMsg = error.response?.data || "No se pudo validar el Steam ID.";
+            Alert.alert("Error", typeof errorMsg === 'string' ? errorMsg : "Error en el registro");
         } finally {
             setLoading(false);
         }
@@ -75,10 +77,13 @@ export default function ConnectSteamScreen({ navigation }: any) {
                             {/* BOTÓN DE TEST PARA DESARROLLO */}
                             <TouchableOpacity 
                                 style={[styles.btnSecondary, { borderStyle: 'solid', marginTop: 10 }]} 
-                                onPress={() => navigation.navigate("SurveyList")} 
+                                onPress={async () => {
+                                    await updateRegistrationStep(3);
+                                    // App.tsx hará el cambio automáticamente
+                                }} 
                             >
                                 <Text style={{ color: colors.text, fontWeight: 'bold' }}>
-                                    DEBUG: SALTAR A ENCUESTAS (TEST)
+                                    DEBUG: SALTAR A ENCUESTAS (PERSISTENTE)
                                 </Text>
                             </TouchableOpacity>
                         </>

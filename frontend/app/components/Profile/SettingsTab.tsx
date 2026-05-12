@@ -32,10 +32,11 @@ interface Props {
     /** Callback que la screen llama con los datos actualizados. */
     onSave?: (payload: SavePayload) => Promise<void>;
     isMobile: boolean;
+    userRole?: string;
 }
 
 // ---- Componente ----
-export default function SettingsTab({ initialData, onSave, isMobile }: Props) {
+export default function SettingsTab({ initialData, onSave, isMobile, userRole }: Props) {
     // Estado del formulario
     const [form, setForm] = useState<UserData>({
         name: initialData?.name ?? '',
@@ -143,7 +144,7 @@ export default function SettingsTab({ initialData, onSave, isMobile }: Props) {
                 </View>
                 <View style={isMobile ? styles.fieldColumn : styles.fieldRow}>
                     {renderInput('Segundo Apellido', form.apellido2, v => update('apellido2', v), { placeholder: 'Apellido 2' })}
-                    {renderInput('Edad', form.edad, v => update('edad', v), { placeholder: '25', keyboardType: 'numeric' })}
+                    {userRole === 'PLAYER' && renderInput('Edad', form.edad, v => update('edad', v), { placeholder: '25', keyboardType: 'numeric' })}
                 </View>
                 {renderInput('Localización', form.localizacion, v => update('localizacion', v), { placeholder: 'Barcelona, España' })}
             </View>
@@ -157,25 +158,27 @@ export default function SettingsTab({ initialData, onSave, isMobile }: Props) {
                 {renderInput('Email', form.email, v => update('email', v), { placeholder: 'usuario@ejemplo.com', keyboardType: 'email-address' })}
             </View>
 
-            {/* ── Sección: Steam ID ── */}
-            <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Ionicons name="game-controller-outline" size={18} color="#5b55c0" />
-                    <Text style={styles.sectionTitle}>Vinculación Steam</Text>
-                </View>
-                {!form.steamId && (
-                    <View style={{ backgroundColor: 'rgba(255,0,0,0.1)', padding: 10, borderRadius: 8, marginBottom: 10 }}>
-                        <Text style={{ color: '#ff6b6b', fontSize: 13, fontWeight: 'bold' }}>
-                            No connection: No has vinculado tu cuenta de Steam.
-                        </Text>
+            {/* ── Sección: Steam ID (Solo Jugadores) ── */}
+            {userRole === 'PLAYER' && (
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Ionicons name="game-controller-outline" size={18} color="#5b55c0" />
+                        <Text style={styles.sectionTitle}>Vinculación Steam</Text>
                     </View>
-                )}
-                {renderInput('Steam ID', form.steamId, v => update('steamId', v), { placeholder: '76561198xxxxxxxxx' })}
-                <Text style={styles.hint}>
-                    Introduce tu Steam ID de 17 dígitos para vincular tu perfil de Steam.
-                    Puedes encontrarlo en la URL de tu perfil de Steam.
-                </Text>
-            </View>
+                    {!form.steamId && (
+                        <View style={{ backgroundColor: 'rgba(255,0,0,0.1)', padding: 10, borderRadius: 8, marginBottom: 10 }}>
+                            <Text style={{ color: '#ff6b6b', fontSize: 13, fontWeight: 'bold' }}>
+                                No connection: No has vinculado tu cuenta de Steam.
+                            </Text>
+                        </View>
+                    )}
+                    {renderInput('Steam ID', form.steamId, v => update('steamId', v), { placeholder: '76561198xxxxxxxxx' })}
+                    <Text style={styles.hint}>
+                        Introduce tu Steam ID de 17 dígitos para vincular tu perfil de Steam.
+                        Puedes encontrarlo en la URL de tu perfil de Steam.
+                    </Text>
+                </View>
+            )}
 
             {/* ── Sección: Contraseña ── */}
             <View style={styles.section}>

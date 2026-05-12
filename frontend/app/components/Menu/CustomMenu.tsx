@@ -36,8 +36,13 @@ const SteamMenuItem = ({ label, onPress }: SteamMenuItemProps) => {
 
 export default function MenuLateral({ visible, onClose }: any) {
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current; // Inicia fuera a la izquierda
-  const navigation = useNavigation();
-  const { logout } = useAuth();
+  const navigation = useNavigation<any>();
+  const { user, logout } = useAuth();
+
+  const navigateTo = (screen: string) => {
+    onClose();
+    navigation.navigate(screen);
+  };
 
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -61,32 +66,50 @@ export default function MenuLateral({ visible, onClose }: any) {
         <Text style={styles.title}>{strings.name}</Text>
         <View style={styles.linea} />
         
-        {/* Aquí tus opciones de menú */}
-        <SteamMenuItem 
-          label={strings.inicio} 
-          onPress={() => { onClose(); navigation.navigate("Home" as never); }}
-        />
-        <SteamMenuItem 
-          label={strings.adminScreen} 
-          onPress={() => { onClose(); navigation.navigate("Admin" as never); }}
-        />
-        <SteamMenuItem 
-          label={strings.usersScreen} 
-          onPress={() => { onClose(); navigation.navigate("AdminUser" as never); }}
-        />
-        <SteamMenuItem 
-          label={strings.perfil} 
-          onPress={() => { onClose(); navigation.navigate("Profile" as never); }}
-        />
-        <SteamMenuItem label={strings.configuracion} />
-        <SteamMenuItem 
-          label={strings.cerrarSesion} 
-          onPress={async () => {
-            onClose();
-            await logout();
-            navigation.navigate("Login" as never);
-          }}
-        />
+        {/* FILTRADO POR ROL */}
+        {user?.role === "PLAYER" && (
+          <>
+            <SteamMenuItem label={strings.inicio} onPress={() => navigateTo("Home")} />
+            <SteamMenuItem label="Mis Encuestas" onPress={() => navigateTo("SurveyList")} />
+          </>
+        )}
+
+        {user?.role === "CLIENT" && (
+          <>
+            <SteamMenuItem label="Dashboard" onPress={() => navigateTo("ClientDashboard")} />
+            <SteamMenuItem label="Crear Encuesta" onPress={() => navigateTo("SurveyCreator")} />
+            <SteamMenuItem label="Analíticas" onPress={() => navigateTo("SurveyAnalytics")} />
+          </>
+        )}
+
+        {user?.role === "ADMIN" && (
+          <>
+            <SteamMenuItem label={strings.adminScreen} onPress={() => navigateTo("Admin")} />
+            <SteamMenuItem label={strings.usersScreen} onPress={() => navigateTo("AdminUser")} />
+          </>
+        )}
+
+        <View style={styles.linea} />
+
+        {user && (
+          <>
+            <SteamMenuItem label={strings.perfil} onPress={() => navigateTo("Profile")} />
+            <SteamMenuItem 
+              label={strings.configuracion} 
+              onPress={() => {
+                onClose();
+                navigation.navigate("Profile", { tab: "configuracion" });
+              }} 
+            />
+            <SteamMenuItem 
+              label={strings.cerrarSesion} 
+              onPress={async () => {
+                onClose();
+                await logout();
+              }}
+            />
+          </>
+        )}
       </Animated.View>
     </View>
   );

@@ -6,6 +6,7 @@ import CustomButton from "@/app/components/CustomButton/CustomButton";
 import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
 import strings from "../../../assets/supportFiles/strings.json";
 import { useLayout } from "@/app/utils/useLayout";
+import client from "../../api/client";
 
 export default function RegisterScreen({ navigation, route }: any) {
   const { isDesktopView } = useLayout();
@@ -42,36 +43,23 @@ export default function RegisterScreen({ navigation, route }: any) {
       return;
     }
 
-    const baseUrl = Platform.OS === "web" ? "http://localhost:8080" : "http://10.0.2.2:8080";
-
-    // Enviamos solo lo necesario para el Paso 1
     const bodyData = {
       type,
       email: email.trim(),
       password,
       name,
-      ...(type === "CLIENT" && { cuentaBancaria }) // Solo si es empresa enviamos el IBAN ahora
+      ...(type === "CLIENT" && { cuentaBancaria })
     };
 
     try {
-      const res = await fetch(`${baseUrl}/api/auth2/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyData),
-      });
+      const res = await client.post("/api/auth2/register", bodyData);
 
-      if (!res.ok) {
-        const errorData = await res.text();
-        Alert.alert("Error", errorData);
-        return;
-      }
-
-      // Si es USER, el backend ha creado el registro con registrationStep: 1
       Alert.alert("¡Éxito!", "Cuenta creada. Ahora inicia sesión para completar tu perfil.");
       navigation.navigate("Login");
 
-    } catch (error) {
-      Alert.alert("Error", "No se pudo conectar con el servidor");
+    } catch (error: any) {
+      const errorMsg = error.response?.data || "No se pudo conectar con el servidor";
+      Alert.alert("Error", typeof errorMsg === 'string' ? errorMsg : "Error en el registro");
     }
   };
 

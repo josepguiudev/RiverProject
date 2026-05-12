@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { View, Text, Alert, Platform, ScrollView, TouchableOpacity } from "react-native";
 import { useAuth } from "./Auth/AuthContext";
+import client from "../api/client";
 import { CustomDatePicker } from "../components/QuestionCard/CustomDatePicker";
-import CustomInputText from "../components/CustomInputText/CustomInputText";
-import CustomButton from "../components/CustomButton/CustomButton";
-import styles, { colors } from "./stylesGlobal";
+// ... (resto de imports)
 
+/**
+ * Pantalla de completar perfil (Paso 2 del onboarding).
+ * Permite al jugador introducir sus apellidos, fecha de nacimiento, género y localización.
+ */
 export default function CompleteProfileScreen({ navigation }: any) {
-  const { user } = useAuth();
+  // Extraemos el usuario y la función para actualizar el paso de registro desde el contexto de auth
+  const { user, updateRegistrationStep } = useAuth();
 
   const [formData, setFormData] = useState({
     apellido1: "",
@@ -38,6 +42,10 @@ export default function CompleteProfileScreen({ navigation }: any) {
     return age;
   };
 
+  /**
+   * Maneja el envío del formulario al backend para completar el paso 2.
+   * Valida los campos obligatorios y la edad del usuario antes de enviar.
+   */
   const handleNextStep = async () => {
     if (!formData.apellido1 || !formData.fechaNacimiento || !formData.localizacion) {
       Alert.alert("Error", "Por favor, completa los campos obligatorios.");
@@ -64,23 +72,18 @@ export default function CompleteProfileScreen({ navigation }: any) {
       edad: edadCalculada
     };
 
-    const baseUrl = Platform.OS === "web" ? "http://localhost:8080" : "http://10.0.2.2:8080";
-
     try {
-      const res = await fetch(`${baseUrl}/api/auth2/complete-profile/${user?.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      // Usamos el cliente centralizado para la petición
+      const res = await client.put(`/api/auth2/complete-profile/${user?.id}`, body);
 
-      if (res.ok) {
-        navigation.replace("ConnectSteam");
-      } else {
-        const errorMsg = await res.text();
-        Alert.alert("Error", errorMsg || "No se pudo guardar la información.");
+      if (res.status === 200) {
+        // Actualizamos el paso de registro a 2 (Vincular Steam)
+        await updateRegistrationStep(2);
+        // No hace falta navigation.navigate ya que App.tsx detectará el cambio de step
       }
-    } catch (error) {
-      Alert.alert("Error", "Error de conexión con el servidor.");
+    } catch (error: any) {
+      const errorMsg = error.response?.data || "Error de conexión con el servidor.";
+      Alert.alert("Error", typeof errorMsg === 'string' ? errorMsg : "No se pudo guardar la información.");
     }
   };
 

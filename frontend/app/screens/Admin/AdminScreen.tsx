@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, Text, ScrollView, Alert, Image } from "react-native";
+import { View, TouchableOpacity, Text, ScrollView, Alert, Image, Platform } from "react-native";
 
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import styles from './styles';
 import MenuPrincipal from '@/app/components/Menu/CustomMenu';
-import strings from "../../../assets/supportFiles/strings.json";
+import strings from "@/assets/supportFiles/strings.json";
 import CustomInputCard from '@/app/components/CustomInputCard/CustomInputCard';
 import CustomButton from '@/app/components/CustomButton/CustomButton';
 
@@ -107,10 +107,24 @@ export default function AdminScreen({ navigation }: any) {
     return (
     <View style={[globalStyles.padre, { flex: 1, backgroundColor: '#000' }]}>
         
-        {/* 1. HEADER */}
-        <View style={[globalStyles.cajaMenu, globalStyles.borde, { height: 60, justifyContent: 'center', paddingHorizontal: 20 }]}>
-            <TouchableOpacity onPress={() => setMenuVisible(true)}>
-                <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu}</Text>
+        {/* BOTÓN MENU ESTANDARIZADO */}
+        <View style={{ 
+            position: 'absolute',
+            top: Platform.OS === 'ios' ? 50 : 20,
+            left: 20,
+            zIndex: 10,
+        }}>
+            <TouchableOpacity 
+                onPress={() => setMenuVisible(true)} 
+                style={{ 
+                    padding: 10, 
+                    backgroundColor: 'rgba(255,255,255,0.1)', 
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.1)'
+                }}
+            >
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu || "MENÚ"}</Text>
             </TouchableOpacity>
         </View>
 

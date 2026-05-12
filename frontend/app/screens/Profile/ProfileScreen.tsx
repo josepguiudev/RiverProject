@@ -43,11 +43,20 @@ const MOCK_SURVEYS = [
 // ── Sub-pestañas del perfil ──
 type ProfileTab = 'perfil' | 'configuracion';
 
-export default function ProfileScreen({ navigation }: any) {
+export default function ProfileScreen({ navigation, route }: any) {
     const { isMobileView, isDesktopView } = useLayout();
     const [menuVisible, setMenuVisible] = useState(false);
     const [activeTab, setActiveTab] = useState<ProfileTab>('perfil');
     const { user } = useAuth(); // Usuario logueado (contiene id, name, email)
+
+    // Efecto para detectar si venimos desde el menú de configuración
+    React.useEffect(() => {
+        if (route.params?.tab === 'configuracion') {
+            setActiveTab('configuracion');
+        } else if (route.params?.tab === 'perfil') {
+            setActiveTab('perfil');
+        }
+    }, [route.params?.tab]);
 
     const steamId = strings.idPlayerJoako || '76561199167008828';
     const apiKey = Constants.expoConfig?.extra?.STEAM_API_KEY || '';
@@ -197,10 +206,24 @@ export default function ProfileScreen({ navigation }: any) {
     return (
         <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre]}>
 
-            {/* Botón menú */}
-            <View style={[globalStyles.cajaMenu, globalStyles.alineadoPersonalVertical, styles.menuBar]}>
-                <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ padding: 20 }}>
-                    <Text style={{ color: 'white' }}>{strings.menu}</Text>
+            {/* BOTÓN MENU ESTANDARIZADO */}
+            <View style={{ 
+                position: 'absolute',
+                top: Platform.OS === 'ios' ? 50 : 20,
+                left: 20,
+                zIndex: 10,
+            }}>
+                <TouchableOpacity 
+                    onPress={() => setMenuVisible(true)} 
+                    style={{ 
+                        padding: 10, 
+                        backgroundColor: 'rgba(255,255,255,0.1)', 
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: 'rgba(255,255,255,0.1)'
+                    }}
+                >
+                    <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu || "MENÚ"}</Text>
                 </TouchableOpacity>
             </View>
 
@@ -235,43 +258,53 @@ export default function ProfileScreen({ navigation }: any) {
                         isDesktopView && styles.contentDesktop
                     ]}
                 >
-                    {/* Sección 1 — Header */}
-                    <ProfileHeader profile={steamProfile} loading={loading} />
+                    {user?.role === 'PLAYER' ? (
+                        <>
+                            {/* Vista de Jugador — Steam & Encuestas */}
+                            <ProfileHeader profile={steamProfile} loading={loading} />
 
-                    {/* Sección 2 — Donut + Juegos
-                        En móvil van en columna, en desktop en fila */}
-                    <View style={[
-                        styles.middleRow,
-                        isMobileView ? styles.middleRowMobile : styles.middleRowDesktop
-                    ]}>
-                        <View style={isMobileView ? styles.fullWidth : styles.halfWidth}>
-                            <DonutGenresCard genres={genres.length > 0 ? genres : undefined} />
-                        </View>
-                        <View style={isMobileView ? styles.fullWidth : styles.halfWidth}>
-                            {/* games={topGames} recibe los 3 juegos principales del usuario (ya cargados desde la BD) 
-                            y en loading={loading} definimos si la rueda sigue girando */}
-                            <TopGamesCard
-                                games={topGames} // Esta es una prop mencionada arriba del todo (linea 25), en este 
-                                // caso esta está devolviendo el valor de estado 'topGames' (linea 107)
-                                loading={loading} //Aquí esta prop está devolviendo el valor de estado 'loading'
+                            <View style={[
+                                styles.middleRow,
+                                isMobileView ? styles.middleRowMobile : styles.middleRowDesktop
+                            ]}>
+                                <View style={isMobileView ? styles.fullWidth : styles.halfWidth}>
+                                    <DonutGenresCard genres={genres.length > 0 ? genres : undefined} />
+                                </View>
+                                <View style={isMobileView ? styles.fullWidth : styles.halfWidth}>
+                                    <TopGamesCard
+                                        games={topGames}
+                                        loading={loading}
+                                        isMobile={isMobileView}
+                                    />
+                                </View>
+                            </View>
+
+                            <SurveysGrid
+                                surveys={surveys}
+                                loading={loading}
                                 isMobile={isMobileView}
-                            // Luego el componente en cuestión (TopGamesCard) se encarga de recoger estas props 
-                            // y mostrar los datos como si dichas props fuesen los paramatros de entrada de una función
-
-                            // En resumen, las props son como el hilo conector de la comunicación entre componentes.
-                            // El componente padre le pasa las props al componente hijo, y el componente hijo 
-                            // se encarga de recoger estas props y mostrar los datos como si dichas props fuesen 
-                            // los paramatros de entrada de una función :))
                             />
+                        </>
+                    ) : (
+                        /**
+                         * VISTA PARA EMPRESA / ADMIN
+                         * Mostramos un resumen básico sin datos de Steam.
+                         */
+                        <View style={{ alignItems: 'center', marginTop: 50 }}>
+                            <View style={[globalStyles.caja, { padding: 40, width: '100%', maxWidth: 500 }]}>
+                                <Text style={[styles.tabTextActive, { fontSize: 24, marginBottom: 10 }]}>
+                                    {userDb?.name || user?.name || "Usuario"}
+                                </Text>
+                                <Text style={{ color: '#888', fontSize: 16, marginBottom: 20 }}>
+                                    Rol: <Text style={{ color: '#5b55c0', fontWeight: 'bold' }}>{user?.role}</Text>
+                                </Text>
+                                <View style={{ height: 1, backgroundColor: '#333', width: '100%', marginBottom: 20 }} />
+                                <Text style={{ color: '#ccc', textAlign: 'center' }}>
+                                    Estás en tu perfil de gestión. Puedes editar tus datos en la pestaña de "Configuración".
+                                </Text>
+                            </View>
                         </View>
-                    </View>
-
-                    {/* Sección 3 — Encuestas */}
-                    <SurveysGrid
-                        surveys={surveys}
-                        loading={loading}
-                        isMobile={isMobileView}
-                    />
+                    )}
 
                     <View style={{ height: 80 }} />
                 </ScrollView>
@@ -294,6 +327,7 @@ export default function ProfileScreen({ navigation }: any) {
                             localizacion: userDb?.localizacion || '',
                             steamId: userDb?.urlIdStream || steamId,
                         }}
+                        userRole={user?.role}
                         onSave={handleSettingsSave}
                     />
                 </View>
