@@ -1,6 +1,6 @@
 USE [master]
 GO
-/****** Object:  Database [river_db]    Script Date: 30/03/2026 17:11:03 ******/
+/****** Object:  Database [river_db]    Script Date: 11/05/2026 22:10:45 ******/
 CREATE DATABASE [river_db]
  CONTAINMENT = NONE
  ON  PRIMARY 
@@ -80,21 +80,21 @@ ALTER DATABASE [river_db] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_
 GO
 USE [river_db]
 GO
-/****** Object:  Table [dbo].[bono_total]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[bono_total]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[bono_total](
+	[cantidad_total] [int] NULL,
 	[id_bono_total] [bigint] IDENTITY(1,1) NOT NULL,
-	[cantidad_total] [int] NOT NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_bono_total] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[category]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[category]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -108,7 +108,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[client]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[client]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -116,7 +116,9 @@ GO
 CREATE TABLE [dbo].[client](
 	[id_client] [bigint] IDENTITY(1,1) NOT NULL,
 	[cuenta_bancaria] [varchar](255) NULL,
+	[email] [varchar](255) NULL,
 	[nombre] [varchar](255) NULL,
+	[password] [varchar](255) NULL,
 	[url_imagen] [varchar](255) NULL,
 PRIMARY KEY CLUSTERED 
 (
@@ -124,18 +126,18 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[game]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[game]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[game](
-	[id_game] [bigint] IDENTITY(1,1) NOT NULL,
-	[appid] [bigint] NULL,
-	[icon_url] [varchar](255) NULL,
 	[id_game_steam] [int] NOT NULL,
 	[is_early_acces] [smallint] NOT NULL,
 	[price] [int] NOT NULL,
+	[appid] [bigint] NULL,
+	[id_game] [bigint] IDENTITY(1,1) NOT NULL,
+	[icon_url] [varchar](255) NULL,
 	[title] [varchar](255) NULL,
 	[url_image] [varchar](255) NULL,
 PRIMARY KEY CLUSTERED 
@@ -144,56 +146,56 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[game_category]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[game_category]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[game_category](
-	[id_game] [bigint] NOT NULL,
-	[id_category] [bigint] NOT NULL
+	[id_category] [bigint] NOT NULL,
+	[id_game] [bigint] NOT NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[game_genere]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[game_generes]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE TABLE [dbo].[game_genere](
+CREATE TABLE [dbo].[game_generes](
 	[id_game] [bigint] NOT NULL,
 	[id_genere] [bigint] NOT NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[genere]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[genere]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[genere](
 	[id_genere] [bigint] IDENTITY(1,1) NOT NULL,
-	[nombre_genero] [varchar](255) NULL,
+	[description] [varchar](255) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_genere] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[logro]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[logro]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[logro](
+	[id_game] [bigint] NULL,
 	[id_logro] [bigint] IDENTITY(1,1) NOT NULL,
 	[text_logro] [varchar](255) NULL,
-	[id_game] [bigint] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_logro] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[opcion_respuesta]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[opcion_respuesta]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -208,46 +210,44 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[options]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[options]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[options](
 	[id_option] [bigint] IDENTITY(1,1) NOT NULL,
-	[text_opcion] [varchar](255) NULL,
 	[id_question] [bigint] NULL,
+	[text_opcion] [varchar](255) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_option] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[pago_panlista]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[pago_panlista]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[pago_panlista](
+	[cantidad_pago] [float] NULL,
 	[id_pago_panelista] [bigint] IDENTITY(1,1) NOT NULL,
-	[cantidad_pago] [float] NOT NULL,
 	[codigo] [varchar](255) NULL,
-	[id] [bigint] NULL,
-	[id_survey] [bigint] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_pago_panelista] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[pregunta_opcion]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[pregunta_opcion]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[pregunta_opcion](
-	[id_pregunta_opcion] [bigint] IDENTITY(1,1) NOT NULL,
 	[id_option] [bigint] NULL,
+	[id_pregunta_opcion] [bigint] IDENTITY(1,1) NOT NULL,
 	[id_question] [bigint] NULL,
 PRIMARY KEY CLUSTERED 
 (
@@ -255,27 +255,28 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[question]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[question]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[question](
 	[id_question] [bigint] IDENTITY(1,1) NOT NULL,
-	[text_question] [varchar](255) NULL,
 	[id_survey] [bigint] NULL,
+	[text_question] [varchar](255) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_question] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[question_config]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[question_config]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[question_config](
+	[is_multiple] [bit] NULL,
 	[id_question] [bigint] NOT NULL,
 	[attributes] [nvarchar](max) NULL,
 	[type_name] [varchar](255) NULL,
@@ -285,209 +286,204 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[respuesta]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[respuesta]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[respuesta](
-	[id_respuesta] [bigint] IDENTITY(1,1) NOT NULL,
-	[is_completada] [smallint] NOT NULL,
-	[value_respuesta] [varchar](255) NULL,
+	[is_completada] [smallint] NULL,
 	[id_option] [bigint] NULL,
+	[id_respuesta] [bigint] IDENTITY(1,1) NOT NULL,
 	[id_user] [bigint] NULL,
+	[value_respuesta] [varchar](255) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_respuesta] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[survey]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[survey]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[survey](
-	[id_survey] [bigint] IDENTITY(1,1) NOT NULL,
+	[num_questions] [int] NULL,
+	[num_users] [int] NULL,
 	[close_date] [datetime2](7) NULL,
 	[creation_date] [datetime2](7) NULL,
-	[launch_date] [datetime2](7) NULL,
-	[name] [varchar](255) NULL,
-	[num_questions] [int] NOT NULL,
-	[num_users] [int] NOT NULL,
 	[id_client] [bigint] NULL,
 	[id_pago_panelista] [bigint] NULL,
+	[id_survey] [bigint] IDENTITY(1,1) NOT NULL,
+	[launch_date] [datetime2](7) NULL,
+	[name] [varchar](255) NULL,
+	[url_grafico_superset] [varchar](255) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_survey] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[survey_category]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[survey_category]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[survey_category](
-	[id_survey] [bigint] NOT NULL,
-	[id_category] [bigint] NOT NULL
+	[id_category] [bigint] NOT NULL,
+	[id_survey] [bigint] NOT NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[survey_genere]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[survey_genere]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[survey_genere](
-	[id_survey] [bigint] NOT NULL,
-	[id_genere] [bigint] NOT NULL
+	[id_genere] [bigint] NOT NULL,
+	[id_survey] [bigint] NOT NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[user_game]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[user_game]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[user_game](
-	[id_user_game] [bigint] IDENTITY(1,1) NOT NULL,
 	[num_hours_game] [real] NOT NULL,
 	[id_game] [bigint] NULL,
 	[id_user] [bigint] NULL,
+	[id_user_game] [bigint] IDENTITY(1,1) NOT NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_user_game] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[user_steam]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[user_steam]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[user_steam](
+	[communityvisibilitystate] [bigint] NULL,
 	[id_user_steam] [bigint] IDENTITY(1,1) NOT NULL,
+	[lastlogoff] [bigint] NULL,
+	[personastate] [bigint] NULL,
+	[personastateflags] [bigint] NULL,
+	[profilestate] [bigint] NULL,
+	[timecreated] [bigint] NULL,
 	[avatar] [varchar](255) NULL,
 	[avatarfull] [varchar](255) NULL,
 	[avatarhash] [varchar](255) NULL,
 	[avatarmedium] [varchar](255) NULL,
-	[communityvisibilitystate] [bigint] NULL,
-	[lastlogoff] [bigint] NULL,
 	[personaname] [varchar](255) NULL,
-	[personastate] [bigint] NULL,
-	[personastateflags] [bigint] NULL,
 	[primaryclanid] [varchar](255) NULL,
-	[profilestate] [bigint] NULL,
 	[profileurl] [varchar](255) NULL,
 	[realname] [varchar](255) NULL,
 	[steamid] [varchar](255) NULL,
-	[timecreated] [bigint] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_user_steam] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[user_steam_queries]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[user_steam_games]    Script Date: 11/05/2026 22:10:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[user_steam_games](
+	[id_game] [bigint] NOT NULL,
+	[user_steam_id] [bigint] NOT NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[user_steam_queries]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[user_steam_queries](
+	[type] [int] NOT NULL,
 	[id_user_steam_queries] [bigint] IDENTITY(1,1) NOT NULL,
 	[description] [varchar](255) NULL,
 	[query] [varchar](255) NULL,
-	[type] [int] NOT NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_user_steam_queries] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[user_survey]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[user_survey]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[user_survey](
-	[id_user_survey] [bigint] IDENTITY(1,1) NOT NULL,
-	[is_respondida] [smallint] NOT NULL,
+	[is_respondida] [smallint] NULL,
 	[id_survey] [bigint] NULL,
 	[id_user] [bigint] NULL,
+	[id_user_survey] [bigint] IDENTITY(1,1) NOT NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_user_survey] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[users]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Table [dbo].[users]    Script Date: 11/05/2026 22:10:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[users](
-	[id_user] [bigint] IDENTITY(1,1) NOT NULL,
-	[apellido1] [varchar](255) NULL,
-	[apellido2] [varchar](255) NULL,
 	[banned] [smallint] NULL,
+	[edad] [int] NULL,
+	[id_rol] [smallint] NULL,
+	[is_active] [bit] NULL,
+	[registration_step] [int] NULL,
+	[bono_total_id_bono_total] [bigint] NULL,
 	[creacion_cuenta_steam] [datetime2](7) NULL,
 	[creacion_cuenta_usuario] [datetime2](7) NULL,
-	[edad] [int] NULL,
+	[fecha_nacimiento] [datetime2](7) NULL,
+	[id_user] [bigint] IDENTITY(1,1) NOT NULL,
+	[steam_perfil_id] [bigint] NULL,
+	[apellido1] [varchar](255) NULL,
+	[apellido2] [varchar](255) NULL,
 	[email] [varchar](255) NULL,
-	[genero] [smallint] NULL,
-	[id_rol] [smallint] NULL,
+	[genero] [varchar](255) NULL,
 	[localizacion] [varchar](255) NULL,
 	[name] [varchar](255) NULL,
 	[password] [varchar](255) NULL,
 	[url_id_stream] [varchar](255) NULL,
 	[url_img_usuario] [varchar](255) NULL,
-	[bono_total_id_bono_total] [bigint] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_user] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Index [UK91mpp196gptqllccgxfh96xv]    Script Date: 30/03/2026 17:11:04 ******/
-CREATE UNIQUE NONCLUSTERED INDEX [UK91mpp196gptqllccgxfh96xv] ON [dbo].[opcion_respuesta]
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UKbfgjs3fem0hmjhvih80158x29]    Script Date: 11/05/2026 22:10:46 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [UKbfgjs3fem0hmjhvih80158x29] ON [dbo].[client]
 (
-	[id_option] ASC
+	[email] ASC
 )
-WHERE ([id_option] IS NOT NULL)
+WHERE ([email] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UKf4i2sjxjr64aya2vhfvf3sb5]    Script Date: 30/03/2026 17:11:04 ******/
-CREATE UNIQUE NONCLUSTERED INDEX [UKf4i2sjxjr64aya2vhfvf3sb5] ON [dbo].[opcion_respuesta]
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UK2kjea7b7qbbdhj4qaa8uciasd]    Script Date: 11/05/2026 22:10:46 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [UK2kjea7b7qbbdhj4qaa8uciasd] ON [dbo].[genere]
 (
-	[id_respuesta] ASC
+	[description] ASC
 )
-WHERE ([id_respuesta] IS NOT NULL)
+WHERE ([description] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UK2cljt8v71qeybgtsmh6wt3oec]    Script Date: 30/03/2026 17:11:04 ******/
-CREATE UNIQUE NONCLUSTERED INDEX [UK2cljt8v71qeybgtsmh6wt3oec] ON [dbo].[pago_panlista]
-(
-	[id_survey] ASC
-)
-WHERE ([id_survey] IS NOT NULL)
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-/****** Object:  Index [UKck3k7w1n8b0kdsu4r5eitlkgh]    Script Date: 30/03/2026 17:11:04 ******/
-CREATE UNIQUE NONCLUSTERED INDEX [UKck3k7w1n8b0kdsu4r5eitlkgh] ON [dbo].[pago_panlista]
-(
-	[id] ASC
-)
-WHERE ([id] IS NOT NULL)
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-/****** Object:  Index [UK17uwe218uahsgp4ech8y8fy6a]    Script Date: 30/03/2026 17:11:04 ******/
-CREATE UNIQUE NONCLUSTERED INDEX [UK17uwe218uahsgp4ech8y8fy6a] ON [dbo].[respuesta]
-(
-	[id_option] ASC
-)
-WHERE ([id_option] IS NOT NULL)
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-/****** Object:  Index [UKbx09rktklf9ej3e14y6nk1m5x]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Index [UKbx09rktklf9ej3e14y6nk1m5x]    Script Date: 11/05/2026 22:10:46 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UKbx09rktklf9ej3e14y6nk1m5x] ON [dbo].[survey]
 (
 	[id_pago_panelista] ASC
@@ -495,9 +491,17 @@ CREATE UNIQUE NONCLUSTERED INDEX [UKbx09rktklf9ej3e14y6nk1m5x] ON [dbo].[survey]
 WHERE ([id_pago_panelista] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+/****** Object:  Index [UK1qn0hwhdxr2m3gbdanfcxb3s9]    Script Date: 11/05/2026 22:10:46 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [UK1qn0hwhdxr2m3gbdanfcxb3s9] ON [dbo].[users]
+(
+	[steam_perfil_id] ASC
+)
+WHERE ([steam_perfil_id] IS NOT NULL)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UK6dotkott2kjsp8vw4d0m25fb7]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Index [UK6dotkott2kjsp8vw4d0m25fb7]    Script Date: 11/05/2026 22:10:46 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UK6dotkott2kjsp8vw4d0m25fb7] ON [dbo].[users]
 (
 	[email] ASC
@@ -505,7 +509,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [UK6dotkott2kjsp8vw4d0m25fb7] ON [dbo].[users]
 WHERE ([email] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UKs99gpymop2nwgletpm9qltncd]    Script Date: 30/03/2026 17:11:04 ******/
+/****** Object:  Index [UKs99gpymop2nwgletpm9qltncd]    Script Date: 11/05/2026 22:10:46 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UKs99gpymop2nwgletpm9qltncd] ON [dbo].[users]
 (
 	[bono_total_id_bono_total] ASC
@@ -523,15 +527,15 @@ REFERENCES [dbo].[game] ([id_game])
 GO
 ALTER TABLE [dbo].[game_category] CHECK CONSTRAINT [FKdav5jej1ue12h67jwunnmpyym]
 GO
-ALTER TABLE [dbo].[game_genere]  WITH CHECK ADD  CONSTRAINT [FKd7j95xfuk6um4o15vg3a4t5ov] FOREIGN KEY([id_game])
+ALTER TABLE [dbo].[game_generes]  WITH CHECK ADD  CONSTRAINT [FKfm3hei97movmum4d8khvgnkxa] FOREIGN KEY([id_game])
 REFERENCES [dbo].[game] ([id_game])
 GO
-ALTER TABLE [dbo].[game_genere] CHECK CONSTRAINT [FKd7j95xfuk6um4o15vg3a4t5ov]
+ALTER TABLE [dbo].[game_generes] CHECK CONSTRAINT [FKfm3hei97movmum4d8khvgnkxa]
 GO
-ALTER TABLE [dbo].[game_genere]  WITH CHECK ADD  CONSTRAINT [FKlewqpdd7mfwuefrryelmkikhg] FOREIGN KEY([id_genere])
+ALTER TABLE [dbo].[game_generes]  WITH CHECK ADD  CONSTRAINT [FKq1vthji1onrvbtedbdq0943fh] FOREIGN KEY([id_genere])
 REFERENCES [dbo].[genere] ([id_genere])
 GO
-ALTER TABLE [dbo].[game_genere] CHECK CONSTRAINT [FKlewqpdd7mfwuefrryelmkikhg]
+ALTER TABLE [dbo].[game_generes] CHECK CONSTRAINT [FKq1vthji1onrvbtedbdq0943fh]
 GO
 ALTER TABLE [dbo].[logro]  WITH CHECK ADD  CONSTRAINT [FK567frwxxfkljblg2dlsiuyllx] FOREIGN KEY([id_game])
 REFERENCES [dbo].[game] ([id_game])
@@ -552,16 +556,6 @@ ALTER TABLE [dbo].[options]  WITH CHECK ADD  CONSTRAINT [FK8f642ke9cismdmup7ly51
 REFERENCES [dbo].[question] ([id_question])
 GO
 ALTER TABLE [dbo].[options] CHECK CONSTRAINT [FK8f642ke9cismdmup7ly517yw0]
-GO
-ALTER TABLE [dbo].[pago_panlista]  WITH CHECK ADD  CONSTRAINT [FK3gxjy41qq6pa78u806knrvxq9] FOREIGN KEY([id])
-REFERENCES [dbo].[survey] ([id_survey])
-GO
-ALTER TABLE [dbo].[pago_panlista] CHECK CONSTRAINT [FK3gxjy41qq6pa78u806knrvxq9]
-GO
-ALTER TABLE [dbo].[pago_panlista]  WITH CHECK ADD  CONSTRAINT [FKdx0vn370f9sys2ym53mk742sp] FOREIGN KEY([id_survey])
-REFERENCES [dbo].[survey] ([id_survey])
-GO
-ALTER TABLE [dbo].[pago_panlista] CHECK CONSTRAINT [FKdx0vn370f9sys2ym53mk742sp]
 GO
 ALTER TABLE [dbo].[pregunta_opcion]  WITH CHECK ADD  CONSTRAINT [FKisbvwspkwijfnm3eib64bic0i] FOREIGN KEY([id_question])
 REFERENCES [dbo].[question] ([id_question])
@@ -633,6 +627,16 @@ REFERENCES [dbo].[game] ([id_game])
 GO
 ALTER TABLE [dbo].[user_game] CHECK CONSTRAINT [FKdexrfk2bpybek4mi37x4x2fuq]
 GO
+ALTER TABLE [dbo].[user_steam_games]  WITH CHECK ADD  CONSTRAINT [FKai1rqbhq10vukeg7ompb2bkj5] FOREIGN KEY([id_game])
+REFERENCES [dbo].[game] ([id_game])
+GO
+ALTER TABLE [dbo].[user_steam_games] CHECK CONSTRAINT [FKai1rqbhq10vukeg7ompb2bkj5]
+GO
+ALTER TABLE [dbo].[user_steam_games]  WITH CHECK ADD  CONSTRAINT [FKcxidcxtide6vtqgfo61np4ct5] FOREIGN KEY([user_steam_id])
+REFERENCES [dbo].[user_steam] ([id_user_steam])
+GO
+ALTER TABLE [dbo].[user_steam_games] CHECK CONSTRAINT [FKcxidcxtide6vtqgfo61np4ct5]
+GO
 ALTER TABLE [dbo].[user_survey]  WITH CHECK ADD  CONSTRAINT [FK90mxdpbeblglbwg04wfgteh9p] FOREIGN KEY([id_survey])
 REFERENCES [dbo].[survey] ([id_survey])
 GO
@@ -642,6 +646,11 @@ ALTER TABLE [dbo].[user_survey]  WITH CHECK ADD  CONSTRAINT [FKktsxmelc3twe9qngt
 REFERENCES [dbo].[users] ([id_user])
 GO
 ALTER TABLE [dbo].[user_survey] CHECK CONSTRAINT [FKktsxmelc3twe9qngt2hjmcmj1]
+GO
+ALTER TABLE [dbo].[users]  WITH CHECK ADD  CONSTRAINT [FK_USER_STEAM] FOREIGN KEY([steam_perfil_id])
+REFERENCES [dbo].[user_steam] ([id_user_steam])
+GO
+ALTER TABLE [dbo].[users] CHECK CONSTRAINT [FK_USER_STEAM]
 GO
 ALTER TABLE [dbo].[users]  WITH CHECK ADD  CONSTRAINT [FK2mg6i1cupoqc46m4dowhhj8g0] FOREIGN KEY([bono_total_id_bono_total])
 REFERENCES [dbo].[bono_total] ([id_bono_total])

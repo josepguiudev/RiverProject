@@ -1,0 +1,40 @@
+USE [river_db];
+GO
+
+SELECT 
+    S.[name] AS [Encuesta],
+    U.[name] AS [Usuario],
+    Q.[text_question] AS [Pregunta],
+    QC.[type_name] AS [Tipo],
+    -- Concatenamos respuestas múltiples con una coma para mayor claridad
+    STRING_AGG(COALESCE(O.[text_opcion], R.[value_respuesta]), ', ') WITHIN GROUP (ORDER BY O.[id_option] ASC) AS [Respuesta_Final],
+    U.[edad] AS [Edad],
+    U.[genero] AS [Genero]
+FROM [dbo].[respuesta] R
+INNER JOIN [dbo].[users] U ON R.[id_user] = U.[id_user]
+-- Intentamos unir por la opción seleccionada
+LEFT JOIN [dbo].[options] O ON R.[id_option] = O.[id_option]
+-- Unimos con la pregunta:
+-- Caso A: La respuesta tiene un id_option (Single o Multiple Choice)
+-- Caso B: La respuesta no tiene id_option pero sí un valor (Numeric o Short Text)
+INNER JOIN [dbo].[question] Q ON (
+    (O.[id_question] = Q.[id_question]) 
+    OR 
+    (R.[id_option] IS NULL AND Q.[id_survey] = (SELECT TOP 1 id_survey FROM [dbo].[survey] WHERE name LIKE '%Terraria%') 
+     AND Q.[text_question] LIKE '%horas%')
+)
+INNER JOIN [dbo].[question_config] QC ON Q.[id_question] = QC.[id_question]
+INNER JOIN [dbo].[survey] S ON Q.[id_survey] = S.[id_survey]
+GROUP BY 
+    S.[name], 
+    U.[name], 
+    Q.[text_question], 
+    QC.[type_name], 
+    U.[edad], 
+    U.[genero],
+    U.[id_user],
+    Q.[id_question]
+ORDER BY 
+    U.[id_user] ASC, 
+    Q.[id_question] ASC;
+GO

@@ -1,203 +1,96 @@
--- ============================================
--- SCRIPT DE DATOS DE PRUEBA - SISTEMA ENCUESTAS
--- Versión corregida: sin GO entre bloques,
--- sin variables compartidas entre secciones
--- ============================================
+USE [river_db];
+GO
 
--- Limpiar datos anteriores (orden inverso por FK)
-DELETE FROM respuesta;
-DELETE FROM opcion_respuesta;
-DELETE FROM user_survey;
-DELETE FROM options;
-DELETE FROM question_config;
-DELETE FROM question;
-DELETE FROM survey;
-DELETE FROM users WHERE id_user IN (1, 2);
-DELETE FROM client WHERE nombre IN ('Gaming Studio Pro', 'Estudio Indie');
+-- Limpieza de datos previa para evitar errores de duplicados o FK
+DELETE FROM [dbo].[respuesta];
+DELETE FROM [dbo].[user_survey];
+DELETE FROM [dbo].[users] WHERE [email] LIKE '%@test.com' OR [email] = 'company@test';
+DELETE FROM [dbo].[question_config];
+DELETE FROM [dbo].[options];
+DELETE FROM [dbo].[question];
+DELETE FROM [dbo].[survey_category];
+DELETE FROM [dbo].[survey_genere];
+DELETE FROM [dbo].[survey];
+DELETE FROM [dbo].[pago_panlista];
+DELETE FROM [dbo].[client] WHERE [email] = 'company@test';
+GO
 
--- ============================================
--- 1. CLIENTES
--- ============================================
-INSERT INTO [dbo].[client] (nombre, cuenta_bancaria, url_imagen)
-VALUES ('Gaming Studio Pro', 'ES-00-1234', 'https://api.dicebear.com/7.x/identicon/svg?seed=studio');
-DECLARE @ClientId1 bigint = SCOPE_IDENTITY();
+--- 1. CREAR CLIENTE ---
+INSERT INTO [dbo].[client] ([email], [password], [nombre], [cuenta_bancaria])
+VALUES ('company@test', '$2a$10$3m6Py0O.uJiaEa/Zr.Q4V.y3PUoMmx6DY1bbptWKAlzHYahRKULiC', 'Terraria Studios', 'ES0011223344');
+DECLARE @ClientId BIGINT = SCOPE_IDENTITY();
 
-INSERT INTO [dbo].[client] (nombre, cuenta_bancaria, url_imagen)
-VALUES ('Estudio Indie', 'ES-00-5678', 'https://api.dicebear.com/7.x/identicon/svg?seed=indie');
-DECLARE @ClientId2 bigint = SCOPE_IDENTITY();
+--- 2. CREAR PAGO (Requerido por relación FK en Survey) ---
+INSERT INTO [dbo].[pago_panlista] ([cantidad_pago], [codigo]) VALUES (2.50, 'PROMO_TERRARIA_2026');
+DECLARE @PagoId BIGINT = SCOPE_IDENTITY();
 
--- ============================================
--- 2. USUARIOS - contasenya = moha
--- ============================================
-SET IDENTITY_INSERT [dbo].[users] ON;
-INSERT INTO [dbo].[users] (id_user, name, email, password, edad, genero, id_rol, localizacion)
-VALUES (1, 'admin', 'admin@example.com', '$2a$10$ifm7hAc06C5To6hYzB3p8upR16hFBIwyjHzC1hEtkwzx/f3upgE8.', 30, 1, 1, 'Madrid');
-INSERT INTO [dbo].[users] (id_user, name, email, password, edad, genero, id_rol, localizacion)
-VALUES (2, 'test', 'test@example.com', '$2a$10$ifm7hAc06C5To6hYzB3p8upR16hFBIwyjHzC1hEtkwzx/f3upgE8.', 25, 1, 2, 'Barcelona');
-SET IDENTITY_INSERT [dbo].[users] OFF;
+--- 3. CREAR ENCUESTA Y PREGUNTAS ---
+INSERT INTO [dbo].[survey] ([name], [id_client], [id_pago_panelista], [num_questions], [creation_date])
+VALUES ('Gran Encuesta Terraria 2026', @ClientId, @PagoId, 3, GETDATE());
+DECLARE @SurveyId BIGINT = SCOPE_IDENTITY();
 
--- ============================================
--- 3. ENCUESTA 1 — Terraria 2026 (7 preguntas)
--- ============================================
-INSERT INTO [dbo].[survey] (name, num_questions, num_users, creation_date, id_client)
-VALUES ('Encuesta de Calidad: Terraria 2026', 7, 2, GETDATE(), @ClientId1);
-DECLARE @S1 bigint = SCOPE_IDENTITY();
+-- Q1: NUMERIC
+INSERT INTO [dbo].[question] ([id_survey], [text_question]) VALUES (@SurveyId, '¿Cuántas horas has jugado a Terraria?');
+DECLARE @Q1 BIGINT = SCOPE_IDENTITY();
+INSERT INTO [dbo].[question_config] ([id_question], [is_multiple], [type_name]) VALUES (@Q1, 0, 'NUMERIC');
 
--- Q1: Única (SINGLE_CHOICE)
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S1, '¿Cuál es tu clase favorita?');
-DECLARE @Q1 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[options] (id_question, text_opcion)
-VALUES (@Q1, 'Guerrero'), (@Q1, 'Ranger'), (@Q1, 'Mago'), (@Q1, 'Invocador');
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q1, 'SINGLE_CHOICE');
+-- Q2: SINGLE_CHOICE
+INSERT INTO [dbo].[question] ([id_survey], [text_question]) VALUES (@SurveyId, '¿Cuál es tu clase favorita?');
+DECLARE @Q2 BIGINT = SCOPE_IDENTITY();
+INSERT INTO [dbo].[question_config] ([id_question], [is_multiple], [type_name]) VALUES (@Q2, 0, 'SINGLE_CHOICE');
+INSERT INTO [dbo].[options] ([id_question], [text_opcion]) VALUES (@Q2, 'Guerrero'), (@Q2, 'Ranger'), (@Q2, 'Mago'), (@Q2, 'Invocador');
 
--- Q2: Múltiple (MULTIPLE_CHOICE)
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S1, '¿Qué biomas exploras más frecuentemente?');
-DECLARE @Q2 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[options] (id_question, text_opcion)
-VALUES (@Q2, 'Jungla'), (@Q2, 'Inframundo'), (@Q2, 'Carmesí/Corrupción'), (@Q2, 'Mazmorra');
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q2, 'MULTIPLE_CHOICE');
+-- Q3: MULTIPLE_CHOICE
+INSERT INTO [dbo].[question] ([id_survey], [text_question]) VALUES (@SurveyId, '¿Qué biomas has explorado y te gustan?');
+DECLARE @Q3 BIGINT = SCOPE_IDENTITY();
+INSERT INTO [dbo].[question_config] ([id_question], [is_multiple], [type_name]) VALUES (@Q3, 1, 'MULTIPLE_CHOICE');
+INSERT INTO [dbo].[options] ([id_question], [text_opcion]) VALUES (@Q3, 'Selva'), (@Q3, 'Inframundo'), (@Q3, 'Hallow'), (@Q3, 'Carmesí');
 
--- Q3: Múltiple (MULTIPLE_CHOICE)
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S1, '¿Qué jefes has derrotado en Modo Maestro?');
-DECLARE @Q3 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[options] (id_question, text_opcion)
-VALUES (@Q3, 'Muro de Carne'), (@Q3, 'Plantera'), (@Q3, 'Golem'), (@Q3, 'Moon Lord');
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q3, 'MULTIPLE_CHOICE');
+--- 4. BUCLE DE CREACIÓN DE 20 USUARIOS Y RESPUESTAS VARIADAS ---
+DECLARE @i INT = 1;
+DECLARE @UserId BIGINT;
+DECLARE @Pass VARCHAR(255) = '$2a$10$3m6Py0O.uJiaEa/Zr.Q4V.y3PUoMmx6DY1bbptWKAlzHYahRKULiC';
 
--- Q4: Numérica (NUMERIC) — sin opciones
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S1, '¿Cuántas horas has jugado aproximadamente?');
-DECLARE @Q4 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q4, 'NUMERIC');
+-- IDs de opciones para lógica de respuesta
+DECLARE @OptGuerrero BIGINT = (SELECT TOP 1 id_option FROM [dbo].[options] WHERE text_opcion = 'Guerrero');
+DECLARE @OptRanger   BIGINT = (SELECT TOP 1 id_option FROM [dbo].[options] WHERE text_opcion = 'Ranger');
+DECLARE @OptMago     BIGINT = (SELECT TOP 1 id_option FROM [dbo].[options] WHERE text_opcion = 'Mago');
 
--- Q5: Texto corto (SHORT_TEXT) — sin opciones
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S1, 'Dinos el nombre de tu objeto favorito');
-DECLARE @Q5 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q5, 'SHORT_TEXT');
+DECLARE @OptSelva    BIGINT = (SELECT TOP 1 id_option FROM [dbo].[options] WHERE text_opcion = 'Selva');
+DECLARE @OptInfra    BIGINT = (SELECT TOP 1 id_option FROM [dbo].[options] WHERE text_opcion = 'Inframundo');
+DECLARE @OptHallow   BIGINT = (SELECT TOP 1 id_option FROM [dbo].[options] WHERE text_opcion = 'Hallow');
 
--- Q6: Única (SINGLE_CHOICE)
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S1, '¿Usas mods habitualmente?');
-DECLARE @Q6 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[options] (id_question, text_opcion)
-VALUES (@Q6, 'Sí, siempre'), (@Q6, 'A veces'), (@Q6, 'No, prefiero Vanilla');
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q6, 'SINGLE_CHOICE');
+WHILE @i <= 20
+BEGIN
+    -- Crear Usuario [cite: 16]
+    INSERT INTO [dbo].[users] ([name], [email], [password], [is_active], [edad], [genero])
+    VALUES ('Player_' + CAST(@i AS VARCHAR), 'user' + CAST(@i AS VARCHAR) + '@test.com', @Pass, 1, 20 + (@i % 10), 
+            CASE WHEN @i % 2 = 0 THEN 'Masculino' ELSE 'Femenino' END);
+    SET @UserId = SCOPE_IDENTITY();
 
--- Q7: Múltiple (MULTIPLE_CHOICE)
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S1, '¿Qué plataformas usas para jugar?');
-DECLARE @Q7 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[options] (id_question, text_opcion)
-VALUES (@Q7, 'PC (Steam)'), (@Q7, 'PlayStation'), (@Q7, 'Nintendo Switch'), (@Q7, 'Móvil');
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q7, 'MULTIPLE_CHOICE');
+    -- Vincular a encuesta
+    INSERT INTO [dbo].[user_survey] ([id_survey], [id_user], [is_respondida]) VALUES (@SurveyId, @UserId, 1);
 
--- ============================================
--- 4. ENCUESTA 2 — Steam Deck (2 preguntas)
--- ============================================
-INSERT INTO [dbo].[survey] (name, num_questions, num_users, creation_date, id_client)
-VALUES ('Opinión sobre Steam Deck', 2, 2, GETDATE(), @ClientId1);
-DECLARE @S2 bigint = SCOPE_IDENTITY();
+    -- Respuesta Q1: NUMERIC (Horas incrementales)
+    INSERT INTO [dbo].[respuesta] ([id_user], [id_option], [value_respuesta], [is_completada])
+    VALUES (@UserId, NULL, CAST(50 + (@i * 12) AS VARCHAR), 1);
 
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S2, '¿Recomendarías la Steam Deck?');
-DECLARE @Q8 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[options] (id_question, text_opcion)
-VALUES (@Q8, 'Sí'), (@Q8, 'No'), (@Q8, 'Tal vez');
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q8, 'SINGLE_CHOICE');
+    -- Respuesta Q2: SINGLE_CHOICE (Variación de clase)
+    INSERT INTO [dbo].[respuesta] ([id_user], [id_option], [is_completada])
+    VALUES (@UserId, CASE WHEN @i % 3 = 0 THEN @OptGuerrero WHEN @i % 3 = 1 THEN @OptRanger ELSE @OptMago END, 1);
 
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S2, '¿Qué función usas más?');
-DECLARE @Q9 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[options] (id_question, text_opcion)
-VALUES (@Q9, 'Modo portátil'), (@Q9, 'Conectada a TV'), (@Q9, 'Modo escritorio');
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q9, 'MULTIPLE_CHOICE');
+    -- Respuesta Q3: MULTIPLE_CHOICE (Variación de Biomas)
+    -- Lógica: Los pares eligen Selva e Inframundo, los múltiplos de 3 Hallow, otros solo Selva
+    INSERT INTO [dbo].[respuesta] ([id_user], [id_option], [is_completada]) VALUES (@UserId, @OptSelva, 1);
+    
+    IF (@i % 2 = 0) 
+        INSERT INTO [dbo].[respuesta] ([id_user], [id_option], [is_completada]) VALUES (@UserId, @OptInfra, 1);
+    
+    IF (@i % 3 = 0)
+        INSERT INTO [dbo].[respuesta] ([id_user], [id_option], [is_completada]) VALUES (@UserId, @OptHallow, 1);
 
--- ============================================
--- 5. ENCUESTA 3 — JRPGs (1 pregunta)
--- ============================================
-INSERT INTO [dbo].[survey] (name, num_questions, num_users, creation_date, id_client)
-VALUES ('Soporte de Idiomas en JRPGs', 1, 2, GETDATE(), @ClientId1);
-DECLARE @S3 bigint = SCOPE_IDENTITY();
+    SET @i = @i + 1;
+END
+GO
 
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S3, '¿En qué idioma juegas los JRPGs?');
-DECLARE @Q10 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[options] (id_question, text_opcion)
-VALUES (@Q10, 'Español'), (@Q10, 'Inglés'), (@Q10, 'Japonés'), (@Q10, 'Otro');
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q10, 'SINGLE_CHOICE');
-
--- ============================================
--- 6. ENCUESTA 4 — Indie (client2, 3 preguntas)
--- ============================================
-INSERT INTO [dbo].[survey] (name, num_questions, num_users, creation_date, id_client)
-VALUES ('Experiencia con juegos Indie', 3, 2, GETDATE(), @ClientId2);
-DECLARE @S4 bigint = SCOPE_IDENTITY();
-
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S4, '¿Con qué frecuencia compras juegos indie?');
-DECLARE @Q11 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[options] (id_question, text_opcion)
-VALUES (@Q11, 'Cada semana'), (@Q11, 'Cada mes'), (@Q11, 'Raramente'), (@Q11, 'Nunca');
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q11, 'SINGLE_CHOICE');
-
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S4, '¿Qué géneros indie prefieres?');
-DECLARE @Q12 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[options] (id_question, text_opcion)
-VALUES (@Q12, 'Roguelike'), (@Q12, 'Plataformas'), (@Q12, 'Puzzle'), (@Q12, 'Narrativo');
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q12, 'MULTIPLE_CHOICE');
-
-INSERT INTO [dbo].[question] (id_survey, text_question)
-VALUES (@S4, 'Nombra tu juego indie favorito');
-DECLARE @Q13 bigint = SCOPE_IDENTITY();
-INSERT INTO [dbo].[question_config] (id_question, type_name)
-VALUES (@Q13, 'SHORT_TEXT');
-
--- ============================================
--- 7. ASIGNACIÓN USUARIO → ENCUESTAS
--- Usuario 1 (admin): todas respondidas
--- Usuario 2 (test): S1 respondida, resto pendientes
--- ============================================
-INSERT INTO [dbo].[user_survey] (id_user, id_survey, is_respondida)
-VALUES
-(1, @S1, 1),
-(1, @S2, 1),
-(1, @S3, 1),
-(1, @S4, 1),
-(2, @S1, 1),
-(2, @S2, 0),
-(2, @S3, 0),
-(2, @S4, 0);
-
--- ============================================
--- VERIFICACIÓN FINAL
--- ============================================
-SELECT 
-    s.id_survey,
-    s.name AS encuesta,
-    q.id_question,
-    q.text_question AS pregunta,
-    qc.type_name AS tipo,
-    COUNT(o.id_option) AS num_opciones
-FROM survey s
-JOIN question q ON q.id_survey = s.id_survey
-JOIN question_config qc ON qc.id_question = q.id_question
-LEFT JOIN options o ON o.id_question = q.id_question
-GROUP BY s.id_survey, s.name, q.id_question, q.text_question, qc.type_name
-ORDER BY s.id_survey, q.id_question;
+PRINT 'Sistema Terraria inicializado: Cliente, 20 Usuarios y respuestas múltiples variadas cargadas.';
