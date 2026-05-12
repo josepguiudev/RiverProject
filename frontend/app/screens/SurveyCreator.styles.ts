@@ -1,3 +1,6 @@
+import { StyleSheet, Platform } from 'react-native';
+import { colors } from './stylesGlobal';
+
 export const creatorStyles = StyleSheet.create({
     container: {
         flex: 1,

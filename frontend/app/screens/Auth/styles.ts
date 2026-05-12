@@ -7,6 +7,7 @@ export const colors = {
     primary: '#5b55c0',
     secondary: '#3b82f6',
     textMain: '#FFFFFF',
+    white: '#ffffff',
     textSecondary: '#888888',
     border: '#333333',
 };
@@ -117,5 +118,18 @@ export default StyleSheet.create({
     },
     contenedorWritter: {
         justifyContent: 'center',
-    }
+    },
+    textoChico: {
+        color: colors.textSecondary,
+        fontSize: 14,
+        textAlign: 'center',
+    },
+    row: { 
+        flexDirection: 'row',
+         alignItems: 'center' 
+    },
+    margen2: { 
+        marginTop: 20 
+    },
+
 });

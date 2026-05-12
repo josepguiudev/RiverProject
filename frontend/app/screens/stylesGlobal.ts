@@ -7,7 +7,7 @@ const { width: screenWidth } = Dimensions.get('window');
 export const colors = {
     // Paleta principal
     background: '#0e0d0df1',
-    cardBg: '#263238',
+    cardBg: '#161616',
     primary: '#5b55c0',
     secondary: '#3b82f6',
     accent: '#64B5F6',
@@ -15,7 +15,7 @@ export const colors = {
     textMain: '#F0F2F5',
     white: '#ffffff',
     darkCard: '#161616',
-    borderDark: 'rgba(255, 255, 255, 0.1)',
+    borderDark: '#1A1A1A',
     // Colores adicionales (para web, login, etc.)
     surface: '#161616',
     text: '#ffffff',
