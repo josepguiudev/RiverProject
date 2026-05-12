@@ -99,4 +99,8 @@ public class GameSteamService {
     public void delete(Long id) {
         gameRepository.deleteById(id);
     }
+
+    public List<Game> findAll() {
+        return gameRepository.findAll();
+    }
 }

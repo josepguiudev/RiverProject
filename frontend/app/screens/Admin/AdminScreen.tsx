@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, Text, ScrollView, Alert, Image } from "react-native";
+import { View, TouchableOpacity, Text, ScrollView, Alert, Image, ActivityIndicator } from "react-native";
 
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import styles from './styles';
@@ -14,8 +14,12 @@ export default function AdminScreen({ navigation }: any) {
     const [usuariosEncontrados, setUsuariosEncontrados] = useState<any[]>([]);
     const [juegosEncontrados, setJuegosEncontrados] = useState<any[]>([]);
     const [juegoDetalle, setJuegoDetalle] = useState<any>(null);
+
+    const [estaCargando, setEstaCargando] = useState(false);
     
     const guardarUsers = async () => {
+        setEstaCargando(true);
+
         if (!usuariosEncontrados || usuariosEncontrados.length === 0) {
             Alert.alert("Aviso", "Primero debes buscar usuarios.");
             return;
@@ -39,10 +43,13 @@ export default function AdminScreen({ navigation }: any) {
         } catch (error) {
             console.error("Error al guardar usuarios:", error);
             Alert.alert("Error", "No se pudo conectar con el servidor.");
+        }finally {
+            setEstaCargando(false);
         }
     }
 
     const guardarBiblio = async () => {
+        setEstaCargando(true);
         console.log("clic biblio")
         if (!juegosEncontrados.length || !usuariosEncontrados.length) {
             Alert.alert("Aviso", "Asegúrate de haber extraído el usuario y su biblioteca.");
@@ -68,10 +75,13 @@ export default function AdminScreen({ navigation }: any) {
 
         } catch (error:any) {
             Alert.alert("Error", error);
+        }finally {
+            setEstaCargando(false);
         }
     }
 
     const guardarJuego = async () => {
+        setEstaCargando(true);
         console.log("clic juego")
             if (!juegoDetalle) {
             Alert.alert("Aviso", "Primero debes extraer los detalles de un juego.");
@@ -101,6 +111,8 @@ export default function AdminScreen({ navigation }: any) {
         } catch (error) {
             console.error("Error al guardar juego:", error);
             Alert.alert("Error", "No se pudo conectar con el servidor.");
+        }finally {
+            setEstaCargando(false);
         }
     }
 
@@ -152,7 +164,11 @@ export default function AdminScreen({ navigation }: any) {
                         ))}
                     </ScrollView>
                     <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#30363d', backgroundColor: '#0d1117' }}>
-                        <CustomButton title="Guardar usuario/s" onPress={guardarUsers} isAdmin={true} />
+                        {estaCargando ? (
+                            <ActivityIndicator color="gold" size="large" />
+                        ) : (
+                            <CustomButton title="Guardar usuario/s" onPress={guardarUsers} isAdmin={true} />
+                        )}
                     </View>
                 </View>
             </View>
@@ -196,7 +212,11 @@ export default function AdminScreen({ navigation }: any) {
                         ))}
                     </ScrollView>
                     <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#30363d', backgroundColor: '#0d1117' }}>
-                        <CustomButton title="Guardar biblioteca" onPress={guardarBiblio} isAdmin={true} />
+                        {estaCargando ? (
+                            <ActivityIndicator color="gold" size="large" />
+                        ) : (
+                            <CustomButton title="Guardar biblioteca" onPress={guardarBiblio} isAdmin={true} />
+                        )}
                     </View>
                 </View>
             </View>
@@ -227,7 +247,11 @@ export default function AdminScreen({ navigation }: any) {
                         })}
                     </ScrollView>
                     <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#30363d', backgroundColor: '#0d1117' }}>
-                        <CustomButton title="Guardar juego en BD" onPress={guardarJuego} isAdmin={true} />
+                        {estaCargando ? (
+                            <ActivityIndicator color="gold" size="large" />
+                        ) : (
+                            <CustomButton title="Guardar juego en BD" onPress={guardarJuego} isAdmin={true} />
+                        )}
                     </View>
                 </View>
             </View>                       
