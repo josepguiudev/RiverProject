@@ -22,6 +22,7 @@ import Index from "./screens/index";
 
 import AdminScreen from "./screens/Admin/AdminScreen";
 import AdminUserScreen from "./screens/Admin/AdminUserScreen";
+import AdminGenresGames from "./screens/Admin/AdminGenresGames";
 
 
 
@@ -62,6 +63,7 @@ function App() {
 					<Stack.Screen name="Home" component={HomeScreen} />
 					<Stack.Screen name="Admin" component={AdminScreen} />
 					<Stack.Screen name="AdminUser" component={AdminUserScreen} />
+					<Stack.Screen name="AdminGenresGames" component={AdminGenresGames} />
 					<Stack.Screen name="ClientDashboard" component={ClientDashboard} />
 					<Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen}/>
 					<Stack.Screen name="SurveyList" component={SurveyListScreen} />

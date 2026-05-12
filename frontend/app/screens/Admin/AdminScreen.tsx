@@ -236,7 +236,7 @@ export default function AdminScreen({ navigation }: any) {
                             if (!gameData) return null;
                             return (
                                 <View key={key} style={{ backgroundColor: '#171d25' }}>
-                                    <Image source={{ uri: gameData.header_image }} style={{ width: '100%', aspectRatio: 460 / 215, borderBottomWidth: 1, borderBottomColor: '#2a475e' }} resizeMode="contain" />
+                                    <Image source={{ uri: gameData.header_image }} style={{ width: '100%', aspectRatio: 460 / 215, borderBottomWidth: 1 }} resizeMode="contain" />
                                     <View style={{ padding: 20 }}>
                                         <Text style={{ color: '#fff', fontWeight: '900', fontSize: 22 }}>{gameData.name}</Text>
                                         <Text style={{ color: '#66c0f4', fontSize: 12, marginBottom: 15 }}>APP ID: {gameData.steam_appid}</Text>
