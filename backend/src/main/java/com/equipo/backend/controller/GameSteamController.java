@@ -36,7 +36,10 @@ public class GameSteamController {
     }
 
     @GetMapping("/external-extract")
-    public Mono<ResponseEntity<Object>> extractFromSteam(@RequestParam String steamid, @RequestParam String apiKey) {
+    public Mono<ResponseEntity<Object>> extractFromSteam(@RequestParam(required = false) String steamid, @RequestParam(required = false) String apiKey) {
+        if (steamid == null || steamid.trim().isEmpty() || apiKey == null || apiKey.trim().isEmpty()) {
+            return Mono.just(ResponseEntity.badRequest().body("Error: steamid y apiKey son requeridos y no pueden estar vacíos."));
+        }
         WebClient webClient = WebClient.create("https://api.steampowered.com");
 
         return webClient.get()
@@ -111,7 +114,10 @@ public class GameSteamController {
     // Los @RequestParam son los parámetros diciendole a Java de dónde sacarlos.
     // .map() envuelve la respuesta de los parámetros dentro de la "caja"
     // (ResponseEntity).
-    public Mono<ResponseEntity<String>> manualSync(@RequestParam String steamid, @RequestParam String apiKey) {
+    public Mono<ResponseEntity<String>> manualSync(@RequestParam(required = false) String steamid, @RequestParam(required = false) String apiKey) {
+        if (steamid == null || steamid.trim().isEmpty() || apiKey == null || apiKey.trim().isEmpty()) {
+            return Mono.just(ResponseEntity.badRequest().body("Error: steamid y apiKey son obligatorios para sincronizar la biblioteca."));
+        }
         return gameService.syncLibraryFromSteam(steamid, apiKey).map(ResponseEntity::ok);
     }
 

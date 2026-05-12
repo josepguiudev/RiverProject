@@ -76,7 +76,7 @@ export default function RegisterScreen({ navigation, route }: any) {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0e0d0df1' }}>
+    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#000000' }}>
       <View style={styles.alineadoPersonal}>
 
         <View style={styles.contendorLogoTitulos}>

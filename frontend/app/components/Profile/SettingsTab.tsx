@@ -163,6 +163,13 @@ export default function SettingsTab({ initialData, onSave, isMobile }: Props) {
                     <Ionicons name="game-controller-outline" size={18} color="#5b55c0" />
                     <Text style={styles.sectionTitle}>Vinculación Steam</Text>
                 </View>
+                {!form.steamId && (
+                    <View style={{ backgroundColor: 'rgba(255,0,0,0.1)', padding: 10, borderRadius: 8, marginBottom: 10 }}>
+                        <Text style={{ color: '#ff6b6b', fontSize: 13, fontWeight: 'bold' }}>
+                            No connection: No has vinculado tu cuenta de Steam.
+                        </Text>
+                    </View>
+                )}
                 {renderInput('Steam ID', form.steamId, v => update('steamId', v), { placeholder: '76561198xxxxxxxxx' })}
                 <Text style={styles.hint}>
                     Introduce tu Steam ID de 17 dígitos para vincular tu perfil de Steam.

@@ -30,10 +30,19 @@ export default StyleSheet.create({
         justifyContent: 'center',
     },
     caja: {
-        backgroundColor: '#161616',
-        borderRadius: 10,
+        backgroundColor: '#1a1a2e',
+        borderRadius: 12,
         padding: 20,
         minHeight: 300,
+        borderWidth: 1,
+        borderColor: '#263238',
+        ...Platform.select({
+            ios: { shadowColor: '#5b55c0', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 10 },
+            android: { elevation: 8 },
+            web: { 
+                boxShadow: '0px 2px 10px rgba(91, 85, 192, 0.2)' 
+            } as any
+        })
     },
     menuButton: {
         position: 'absolute',

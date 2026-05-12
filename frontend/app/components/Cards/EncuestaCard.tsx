@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Platform } from "react-native";
 import { useLayout } from "@/app/utils/useLayout";
 
 /**
@@ -49,12 +49,20 @@ export default memo(EncuestaCard);
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#1a1a2e",
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginVertical: 8,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#263238',
     width: '100%',
+    ...Platform.select({
+      ios: { shadowColor: '#5b55c0', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 10 },
+      android: { elevation: 8 },
+      web: { 
+        boxShadow: '0px 2px 10px rgba(91, 85, 192, 0.2)' 
+      } as any
+    })
   },
   cardLarge: {
     padding: 24,
@@ -63,7 +71,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: '#333',
+    color: '#ffffff',
   },
   titleDesktop: {
     fontSize: 22,
@@ -71,7 +79,7 @@ const styles = StyleSheet.create({
   pago: {
     fontSize: 14,
     fontWeight: "600",
-    color: '#666',
+    color: '#a2a8d3',
     marginTop: 4,
   },
   pagoDesktop: {

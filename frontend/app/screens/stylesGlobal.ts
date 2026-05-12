@@ -4,13 +4,13 @@ const { width: screenWidth } = Dimensions.get('window');
 
 export const colors = {
   primary: '#5b55c0',
-  secondary: '#7c4dff',
-  background: '#0a0a0a',
+  secondary: '#3b82f6',
+  background: '#0e0d0df1',
   surface: '#161616',
   text: '#ffffff',
-  textSecondary: '#a0a0a0',
-  border: '#2a2a2a',
-  blue: '#4a90e2',
+  textSecondary: '#888888',
+  border: '#333333',
+  blue: '#3b82f6',
   danger: '#ff4d4d'
 };
 
@@ -20,7 +20,13 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     width: '100%',
-    minHeight: Platform.OS === 'web' ? ('100vh' as any) : '100%', 
+    ...Platform.select({
+      web: { minHeight: '100vh' as any },
+      default: { minHeight: '100%' as any }
+    })
+    },
+    scrollContainer: {
+      flexGrow: 1,
     },
     fullWidthContainer: {
     width: '100%',
@@ -84,6 +90,22 @@ export default StyleSheet.create({
     alignSelf: 'center', // Centra la caja en la pantalla
     borderWidth: 1,
     borderColor: colors.border,
+    ...Platform.select({
+      ios: { shadowColor: '#5b55c0', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 10 },
+      android: { elevation: 8 }
+    })
+  },
+  caja: {
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    padding: 24,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...Platform.select({
+      ios: { shadowColor: '#5b55c0', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 10 },
+      android: { elevation: 8 }
+    })
   },
 
   // DASHBOARD / CARDS
@@ -98,8 +120,8 @@ export default StyleSheet.create({
     // Sombra sutil para Web/iOS
     ...Platform.select({
       web: { cursor: 'pointer' },
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
-      android: { elevation: 3 }
+      ios: { shadowColor: '#5b55c0', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 10 },
+      android: { elevation: 8 }
     })
   },
   tittleTextSurvey: {

@@ -101,9 +101,7 @@ const SurveyListScreen = ({ navigation }: any) => {
                     </View>
                 }
                 renderItem={({ item }) => {
-                    if (!item || !item.survey) return null;
-
-                    const isCompleted = Number(item.isRespondida) === 1;
+                    if (!item || !item.survey) return null;                    const isCompleted = Number(item.isRespondida) === 1;
 
                     return (
                         <View style={{ width: '100%', maxWidth: 800 }}>
@@ -118,9 +116,8 @@ const SurveyListScreen = ({ navigation }: any) => {
                                         alignItems: 'center',
                                         justifyContent: 'space-between',
                                         padding: isDesktopView ? 30 : 20,
-                                        backgroundColor: isCompleted ? '#0a0a0a' : '#141414',
-                                        borderColor: isCompleted ? '#28a745' : '#333',
-                                        borderWidth: 1.5,
+                                        backgroundColor: isCompleted ? 'rgba(40, 167, 69, 0.05)' : colors.surface,
+                                        borderColor: isCompleted ? '#28a745' : colors.border,
                                         opacity: isCompleted ? 0.7 : 1,
                                         marginBottom: 15
                                     }
@@ -130,9 +127,9 @@ const SurveyListScreen = ({ navigation }: any) => {
                                 <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                                     {/* Círculo de estado */}
                                     <View style={{
-                                        width: 14,
-                                        height: 14,
-                                        borderRadius: 7,
+                                        width: 12,
+                                        height: 12,
+                                        borderRadius: 6,
                                         backgroundColor: isCompleted ? '#28a745' : '#fd7e14',
                                         marginRight: 15,
                                     }} />
@@ -140,15 +137,14 @@ const SurveyListScreen = ({ navigation }: any) => {
                                     <View style={{ flex: 1 }}>
                                         <Text style={[
                                             stylesGlobal.tittleTextSurvey, 
-                                            isDesktopView && stylesGlobal.tittleTextSurveyDesktop,
-                                            isCompleted && { color: '#666' }
+                                            isCompleted && { color: colors.textSecondary }
                                         ]}>
                                             {item.survey.name || "Encuesta sin nombre"}
                                         </Text>
                                         
                                         <Text style={{ 
                                             fontSize: 14, 
-                                            color: isCompleted ? '#28a745' : '#888', 
+                                            color: isCompleted ? '#28a745' : colors.textSecondary, 
                                             marginTop: 4,
                                             fontWeight: isCompleted ? 'bold' : 'normal'
                                         }}>
@@ -159,18 +155,18 @@ const SurveyListScreen = ({ navigation }: any) => {
 
                                 {/* Lado derecho: Badge de acción */}
                                 <View style={{
-                                    paddingVertical: 6,
-                                    paddingHorizontal: 12,
-                                    borderRadius: 6,
+                                    paddingVertical: 8,
+                                    paddingHorizontal: 16,
+                                    borderRadius: 12,
                                     backgroundColor: isCompleted ? 'rgba(40,167,69,0.1)' : 'rgba(91, 85, 192, 0.1)',
                                     borderWidth: 1,
-                                    borderColor: isCompleted ? '#28a745' : '#5b55c0',
+                                    borderColor: isCompleted ? '#28a745' : colors.primary,
                                     marginLeft: 10
                                 }}>
                                     <Text style={{ 
-                                        color: isCompleted ? '#28a745' : '#5b55c0', 
+                                        color: isCompleted ? '#28a745' : colors.primary, 
                                         fontWeight: 'bold', 
-                                        fontSize: 10 
+                                        fontSize: 11 
                                     }}>
                                         {isCompleted ? "FINALIZADA" : "RESPONDER"}
                                     </Text>

@@ -10,7 +10,7 @@ export default function HomeScreen({ navigation }: any) {
     const [menuVisible, setMenuVisible] = useState(false);
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#0e0d0df1' }}>
+        <View style={{ flex: 1, backgroundColor: '#000000' }}>
             <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
                 <View style={styles.alineadoPersonal}>
                     <View style={styles.contendorLogoTitulos}>

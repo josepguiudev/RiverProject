@@ -102,7 +102,7 @@ export const SurveySidebar = ({ survey, setSurvey, availableCategories, availabl
 };
 
 const sidebarStyles = StyleSheet.create({
-    container: { padding: 15, backgroundColor: "#121212", borderRadius: 12, height: "100%" },
+    container: { padding: 15, backgroundColor: "#1a1a2e", borderRadius: 12, height: "100%", borderWidth: 1, borderColor: '#263238' },
     sectionTitle: { color: colors.primary, fontWeight: "bold", fontSize: 12, marginBottom: 20, letterSpacing: 1 },
     box: { marginBottom: 20 },
     label: { color: "#888", fontSize: 11, fontWeight: "bold", marginBottom: 8, textTransform: "uppercase" },

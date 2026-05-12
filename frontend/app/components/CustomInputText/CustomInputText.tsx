@@ -11,7 +11,7 @@ interface Props extends TextInputProps {
 
 const CustomInputText = ({ label, placeholder, isAdmin=false, ...props }: Props) => {
   return (
-    <div style={styles.container}>
+    <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.inputWrapper}>
         <TextInput
@@ -21,7 +21,7 @@ const CustomInputText = ({ label, placeholder, isAdmin=false, ...props }: Props)
           {...props}
         />
       </View>
-    </div>
+    </View>
   );
 };
 

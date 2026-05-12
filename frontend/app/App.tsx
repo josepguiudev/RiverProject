@@ -2,10 +2,10 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { AuthProvider } from './screens/Auth/AuthContext';
+import { AuthProvider } from "./screens/Auth/AuthContext";
 
 // Importo TanStack Query para usarlo en toda la app
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Y le creo uun cliente para guardar el cache de las consultas
 const queryClient = new QueryClient();
@@ -18,19 +18,15 @@ import TakeSurveyScreen from "./screens/TakeSurveyScreen";
 import SurveyListScreen from "./screens/SurveyListScreen";
 import HomeScreen from "./screens/Home/HomeScreen";
 import ClientDashboard from "./screens/ClientDashboard";
-import CompleteProfile from "./screens/CompleteProfileScreen"
-import ConnectSteam from "./screens/ConnectSteamScreen"
+import CompleteProfile from "./screens/CompleteProfileScreen";
+import ConnectSteam from "./screens/ConnectSteamScreen";
 import ProfileScreen from "./screens/Profile/ProfileScreen";
-
-
 
 import LoginScreen from "./screens/Auth/LoginScreen";
 import Index from "./screens/index";
 
 import AdminScreen from "./screens/Admin/AdminScreen";
 import AdminUserScreen from "./screens/Admin/AdminUserScreen";
-
-
 
 // 2. INTERRUPTOR DIRECTO
 // Cambia a true para ver Storybook, false para la App normal
@@ -39,48 +35,51 @@ import AdminUserScreen from "./screens/Admin/AdminUserScreen";
 const Stack = createNativeStackNavigator();
 
 function App() {
-	// Si el interruptor está activo, devolvemos Storybook
-	/*
+  // Si el interruptor está activo, devolvemos Storybook
+  /*
   if (SHOW_STORYBOOK) {
 	const StorybookUI = require('../.rnstorybook').default;
 	return <StorybookUI />;
   }
 	*/
 
-	// Si no, devolvemos tu navegación normal
-	return (
-		<QueryClientProvider client={queryClient}>
-			<AuthProvider>
-				<NavigationContainer>
-					<Stack.Navigator
-						initialRouteName="Home"
-						screenOptions={{ headerShown: false }}
-					>
-						<Stack.Screen
-							name="Index"
-							component={Index}
-							options={{ headerShown: false }}
-						/>
-						<Stack.Screen
-							name="Login"
-							component={LoginScreen}
-							options={{ headerShown: false }}
-						/>
-						<Stack.Screen name="Register" component={RegisterScreen} />
-						<Stack.Screen name="Home" component={HomeScreen} />
-						<Stack.Screen name="Admin" component={AdminScreen} />
-						<Stack.Screen name="AdminUser" component={AdminUserScreen} />
-						<Stack.Screen name="ClientDashboard" component={ClientDashboard} />
-						<Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen} />
-						<Stack.Screen name="SurveyList" component={SurveyListScreen} />
-						<Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
-						<Stack.Screen name="CompleteProfile" component={CompleteProfile} />
-						<Stack.Screen name="ConnectSteam" component={ConnectSteam} />
-						<Stack.Screen name="Profile" component={ProfileScreen} />
-					</Stack.Navigator>
-				</NavigationContainer>
-			</AuthProvider>
-		</QueryClientProvider>
-	);
+  // Si no, devolvemos tu navegación normal
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={{ headerShown: false }}
+          >
+            <Stack.Screen
+              name="Index"
+              component={Index}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Admin" component={AdminScreen} />
+            <Stack.Screen name="AdminUser" component={AdminUserScreen} />
+            <Stack.Screen name="ClientDashboard" component={ClientDashboard} />
+            <Stack.Screen
+              name="SurveyCreator"
+              component={SurveyCreatorScreen}
+            />
+            <Stack.Screen name="SurveyList" component={SurveyListScreen} />
+            <Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
+            <Stack.Screen name="CompleteProfile" component={CompleteProfile} />
+            <Stack.Screen name="ConnectSteam" component={ConnectSteam} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
 }
 export default App;

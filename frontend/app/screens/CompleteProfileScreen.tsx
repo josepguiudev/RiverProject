@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { View, Text, Alert, Platform, ScrollView, TouchableOpacity } from "react-native";
 import { useAuth } from "./Auth/AuthContext";
 import { CustomDatePicker } from "../components/QuestionCard/CustomDatePicker";
-import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
-import CustomButton from "@/app/components/CustomButton/CustomButton";
-import styles from "./stylesGlobal";
+import CustomInputText from "../components/CustomInputText/CustomInputText";
+import CustomButton from "../components/CustomButton/CustomButton";
+import styles, { colors } from "./stylesGlobal";
 
 export default function CompleteProfileScreen({ navigation }: any) {
   const { user } = useAuth();
@@ -24,7 +24,6 @@ export default function CompleteProfileScreen({ navigation }: any) {
     { label: "Helicoptero", value: 3 },
   ];
 
-  // Función de cálculo de edad corregida
   const calculateAge = (birthdayStr: string) => {
     const birthday = new Date(birthdayStr);
     if (isNaN(birthday.getTime())) return null;
@@ -40,16 +39,14 @@ export default function CompleteProfileScreen({ navigation }: any) {
   };
 
   const handleNextStep = async () => {
-    // 1. Validaciones previas
     if (!formData.apellido1 || !formData.fechaNacimiento || !formData.localizacion) {
       Alert.alert("Error", "Por favor, completa los campos obligatorios.");
       return;
     }
 
     const edadCalculada = calculateAge(formData.fechaNacimiento);
-
     if (edadCalculada === null) {
-      Alert.alert("Error", "Fecha de nacimiento inválida. Usa el formato AAAA-MM-DD");
+      Alert.alert("Error", "Fecha de nacimiento inválida.");
       return;
     }
 
@@ -58,7 +55,6 @@ export default function CompleteProfileScreen({ navigation }: any) {
       return;
     }
 
-    // 2. Preparar el Body para el Backend
     const body = {
       apellido1: formData.apellido1,
       apellido2: formData.apellido2,
@@ -78,7 +74,6 @@ export default function CompleteProfileScreen({ navigation }: any) {
       });
 
       if (res.ok) {
-        // IMPORTANTE: navigation.replace para no poder volver atrás
         navigation.replace("ConnectSteam");
       } else {
         const errorMsg = await res.text();
@@ -90,7 +85,10 @@ export default function CompleteProfileScreen({ navigation }: any) {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0e0d0df1', padding: 20 }}>
+    <ScrollView 
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={[styles.scrollContainer, { paddingVertical: 40, alignItems: 'center', justifyContent: 'center' }]}
+    >
       <View style={[styles.cajaDesktop, { alignSelf: 'center', width: '100%', maxWidth: 500 }]}>
         <Text style={styles.mainText}>Paso 2: Completa tu Perfil</Text>
 
@@ -123,9 +121,9 @@ export default function CompleteProfileScreen({ navigation }: any) {
                 paddingHorizontal: 15,
                 borderRadius: 8,
                 minWidth: '47%',
-                backgroundColor: formData.genero === opt.value ? '#007AFF' : '#1a1a1a',
+                backgroundColor: formData.genero === opt.value ? colors.primary : '#1a1a1a',
                 borderWidth: 1,
-                borderColor: formData.genero === opt.value ? '#007AFF' : '#333',
+                borderColor: formData.genero === opt.value ? colors.primary : '#333',
                 alignItems: 'center'
               }}
             >
@@ -140,7 +138,7 @@ export default function CompleteProfileScreen({ navigation }: any) {
           onChangeText={(t) => setFormData({...formData, localizacion: t})} 
         />
 
-        <View style={{ marginTop: 20 }}>
+        <View style={{ marginTop: 20, alignItems: 'center' }}>
           <CustomButton title="CONTINUAR AL PASO FINAL" onPress={handleNextStep} />
         </View>
       </View>

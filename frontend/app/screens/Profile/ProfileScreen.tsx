@@ -53,55 +53,10 @@ export default function ProfileScreen({ navigation }: any) {
     const apiKey = Constants.expoConfig?.extra?.STEAM_API_KEY || '';
 
     const { data: profileData, isLoading: loading } = useQuery({
-        queryKey: ['profile', steamId],
+        queryKey: ['profile', steamId, user?.id],
         queryFn: async () => {
             try {
-                // Limpiamos el steamId por si tiene espacios invisibles
-                const cleanSteamId = steamId.trim();
-
-                // 1. Sincronizar
-                await fetch(`${BASE_URL}/api/games/sync-library?steamid=${cleanSteamId}&apiKey=${apiKey}`).catch(() => { });
-
-                // 2. Cargar Perfil
-                let profileJson = MOCK_PROFILE;
-                try {
-                    const profileRes = await fetch(`${BASE_URL}/api/usersteam/by-bd-steamid/${cleanSteamId}`);
-                    if (profileRes.ok) {
-                        profileJson = await profileRes.json();
-                    } else {
-                        console.log("Error en by-bd-steamid:", profileRes.status);
-                    }
-                } catch (e) { console.log("Fallo conexión perfil"); }
-
-                // 3. Cargar Juegos (Top 3)
-                let gamesJson = MOCK_GAMES;
-                try {
-                    const gamesRes = await fetch(`${BASE_URL}/api/games/top3/${cleanSteamId}`);
-                    if (gamesRes.ok) gamesJson = await gamesRes.json();
-                } catch (e) { console.log("Fallo conexión juegos"); }
-
-                // 4. Cargar Encuestas (SOLO si tenemos un userId válido)
-                const userId = user?.id; // Intentamos sacar el ID real
-                let surveysData = MOCK_SURVEYS;
-
-                // IMPORTANTE: Solo llamamos si userId es un número válido
-                if (userId && !isNaN(Number(userId))) {
-                    try {
-                        const surveysRes = await axios.get(`${BASE_URL}/api/surveys/user/${userId}`);
-                        surveysData = surveysRes.data;
-                    } catch (e) { console.log("Fallo conexión encuestas"); }
-                } else {
-                    console.log("Usando encuestas mock porque el userId es:", userId);
-                }
-
-                // 5. Cargar Géneros
-                let genresData: { name: string; percentage: number }[] = [];
-                try {
-                    const genresRes = await fetch(`${BASE_URL}/api/games/top-genres/${cleanSteamId}`);
-                    if (genresRes.ok) genresData = await genresRes.json();
-                } catch (e) { }
-
-                // 6. Cargar datos del usuario de la BD (para Settings)
+                // 1. Fetch user data from DB first to get correct steamId
                 let userDbData = null;
                 if (user?.id) {
                     try {
@@ -109,6 +64,58 @@ export default function ProfileScreen({ navigation }: any) {
                         if (userRes.ok) {
                             userDbData = await userRes.json();
                         }
+                    } catch (e) { }
+                }
+
+                // Determine final steam ID from DB or fallback to default
+                const finalSteamId = userDbData ? (userDbData.urlIdStream || '') : steamId;
+                const cleanSteamId = finalSteamId ? finalSteamId.trim() : '';
+
+                // 2. Synchronize library if steamId and apiKey are present
+                if (cleanSteamId && apiKey) {
+                    await fetch(`${BASE_URL}/api/games/sync-library?steamid=${cleanSteamId}&apiKey=${apiKey}`).catch(() => { });
+                }
+
+                // 3. Load Profile
+                let profileJson = MOCK_PROFILE;
+                if (cleanSteamId) {
+                    try {
+                        const profileRes = await fetch(`${BASE_URL}/api/usersteam/by-bd-steamid/${cleanSteamId}`);
+                        if (profileRes.ok) {
+                            profileJson = await profileRes.json();
+                        } else {
+                            console.log("Error en by-bd-steamid:", profileRes.status);
+                        }
+                    } catch (e) { console.log("Fallo conexión perfil"); }
+                }
+
+                // 4. Load Top 3 Games
+                let gamesJson = MOCK_GAMES;
+                if (cleanSteamId) {
+                    try {
+                        const gamesRes = await fetch(`${BASE_URL}/api/games/top3/${cleanSteamId}`);
+                        if (gamesRes.ok) gamesJson = await gamesRes.json();
+                    } catch (e) { console.log("Fallo conexión juegos"); }
+                }
+
+                // 5. Load Surveys (only if valid userId)
+                let surveysData = MOCK_SURVEYS;
+                const userId = user?.id;
+                if (userId && !isNaN(Number(userId))) {
+                    try {
+                        const surveysRes = await axios.get(`${BASE_URL}/api/surveys/user/${userId}`);
+                        surveysData = surveysRes.data;
+                    } catch (e) { console.log("Fallo conexión encuestas"); }
+                } else {
+                    console.log("Usando encuestas mock porque el userId es inválido:", userId);
+                }
+
+                // 6. Load Genres
+                let genresData: { name: string; percentage: number }[] = [];
+                if (cleanSteamId) {
+                    try {
+                        const genresRes = await fetch(`${BASE_URL}/api/games/top-genres/${cleanSteamId}`);
+                        if (genresRes.ok) genresData = await genresRes.json();
                     } catch (e) { }
                 }
 

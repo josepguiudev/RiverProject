@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, Alert, Platform, ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
 import { useAuth } from "./Auth/AuthContext"; 
-import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
-import CustomButton from "@/app/components/CustomButton/CustomButton";
+import CustomInputText from "../components/CustomInputText/CustomInputText";
+import CustomButton from "../components/CustomButton/CustomButton";
 import styles, { colors } from "./stylesGlobal";
 
 export default function ConnectSteamScreen({ navigation }: any) {
@@ -46,8 +46,8 @@ export default function ConnectSteamScreen({ navigation }: any) {
 
     return (
         <ScrollView 
-            style={styles.alineadoPersonal} 
-            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}
+            style={[styles.alineadoPersonal, { flex: 1 }]} 
+            contentContainerStyle={[styles.scrollContainer, { justifyContent: 'center', padding: 20 }]}
         >
             <View style={styles.cajaDesktop}>
                 <Text style={styles.tituloHero}>
@@ -65,7 +65,7 @@ export default function ConnectSteamScreen({ navigation }: any) {
                     onChangeText={setSteamId} 
                 />
 
-                <View style={{ marginTop: 30, gap: 12 }}>
+                <View style={{ marginTop: 30, gap: 12, alignItems: 'center' }}>
                     {loading ? (
                         <ActivityIndicator size="large" color={colors.primary} />
                     ) : (
