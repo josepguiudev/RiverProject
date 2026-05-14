@@ -227,7 +227,7 @@ export default function AdminUserScreen({ navigation }: any) {
 
     return (
 
-        <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre, globalStyles.borde]}>
+        <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre]}>
             {/* 1. HEADER / BOTÓN MENU */}
             <View style={[globalStyles.cajaMenu, globalStyles.alineadoPersonalVertical]}>
                 <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ padding: 20 }}>
@@ -236,7 +236,7 @@ export default function AdminUserScreen({ navigation }: any) {
             </View>
 
             {/*Creación del Crud de usuarios en nuestra app*/}
-            <View style={[globalStyles.cajaMenu, globalStyles.alineadoPersonalVertical, globalStyles.borde2, {height: '100%'}]}>
+            <View style={[globalStyles.cajaMenu, globalStyles.alineadoPersonalVertical, {height: '100%'}]}>
                 <View style={{ flex: 1 }}>
 
                     <FlatList
