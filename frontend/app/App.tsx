@@ -63,7 +63,7 @@ function App() {
 						options={{ headerShown: false }}
 					/>
 					<Stack.Screen name="Register" component={RegisterScreen} />
-					<Stack.Screen name="Home" component={HomeScreen} />
+					<Stack.Screen name="CrearEncuesta" component={ClientDashboard} />
 					<Stack.Screen name="Admin" component={AdminScreen} />
 					<Stack.Screen name="AdminUser" component={AdminUserScreen} />
 					<Stack.Screen name="AdminGenresGames" component={AdminGenresGames} />
