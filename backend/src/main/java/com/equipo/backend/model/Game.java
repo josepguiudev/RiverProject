@@ -32,7 +32,7 @@ public class Game {
     private String iconUrl;
     private String url_image;
 
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(
         name = "game_generes",                                  // Tabla intermedia
         joinColumns = @JoinColumn(name = "id_game"),            // FK a la tabla Game

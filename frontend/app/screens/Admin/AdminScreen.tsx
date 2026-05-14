@@ -16,6 +16,10 @@ export default function AdminScreen({ navigation }: any) {
     const [juegoDetalle, setJuegoDetalle] = useState<any>(null);
 
     const [estaCargando, setEstaCargando] = useState(false);
+    const [estaCargando2, setEstaCargando2] = useState(false);
+    const [estaCargando3, setEstaCargando3] = useState(false);
+
+    const [steamIdBibliotecaActiva, setSteamIdBibliotecaActiva] = useState("");
     
     const guardarUsers = async () => {
         setEstaCargando(true);
@@ -49,10 +53,10 @@ export default function AdminScreen({ navigation }: any) {
     }
 
     const guardarBiblio = async () => {
-        setEstaCargando(true);
+        setEstaCargando2(true);
         console.log("clic biblio")
-        if (!juegosEncontrados.length || !usuariosEncontrados.length) {
-            Alert.alert("Aviso", "Asegúrate de haber extraído el usuario y su biblioteca.");
+        if (!steamIdBibliotecaActiva || juegosEncontrados.length === 0) {
+            Alert.alert("Error", "No hay ninguna biblioteca cargada para guardar.");
             return;
         }
 
@@ -65,7 +69,7 @@ export default function AdminScreen({ navigation }: any) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    steamid: steamidOwner,      // <--- Enviamos el ID del dueño
+                    steamid: steamIdBibliotecaActiva,      // <--- Enviamos el ID del dueño
                     games: juegosEncontrados    // <--- El array de juegos de Steam
                 }),
             });
@@ -76,12 +80,12 @@ export default function AdminScreen({ navigation }: any) {
         } catch (error:any) {
             Alert.alert("Error", error);
         }finally {
-            setEstaCargando(false);
+            setEstaCargando2(false);
         }
     }
 
     const guardarJuego = async () => {
-        setEstaCargando(true);
+        setEstaCargando3(true);
         console.log("clic juego")
             if (!juegoDetalle) {
             Alert.alert("Aviso", "Primero debes extraer los detalles de un juego.");
@@ -93,7 +97,7 @@ export default function AdminScreen({ navigation }: any) {
             const url = `${strings.parte2Desktop}api/generes/save-game-details`;
 
             const response = await fetch(url, {
-                method: 'POST',
+                method: 'POST', 
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -112,7 +116,7 @@ export default function AdminScreen({ navigation }: any) {
             console.error("Error al guardar juego:", error);
             Alert.alert("Error", "No se pudo conectar con el servidor.");
         }finally {
-            setEstaCargando(false);
+            setEstaCargando3(false);
         }
     }
 
@@ -175,9 +179,14 @@ export default function AdminScreen({ navigation }: any) {
 
             {/* --- COLUMNA 2: BIBLIOTECAS --- */}
             <View style={{ flex: 1, marginHorizontal: 8, height: '100%' }}>
-                <CustomInputCard title='Extraer Bibliotecas' value={3} onResultFound={(data) => {
-                    const listaJuegos = data.response?.games || (Array.isArray(data) ? data : []);
+                <CustomInputCard title='Extraer Bibliotecas' value={3} onResultFound={(responseObj: any) => {
+                    setJuegosEncontrados([]);
+                    const listaJuegos = responseObj?.games || [];
                     setJuegosEncontrados([...listaJuegos]);
+
+                    if (responseObj?.steamid) {
+                        setSteamIdBibliotecaActiva(responseObj.steamid);
+                    }
                 }}/>
 
                 <View style={{ flex: 1, backgroundColor: '#0d1117', marginTop: 10, borderRadius: 12, borderWidth: 1, borderColor: '#30363d', overflow: 'hidden' }}>
@@ -212,7 +221,7 @@ export default function AdminScreen({ navigation }: any) {
                         ))}
                     </ScrollView>
                     <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#30363d', backgroundColor: '#0d1117' }}>
-                        {estaCargando ? (
+                        {estaCargando2 ? (
                             <ActivityIndicator color="gold" size="large" />
                         ) : (
                             <CustomButton title="Guardar biblioteca" onPress={guardarBiblio} isAdmin={true} />
@@ -236,7 +245,7 @@ export default function AdminScreen({ navigation }: any) {
                             if (!gameData) return null;
                             return (
                                 <View key={key} style={{ backgroundColor: '#171d25' }}>
-                                    <Image source={{ uri: gameData.header_image }} style={{ width: '100%', aspectRatio: 460 / 215, borderBottomWidth: 1, borderBottomColor: '#2a475e' }} resizeMode="contain" />
+                                    <Image source={{ uri: gameData.header_image }} style={{ width: '100%', aspectRatio: 460 / 215, borderBottomWidth: 1 }} resizeMode="contain" />
                                     <View style={{ padding: 20 }}>
                                         <Text style={{ color: '#fff', fontWeight: '900', fontSize: 22 }}>{gameData.name}</Text>
                                         <Text style={{ color: '#66c0f4', fontSize: 12, marginBottom: 15 }}>APP ID: {gameData.steam_appid}</Text>
@@ -247,7 +256,7 @@ export default function AdminScreen({ navigation }: any) {
                         })}
                     </ScrollView>
                     <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#30363d', backgroundColor: '#0d1117' }}>
-                        {estaCargando ? (
+                        {estaCargando3 ? (
                             <ActivityIndicator color="gold" size="large" />
                         ) : (
                             <CustomButton title="Guardar juego en BD" onPress={guardarJuego} isAdmin={true} />
