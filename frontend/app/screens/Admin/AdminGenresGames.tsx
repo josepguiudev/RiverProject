@@ -58,11 +58,10 @@ export default function AdminGenresGames({ navigation }: any) {
 
             <FlatList
                 data={generos}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item, index) => item.id?.toString() || index.toString()}
                 renderItem={({ item }) => {
-                    // ✅ 1. FILTRADO: Nos quedamos solo con los juegos que son OBJETOS
-                    // Esto ignora los números (6, 14) que ensucian la lista
-                    const juegosValidos = item.games?.filter((g: any) => typeof g === 'object' && g !== null) || [];
+                    // 🛠️ CORRECCIÓN 1: Soportamos tanto objetos de juego como IDs numéricos crudos
+                    const juegosAProcesar = item.games || [];
 
                     return (
                         <View style={{ marginBottom: 20, borderRadius: 10, overflow: 'hidden', borderWidth: 1, borderColor: '#2a475e' }}>
@@ -78,25 +77,31 @@ export default function AdminGenresGames({ navigation }: any) {
                                 borderBottomColor: '#66c0f4'
                             }}>
                                 <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 13 }}>
-                                    {item.description.toUpperCase()}
+                                    {item.description ? item.description.toUpperCase() : "GÉNERO"}
                                 </Text>
                                 <View style={{ backgroundColor: '#2a475e', paddingHorizontal: 8, borderRadius: 4 }}>
                                     <Text style={{ color: 'gold', fontSize: 10, fontWeight: 'bold' }}>
-                                        {juegosValidos.length} JUEGOS
+                                        {juegosAProcesar.length} JUEGOS
                                     </Text>
                                 </View>
                             </View>
 
                             {/* LISTA DE JUEGOS */}
                             <View style={{ backgroundColor: '#0d1117', padding: 8 }}>
-                                {juegosValidos.length > 0 ? (
-                                    juegosValidos.map((game: any) => {
-                                        // ✅ 2. CONSTRUCCIÓN DE LA URL DE IMAGEN
-                                        // Combinamos el AppID con el hash que viene en iconUrl
-                                        const fullIconUrl = `http://steampowered.com{game.appid}/${game.iconUrl}.jpg`;
+                                {juegosAProcesar.length > 0 ? (
+                                    juegosAProcesar.map((game: any, idx: number) => {
+                                        // 🛠️ CORRECCIÓN 2: Evaluamos dinámicamente el tipo de dato que envió Spring Boot
+                                        const esObjetoCompleto = typeof game === 'object' && game !== null;
+                                        
+                                        // Si es objeto usamos sus propiedades, si es un número asumimos que es el ID/AppID
+                                        const idDeJuego = esObjetoCompleto ? (game.appid || game.id_game_steam) : game;
+                                        const tituloJuego = esObjetoCompleto ? (game.title || `Juego ID: ${idDeJuego}`) : `Juego ID: ${idDeJuego}`;
+                                        
+                                        // Usamos el header oficial de Steam que siempre funciona usando solo el ID del juego
+                                        const urlImagenSteam = `http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.iconUrl}.jpg`;
 
                                         return (
-                                            <View key={game.id_game} style={{ 
+                                            <View key={esObjetoCompleto ? (game.id_game || idx) : idx} style={{ 
                                                 flexDirection: 'row', 
                                                 alignItems: 'center', 
                                                 padding: 10, 
@@ -107,22 +112,22 @@ export default function AdminGenresGames({ navigation }: any) {
                                                 borderLeftColor: '#66c0f4'
                                             }}>
                                                 <Image 
-                                                    source={{ uri: `http://steampowered.com{game.appid}/${game.iconUrl}.jpg` }} 
-                                                    style={{ width: 35, height: 35, borderRadius: 4, backgroundColor: '#000' }} 
+                                                    source={{ uri: urlImagenSteam }} 
+                                                    style={{ width: 65, height: 30, borderRadius: 4, backgroundColor: '#000' }} 
                                                     resizeMode="cover"
                                                 />
                                                 <View style={{ marginLeft: 12, flex: 1 }}>
                                                     <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>
-                                                        {game.title}
+                                                        {tituloJuego}
                                                     </Text>
-                                                    <Text style={{ color: '#889fb2', fontSize: 10 }}>AppID: {game.appid}</Text>
+                                                    <Text style={{ color: '#889fb2', fontSize: 10 }}>ID Detectado: {idDeJuego}</Text>
                                                 </View>
                                             </View>
                                         );
                                     })
                                 ) : (
                                     <Text style={{ color: '#444', textAlign: 'center', padding: 10, fontStyle: 'italic' }}>
-                                        Datos de juegos incompletos en este género
+                                        No hay juegos vinculados en este género
                                     </Text>
                                 )}
                             </View>

@@ -1,5 +1,6 @@
 package com.equipo.backend.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.equipo.backend.model.Genere;
 import com.equipo.backend.service.GenereService;
 
 import reactor.core.publisher.Mono;
@@ -52,5 +54,15 @@ public class GenereController {
                 .onErrorResume(e -> Mono.just(
                     ResponseEntity.badRequest().body("Error al conectar con Steam: " + e.getMessage())
                 ));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Genere>> getAllGeneres() {
+        try {
+            return ResponseEntity.ok(genereService.findAll());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 }

@@ -24,6 +24,8 @@ import AdminScreen from "./screens/Admin/AdminScreen";
 import AdminUserScreen from "./screens/Admin/AdminUserScreen";
 import AdminGenresGames from "./screens/Admin/AdminGenresGames";
 
+import SimpleFormScreen from "./screens/SimpleFormScreen";
+
 
 
 // 2. INTERRUPTOR DIRECTO

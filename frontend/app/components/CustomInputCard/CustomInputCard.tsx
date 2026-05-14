@@ -59,8 +59,11 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
     const [queries3, setQueries3] = useState<SteamQuery[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedOption, setSelectedOption] = useState<Option | null>(null);
+
     const [inputUserId, setInputUserId] = useState("");
+    const [inputLibraryUserId, setInputLibraryUserId] = useState("");//Libreria de juegos
     const [inputGameId, setInputGameId] = useState("");
+
     const [usuariosBD, setUsuariosBD] = useState<Option[]>([]);
     const [juegosBD, setJuegosBD] = useState<Option[]>([]);
 
@@ -173,13 +176,15 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
                 const data = await response.json();
 
                 if (Array.isArray(data)) {
-                    const options = data.map((g: any) => ({
-                        id: g.id_game || g.id, // Revisa cómo se llama tu PK en la entidad Game
-                        label: `${g.title} (${g.appid})`, // Usamos 'title' porque así lo seteas en el Service
-                        value: g.appid.toString()
-                    }));
-                    setJuegosBD(options);
-                }
+                    const options = data
+                        .filter((g: any) => g !== null && g.appid !== undefined && g.appid !== null) // Filtramos juegos rotos
+                        .map((g: any) => ({
+                            id: g.id_game || g.id, 
+                            label: `${g.title || 'Juego sin título'} (${g.appid})`, 
+                            value: g.appid.toString() // Ahora sí se garantiza que appid existe
+                        }));
+                            setJuegosBD(options);
+                        }
             } catch (error) {
                 console.error("Error al cargar juegos:", error);
             }finally {
@@ -202,6 +207,7 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
         console.log("clic")
         if (!selectedOption || !inputUserId) {
         Alert.alert("Error", "Selecciona una consulta e introduce un ID");
+        setEstaCargando(false);
         return;
         }
 
@@ -288,28 +294,37 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
 
     const buscarPeticion2 = async () => {
         setEstaCargando(true);
-        console.log("clic 2222222222222222222222222222222222")
         console.log(inputUserId)
-        if (!selectedOption) {
-        console.log("No se ha seleccionado ninguna opción");
+        if (!inputLibraryUserId || inputLibraryUserId.trim() === "") {
+            Alert.alert("Error", "Selecciona una consulta e introduce un ID para la biblioteca");
+            console.log("No se ha seleccionado ninguna opción");
+            setEstaCargando(false);
         return;
         }
 
         try{
-            const response = await fetch(`${strings.parte2Desktop}${strings.controllerGame}${strings.extraer}${inputUserId}${strings.key}${Constants.expoConfig?.extra?.STEAM_API_KEY}`);
+            const response = await fetch(`${strings.parte2Desktop}${strings.controllerGame}${strings.extraer}${inputLibraryUserId}${strings.key}${Constants.expoConfig?.extra?.STEAM_API_KEY}`);
+            
             if (!response.ok) throw new Error("Error en el servidor");
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (onResultFound) {
-                onResultFound(data.response.games); 
+                if (data && data.response) {
+                if (onResultFound) {
+                    // Emitimos el formato exacto que ahora espera tu AdminScreen
+                    onResultFound({
+                        games: data.response.games || [],
+                        steamid: inputLibraryUserId
+                    }); 
+                }
+                const cantidad = data.response?.game_count || 0;
+                Alert.alert("Éxito", `Se han extraído ${cantidad} juegos del usuario.`);
+
+                console.log(`Se han extraído ${cantidad} juegos del usuario.`);
+                console.log(data.response.games);
+            } else {
+                throw new Error("La respuesta de Steam no contiene el nodo 'response'");
             }
-
-            const cantidad = data.response?.game_count || 0;
-            Alert.alert("Éxito", `Se han extraído ${cantidad} juegos del usuario.`);
-
-            console.log(`Se han extraído ${cantidad} juegos del usuario.`);
-            console.log(data.response.games);
 
         }catch(error){
             console.log("Error", error);
@@ -318,16 +333,19 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
             setEstaCargando(false);
         }
 
-        console.log("ID Query:", selectedOption.id);
-        console.log("Query seleccionada:", selectedOption.value);
-        console.log("Descripción:", selectedOption.label);
+        //console.log("ID Query:", selectedOption.id);
+        //console.log("Query seleccionada:", selectedOption.value);
+        //console.log("Descripción:", selectedOption.label);
         console.log("Descripción:", Constants.expoConfig?.extra?.STEAM_API_KEY);
         console.log("ID Usuario:", inputUserId);
     }
 
     const buscarPeticion3 = async () => {
         setEstaCargando(true);
-        if (!inputGameId) return;
+        if (!inputGameId){
+            setEstaCargando(false);
+            return;
+        } 
 
         try {
             // Llamas a TU backend pasando el id del juego como parámetro
@@ -362,21 +380,6 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
         marginBottom: 10, 
         letterSpacing: 1,
         textTransform: 'uppercase'
-    };
-    const filaControles: ViewStyle = { 
-        flexDirection: 'row', 
-        alignItems: 'flex-end', // Alineación perfecta por la base
-        gap: 12 
-    };
-
-    const containerCard: ViewStyle = {
-        backgroundColor: '#1b2838',
-        padding: 20,
-        borderRadius: 15,
-        borderWidth: 1,
-        borderColor: '#2a475e',
-        marginBottom: 15,
-        width: '100%',
     };
 
     const labelEstilo2: TextStyle = { 
@@ -545,33 +548,23 @@ const CustomInputCard = ({ title, value, onResultFound}: Props) => {
                     </View>
 
                     {/* 2. FILA DE PARÁMETROS (Alineados por la base al 48% cada uno) */}
-                    <View style={{ 
-                        flexDirection: 'row', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'flex-end', 
-                        marginBottom: 15,
-                        width: '100%'
-                    }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 15, width: '100%' }}>
                         <View style={{ width: '48%' }}>
                             <Text style={[labelEstilo2, { marginBottom: 4 }]}>ELEGIR USUARIO</Text>
-                            {estaCargandoUsers ? (
-                                <ActivityIndicator color="gold" size="small" />
-                            ) : (
-                                <CustomDropdown 
-                                    label="" 
-                                    options={usuariosBD} 
-                                    onSelect={(item) => setInputUserId(item.value)} 
-                                />
-                            )}
+                            <CustomDropdown 
+                                label="" 
+                                options={usuariosBD} 
+                                // ✅ Rellena el input de la biblioteca, no el de usuarios
+                                onSelect={(item) => setInputLibraryUserId(item.value)} 
+                            />
                         </View>
-
                         <View style={{ width: '48%' }}>
                             <Text style={[labelEstilo2, { marginBottom: 4 }]}>O ESCRIBIR ID</Text>
                             <CustomInputText 
                                 placeholder="SteamID..." 
-                                value={inputUserId} 
+                                value={inputLibraryUserId} // ✅ Vinculado al nuevo estado
                                 isAdmin={true} 
-                                onChangeText={setInputUserId}
+                                onChangeText={setInputLibraryUserId} // ✅ Setter correcto
                             />
                         </View>
                     </View>
