@@ -132,4 +132,14 @@ public class SurveyAllUrlLogicController {
     public ResponseEntity<List<SurveySummaryDTO>> getSurveysByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(encuestaService.obtenerResumenEncuestasPorUsuario(userId));
     }
+
+    @GetMapping("/{idSurvey}/resultados")
+    public ResponseEntity<?> getResultadosEncuesta(@PathVariable Long idSurvey) {
+        try {
+            // Llamamos al servicio matemático que acabamos de estabilizar en los pasos anteriores
+            return ResponseEntity.ok(encuestaService.obtenerEstadisticasVotos(idSurvey));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al procesar métricas de votación: " + e.getMessage());
+        }
+    }
 }

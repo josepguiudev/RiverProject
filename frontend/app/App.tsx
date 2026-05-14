@@ -14,6 +14,7 @@ import HomeScreen from "./screens/Home/HomeScreen";
 import ClientDashboard from "./screens/ClientDashboard";
 import CompleteProfile from "./screens/CompleteProfileScreen"
 import ConnectSteam from "./screens/ConnectSteamScreen"
+import AdminGraphics from "./screens/Admin/AdminGraphics";
 
 
 
@@ -66,6 +67,7 @@ function App() {
 					<Stack.Screen name="Admin" component={AdminScreen} />
 					<Stack.Screen name="AdminUser" component={AdminUserScreen} />
 					<Stack.Screen name="AdminGenresGames" component={AdminGenresGames} />
+					<Stack.Screen name="AdminGraphics" component={AdminGraphics} />
 					<Stack.Screen name="ClientDashboard" component={ClientDashboard} />
 					<Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen}/>
 					<Stack.Screen name="SurveyList" component={SurveyListScreen} />

@@ -8,6 +8,8 @@ import globalStyles from "@/assets/globalStyles/globalStyles";
 export default function AdminGenresGames({ navigation }: any) {  
     const [menuVisible, setMenuVisible] = useState(false);
     const [generos, setGeneros] = useState<any[]>([]);
+
+    const [metaComunidad, setMetaComunidad] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
