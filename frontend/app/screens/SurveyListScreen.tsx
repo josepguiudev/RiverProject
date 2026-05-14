@@ -1,305 +1,357 @@
-import React, { useState, useCallback } from 'react';
-import { 
-    View, FlatList, Text, ActivityIndicator, RefreshControl, 
-    TouchableOpacity, Platform, SafeAreaView, StatusBar 
-} from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useState, useEffect } from "react";
+import {
+    View,
+    TextInput,
+    TouchableOpacity,
+    FlatList,
+    Text,
+    Alert,
+    ActivityIndicator,
+    SafeAreaView,
+    ScrollView,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { isWeb } from "@/app/utils/device";
+import { Question, Survey, Category, Genere } from "../types/formsSurvey.types";
+import { FormApiService } from "../services/api/service";
+import { QuestionCard } from "../components/QuestionCard/QuestionCard";
+import { SurveySidebar } from "../components/QuestionCard/SurveySidebar";
+import styles, { colors } from "./stylesGlobal";
+import { useLayout } from "@/app/utils/useLayout";
+import { ResponsiveLayout } from "../components/ResponsiveLayout";
+import { useAuth } from "./Auth/AuthContext";
+import { isWeb } from "../utils/device";
 
-import { FormApiService } from '../services/api/service';
-import { UserSurveyRel } from '../types/formsSurvey.types';
-import { useAuth } from "../screens/Auth/AuthContext";
-import { useLayout } from '@/app/utils/useLayout';
-import stylesGlobal, { colors } from './stylesGlobal';
-import MenuPrincipal from '@/app/components/Menu/CustomMenu';
-import strings from "../../../frontend/assets/supportFiles/strings.json";
-
-const SurveyListScreen = ({ navigation }: any) => {
-    const [menuVisible, setMenuVisible] = useState(false);
+const SurveyCreatorScreen = ({ navigation }: any) => {
     const { isDesktopView } = useLayout();
-    const { user, loading: authLoading } = useAuth();
-    
-    const [surveys, setSurveys] = useState<UserSurveyRel[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
+    const { user } = useAuth();
 
-    const totalPendientes = surveys.filter(s => Number(s.isRespondida) === 0).length;
-    const totalCompletadas = surveys.filter(s => Number(s.isRespondida) === 1).length;
+    const [loading, setLoading] = useState(false);
+    const [loadingMetadata, setLoadingMetadata] = useState(true);
 
-    const loadSurveys = async () => {
-        if (!user?.id) return;
-        try {
-            const data = await FormApiService.getUserSurveys(Number(user.id));
-            setSurveys(Array.isArray(data) ? data : []);
-        } catch (e) {
-            console.error("Error cargando encuestas:", e);
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
+    const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+    const [availableGeneres, setAvailableGeneres] = useState<Genere[]>([]);
+
+    const [survey, setSurvey] = useState<Survey>({
+        name: "",
+        numUsers: 0,
+        numQuestions: 0,
+        questionList: [],
+        categoryList: [],
+        genereList: [],
+        launchDate: new Date().toISOString(),
+        closeDate: "",
+    });
+
+    useEffect(() => {
+        const loadMetadata = async () => {
+            try {
+                const [cats, gens] = await Promise.all([
+                    FormApiService.getCategories(),
+                    FormApiService.getGeneres(),
+                ]);
+                setAvailableCategories(cats);
+                setAvailableGeneres(gens);
+            } catch (error) {
+                console.error("Error cargando metadatos:", error);
+            } finally {
+                setLoadingMetadata(false);
+            }
+        };
+        loadMetadata();
+    }, []);
+
+    const addQuestion = () => {
+        const newQuestion: Question = {
+            textQuestion: "",
+            config: {
+                typeName: "SHORT_TEXT",
+                isMultiple: false,
+                attributes: "",
+            },
+            option: [],
+        } as any;
+
+        setSurvey({
+            ...survey,
+            questionList: [...survey.questionList, newQuestion],
+        });
+    };
+
+    const removeQuestion = (index: number) => {
+        const updated = [...survey.questionList];
+        updated.splice(index, 1);
+        setSurvey({ ...survey, questionList: updated });
+    };
+
+    const updateQuestionText = (index: number, text: string) => {
+        const updated = [...survey.questionList];
+        updated[index].textQuestion = text;
+        setSurvey({ ...survey, questionList: updated });
+    };
+
+    const updateType = (index: number, type: any) => {
+        const updated = [...survey.questionList];
+        updated[index].config = {
+            typeName: type,
+            isMultiple: type === "MULTIPLE_CHOICE",
+            attributes: "",
+        };
+        updated[index].option =
+            type === "SINGLE_CHOICE" || type === "MULTIPLE_CHOICE"
+                ? [{ textOpcion: "" }]
+                : [];
+        setSurvey({ ...survey, questionList: updated });
+    };
+
+    const addOption = (qIndex: number) => {
+        const updated = [...survey.questionList];
+        if (!updated[qIndex].option) updated[qIndex].option = [];
+        updated[qIndex].option!.push({ textOpcion: "" });
+        setSurvey({ ...survey, questionList: updated });
+    };
+
+    const updateOptionText = (qIndex: number, oIndex: number, text: string) => {
+        const updated = [...survey.questionList];
+        if (updated[qIndex].option) {
+            updated[qIndex].option![oIndex].textOpcion = text;
+            setSurvey({ ...survey, questionList: updated });
         }
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            if (!authLoading && user?.id) loadSurveys();
-        }, [user, authLoading])
-    );
+    const handleSaveSurvey = async () => {
+        if (!survey.name.trim() || survey.questionList.length === 0) {
+            Alert.alert("Error", "Completa el título y añade al menos una pregunta.");
+            return;
+        }
+        if (!user?.id) {
+            Alert.alert("Error", "Sesión no válida.");
+            return;
+        }
+        setLoading(true);
+        try {
+            await FormApiService.submitForm(survey, user.id);
+            Alert.alert("Éxito", "Encuesta publicada correctamente.");
+            navigation.goBack();
+        } catch (error) {
+            Alert.alert("Error", (error as Error).message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    if (authLoading || (loading && !refreshing)) {
-        return (
-            <View style={stylesGlobal.alineadoPersonal}>
-                <ActivityIndicator size="large" color={colors.secondary} />
-            </View>
-        );
-    }
+    if (loadingMetadata)
+        return <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />;
 
     // ============================================================
-    //  VERSIÓN WEB (nuevo diseño de tu compañero)
+    //  VERSIÓN WEB (original, sin cambios)
     // ============================================================
     if (isWeb) {
         return (
-            <View style={stylesGlobal.alineadoPersonal}>
-                {/* Botón menú fijo arriba */}
-                <View style={{ 
-                    width: '100%', 
-                    flexDirection: 'row', 
-                    justifyContent: 'flex-start', 
-                    zIndex: 10,
-                    paddingTop: Platform.OS === 'ios' ? 50 : 20,
-                    paddingHorizontal: 20 
-                }}>
-                    <TouchableOpacity 
-                        onPress={() => setMenuVisible(true)} 
-                        style={{ 
-                            padding: 10, 
-                            backgroundColor: 'rgba(255,255,255,0.05)', 
-                            borderRadius: 8 
-                        }}
-                    >
-                        <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu}</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Lista de encuestas con cabecera y diseño mejorado */}
-                <FlatList
-                    data={surveys}
-                    keyExtractor={(item, index) => 
-                        item?.id?.toString() || 
-                        item?.survey?.id?.toString() || 
-                        `survey-${index}`
-                    }
-                    contentContainerStyle={{ 
-                        alignItems: 'center', 
-                        paddingBottom: 60,
-                        width: '100%',
-                        paddingHorizontal: 15
-                    }}
-                    ListHeaderComponent={
-                        <View style={{ width: '100%', maxWidth: 800, marginVertical: 40 }}>
-                            <Text style={[
-                                stylesGlobal.tituloHero, 
-                                isDesktopView && stylesGlobal.tituloHeroDesktop,
-                                { textAlign: 'center' }
-                            ]}>
-                                Mis Encuestas
+            <View style={styles.alineadoPersonal}>
+                <ResponsiveLayout fullWidth={true}>
+                    <View style={{ padding: 20, width: "100%" }}>
+                        <View style={{ marginBottom: 30 }}>
+                            <Text style={styles.tituloHero}>
+                                Nuevo <Text style={styles.destaqueAzul}>Proyecto</Text>
                             </Text>
                         </View>
-                    }
-                    renderItem={({ item }) => {
-                        if (!item || !item.survey) return null;
-                        const isCompleted = Number(item.isRespondida) === 1;
-                        return (
-                            <View style={{ width: '100%', maxWidth: 800 }}>
-                                <TouchableOpacity 
-                                    activeOpacity={0.7}
-                                    disabled={isCompleted}
-                                    onPress={() => navigation.navigate('TakeSurvey', { surveyId: item.survey.id })}
-                                    style={[
-                                        stylesGlobal.cajaEncuestas,
-                                        { 
-                                            flexDirection: 'row', 
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            padding: isDesktopView ? 30 : 20,
-                                            backgroundColor: isCompleted ? '#0a0a0a' : '#141414',
-                                            borderColor: isCompleted ? '#28a745' : '#333',
-                                            borderWidth: 1.5,
-                                            opacity: isCompleted ? 0.7 : 1,
-                                            marginBottom: 15
-                                        }
-                                    ]}
+
+                        <View
+                            style={{
+                                flexDirection: isDesktopView ? "row" : "column",
+                                width: "100%",
+                                gap: 30,
+                            }}
+                        >
+                            {/* Columna izquierda – preguntas */}
+                            <View style={{ flex: isDesktopView ? 2 : 1 }}>
+                                <TextInput
+                                    placeholder="Título de la Encuesta..."
+                                    placeholderTextColor="#666"
+                                    style={styles.inputTitulo}
+                                    value={survey.name}
+                                    onChangeText={(text) =>
+                                        setSurvey({ ...survey, name: text })
+                                    }
+                                />
+
+                                <FlatList
+                                    data={survey.questionList}
+                                    keyExtractor={(_, index) => index.toString()}
+                                    scrollEnabled={false}
+                                    renderItem={({ item, index }) => (
+                                        <QuestionCard
+                                            question={
+                                                {
+                                                    ...item,
+                                                    typeName: item.config?.typeName || "SHORT_TEXT",
+                                                } as any
+                                            }
+                                            index={index}
+                                            onUpdateQuestion={(text) =>
+                                                updateQuestionText(index, text)
+                                            }
+                                            onRemoveQuestion={() => removeQuestion(index)}
+                                            onUpdateType={(type) => updateType(index, type)}
+                                            onAddOption={() => addOption(index)}
+                                            onUpdateOption={(text, oIndex) =>
+                                                updateOptionText(index, oIndex, text)
+                                            }
+                                        />
+                                    )}
+                                    ListFooterComponent={
+                                        <TouchableOpacity
+                                            style={styles.btnSecondary}
+                                            onPress={addQuestion}
+                                        >
+                                            <Text style={{ color: colors.text, fontWeight: "bold" }}>
+                                                + AÑADIR PREGUNTA
+                                            </Text>
+                                        </TouchableOpacity>
+                                    }
+                                />
+
+                                <TouchableOpacity
+                                    style={[styles.btnPrimary, { marginTop: 30 }]}
+                                    onPress={handleSaveSurvey}
+                                    disabled={loading}
                                 >
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                        {/* Círculo de estado */}
-                                        <View style={{
-                                            width: 14,
-                                            height: 14,
-                                            borderRadius: 7,
-                                            backgroundColor: isCompleted ? '#28a745' : '#fd7e14',
-                                            marginRight: 15,
-                                        }} />
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={[
-                                                stylesGlobal.tittleTextSurvey, 
-                                                isDesktopView && stylesGlobal.tittleTextSurveyDesktop,
-                                                isCompleted && { color: '#666' }
-                                            ]}>
-                                                {item.survey.name || "Encuesta sin nombre"}
-                                            </Text>
-                                            <Text style={{ 
-                                                fontSize: 14, 
-                                                color: isCompleted ? '#28a745' : '#888', 
-                                                marginTop: 4,
-                                                fontWeight: isCompleted ? 'bold' : 'normal'
-                                            }}>
-                                                {isCompleted ? "Completada ✓" : `Pendiente • ${item.survey.numQuestions || 0} preguntas`}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                    {/* Badge de acción */}
-                                    <View style={{
-                                        paddingVertical: 6,
-                                        paddingHorizontal: 12,
-                                        borderRadius: 6,
-                                        backgroundColor: isCompleted ? 'rgba(40,167,69,0.1)' : 'rgba(91, 85, 192, 0.1)',
-                                        borderWidth: 1,
-                                        borderColor: isCompleted ? '#28a745' : '#5b55c0',
-                                        marginLeft: 10
-                                    }}>
-                                        <Text style={{ 
-                                            color: isCompleted ? '#28a745' : '#5b55c0', 
-                                            fontWeight: 'bold', 
-                                            fontSize: 10 
-                                        }}>
-                                            {isCompleted ? "FINALIZADA" : "RESPONDER"}
-                                        </Text>
-                                    </View>
+                                    <Text style={styles.btnPrimaryText}>
+                                        {loading ? "PUBLICANDO..." : "PUBLICAR PROYECTO"}
+                                    </Text>
                                 </TouchableOpacity>
                             </View>
-                        );
-                    }}
-                    refreshControl={
-                        <RefreshControl 
-                            refreshing={refreshing} 
-                            onRefresh={loadSurveys} 
-                            tintColor={colors.primary} 
-                        />
-                    }
-                    ListEmptyComponent={
-                        <View style={{ marginTop: 50 }}>
-                            <Text style={[stylesGlobal.texto, { opacity: 0.5 }]}>
-                                No tienes encuestas asignadas por ahora.
-                            </Text>
-                        </View>
-                    }
-                />
 
-                <MenuPrincipal visible={menuVisible} onClose={() => setMenuVisible(false)} />
+                            {/* Columna derecha – configuraciones */}
+                            <View
+                                style={{
+                                    flex: 1,
+                                    minWidth: isDesktopView ? 300 : "100%",
+                                }}
+                            >
+                                <SurveySidebar
+                                    survey={survey}
+                                    setSurvey={setSurvey}
+                                    availableCategories={availableCategories}
+                                    availableGeneres={availableGeneres}
+                                />
+                            </View>
+                        </View>
+                    </View>
+                </ResponsiveLayout>
             </View>
         );
     }
 
     // ============================================================
-    //  VERSIÓN ANDROID (original, con diseño táctil)
+    //  VERSIÓN ANDROID (con botón de volver a ClientDashboard)
     // ============================================================
+    const goBack = () => {
+        navigation.navigate("ClientDashboard");
+    };
+
     return (
-        <SafeAreaView style={stylesGlobal.alineadoPersonal}>
-            <StatusBar barStyle="light-content" />
-            
-            {/* Header Android: Menú y Perfil */}
-            <View style={[stylesGlobal.row, { justifyContent: 'space-between', padding: 25, width: '100%' }]}>
-                <TouchableOpacity 
-                    onPress={() => setMenuVisible(true)} 
-                    style={stylesGlobal.iconContainerAndroid}
-                >
-                    <Ionicons name="menu-outline" size={30} color="white" />
-                </TouchableOpacity>
-                <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={[stylesGlobal.texto, { fontWeight: 'bold', color: colors.secondary }]}>
-                        {user?.name}
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 16, paddingTop: 20 }}
+            >
+                {/* Header con botón de volver y título */}
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
+                    <TouchableOpacity onPress={goBack} style={{ marginRight: 16 }}>
+                        <Ionicons name="arrow-back-outline" size={28} color={colors.primary} />
+                    </TouchableOpacity>
+                    <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.white }}>
+                        Nuevo <Text style={{ color: colors.secondary }}>Proyecto</Text>
                     </Text>
-                    <Text style={stylesGlobal.statLabel}>ID: #{user?.id}</Text>
-                </View>
-            </View>
-
-            <View style={{ flex: 1, width: '100%', paddingHorizontal: 25 }}>
-                <View style={stylesGlobal.headerAndroid}>
-                    <Text style={[stylesGlobal.tituloHero, { textAlign: 'left' }]}>
-                        Mis <Text style={stylesGlobal.destaqueAzul}>Encuestas</Text>
-                    </Text>
-                    
-                    {/* Chips de conteo */}
-                    <View style={[stylesGlobal.row, { justifyContent: 'flex-start', marginTop: 15, gap: 10 }]}>
-                        <View style={stylesGlobal.badgeAndroid}>
-                            <Text style={{ color: colors.secondary, fontSize: 11, fontWeight: 'bold' }}>
-                                {totalPendientes} PENDIENTES
-                            </Text>
-                        </View>
-                        <View style={[stylesGlobal.badgeAndroid, { borderColor: 'rgba(139, 195, 74, 0.4)' }]}>
-                            <Text style={{ color: colors.cta, fontSize: 11, fontWeight: 'bold' }}>
-                                {totalCompletadas} LISTAS
-                            </Text>
-                        </View>
-                    </View>
                 </View>
 
-                <FlatList
-                    data={surveys}
-                    keyExtractor={(item) => item?.survey?.id?.toString() || Math.random().toString()}
-                    renderItem={({ item }) => {
-                        const isCompleted = Number(item.isRespondida) === 1;
-                        return (
-                            <TouchableOpacity 
-                                onPress={() => !isCompleted && navigation.navigate('TakeSurvey', { surveyId: item.survey.id })}
-                                style={[
-                                    stylesGlobal.cajaEncuestasAndroid,
-                                    isCompleted && stylesGlobal.cajaEncuestasCompletada,
-                                    { borderLeftWidth: 4, borderLeftColor: isCompleted ? colors.cta : colors.secondary }
-                                ]}
-                            >
-                                <View style={{ flex: 1 }}>
-                                    <Text style={stylesGlobal.tittleTextSurvey}>{item.survey.name}</Text>
-                                    <View style={[stylesGlobal.row, { justifyContent: 'flex-start', marginTop: 5 }]}>
-                                        <Text style={[stylesGlobal.textoEstado, { color: isCompleted ? colors.cta : colors.secondary, marginTop: 0 }]}>
-                                            {isCompleted ? "Completada" : "Pendiente"}
-                                        </Text>
-                                        <View style={stylesGlobal.dot} />
-                                        <Text style={[stylesGlobal.statLabel, { marginTop: 0 }]}>
-                                            {item.survey.numQuestions} Qs
-                                        </Text>
-                                    </View>
-                                </View>
-                                <Ionicons 
-                                    name={isCompleted ? "checkmark-done" : "chevron-forward"} 
-                                    size={22} 
-                                    color={isCompleted ? colors.cta : colors.secondary} 
-                                />
-                            </TouchableOpacity>
-                        );
+                {/* Input del título */}
+                <TextInput
+                    placeholder="Título de la encuesta..."
+                    placeholderTextColor="#888"
+                    style={{
+                        backgroundColor: "#1A1A1A",
+                        color: "white",
+                        fontSize: 20,
+                        padding: 16,
+                        borderRadius: 16,
+                        marginBottom: 24,
+                        borderWidth: 1,
+                        borderColor: "#333",
                     }}
-                    contentContainerStyle={{ paddingBottom: 30 }}
-                    showsVerticalScrollIndicator={false}
-                    refreshControl={
-                        <RefreshControl 
-                            refreshing={refreshing} 
-                            onRefresh={loadSurveys} 
-                            tintColor={colors.secondary} 
-                        />
-                    }
-                    ListEmptyComponent={
-                        <View style={{ marginTop: 50, alignItems: 'center' }}>
-                            <Text style={[stylesGlobal.texto, { opacity: 0.5 }]}>
-                                No tienes encuestas asignadas.
-                            </Text>
-                        </View>
-                    }
+                    value={survey.name}
+                    onChangeText={(text) => setSurvey({ ...survey, name: text })}
                 />
-            </View>
 
-            <MenuPrincipal visible={menuVisible} onClose={() => setMenuVisible(false)} />
+                {/* Lista de preguntas */}
+                {survey.questionList.map((_, idx) => (
+                    <QuestionCard
+                        key={idx}
+                        question={
+                            {
+                                ...survey.questionList[idx],
+                                typeName: survey.questionList[idx].config?.typeName || "SHORT_TEXT",
+                            } as any
+                        }
+                        index={idx}
+                        onUpdateQuestion={(text) => updateQuestionText(idx, text)}
+                        onRemoveQuestion={() => removeQuestion(idx)}
+                        onUpdateType={(type) => updateType(idx, type)}
+                        onAddOption={() => addOption(idx)}
+                        onUpdateOption={(text, oIdx) => updateOptionText(idx, oIdx, text)}
+                    />
+                ))}
+
+                {/* Botón añadir pregunta */}
+                <TouchableOpacity
+                    style={{
+                        backgroundColor: "transparent",
+                        borderWidth: 1.5,
+                        borderColor: colors.primary,
+                        borderRadius: 16,
+                        paddingVertical: 14,
+                        marginVertical: 16,
+                        alignItems: "center",
+                    }}
+                    onPress={addQuestion}
+                >
+                    <Text style={{ color: colors.primary, fontSize: 16, fontWeight: "bold" }}>
+                        + AÑADIR PREGUNTA
+                    </Text>
+                </TouchableOpacity>
+
+                {/* Botón publicar */}
+                <TouchableOpacity
+                    style={{
+                        backgroundColor: colors.cta,
+                        borderRadius: 16,
+                        paddingVertical: 16,
+                        alignItems: "center",
+                        marginTop: 8,
+                        marginBottom: 20,
+                        elevation: 4,
+                    }}
+                    onPress={handleSaveSurvey}
+                    disabled={loading}
+                >
+                    <Text style={{ color: "#1D2735", fontSize: 18, fontWeight: "bold" }}>
+                        {loading ? "PUBLICANDO..." : "PUBLICAR PROYECTO"}
+                    </Text>
+                </TouchableOpacity>
+
+                {/* Sidebar (configuraciones) */}
+                <View style={{ marginVertical: 8 }}>
+                    <SurveySidebar
+                        survey={survey}
+                        setSurvey={setSurvey}
+                        availableCategories={availableCategories}
+                        availableGeneres={availableGeneres}
+                    />
+                </View>
+            </ScrollView>
         </SafeAreaView>
     );
 };
 
-export default SurveyListScreen;
+export default SurveyCreatorScreen;
