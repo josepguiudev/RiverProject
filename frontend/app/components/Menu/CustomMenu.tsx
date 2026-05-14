@@ -84,8 +84,18 @@ export default function MenuLateral({ visible, onClose }: any) {
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.background} />
       </TouchableWithoutFeedback>
-      <Animated.View style={[styles.menuContainer, { width: MENU_WIDTH, transform: [{ translateX: slideAnim }] }]}>
-        {isWeb ? <MenuContent /> : <SafeAreaView style={{ flex: 1 }}><MenuContent /></SafeAreaView>}
+
+      <Animated.View style={[styles.menuContainer, { transform: [{ translateX: slideAnim }] }]}>
+        <Text style={styles.title}>{strings.name}</Text>
+        <View style={styles.linea} />
+        
+        {/* Aquí tus opciones de menú */}
+        <SteamMenuItem label={strings.adminScreen} onPress={() => navigation.navigate("Admin" as never)}/>
+        <SteamMenuItem label={strings.usersScreen} onPress={() => navigation.navigate("AdminUser" as never)}/>
+        <SteamMenuItem label={strings.usersGenreGames} onPress={() => navigation.navigate("AdminGenresGames" as never)}/>
+        <SteamMenuItem label={strings.perfil} />
+        <SteamMenuItem label={strings.configuracion} />
+        <SteamMenuItem label={strings.cerrarSesion} />
       </Animated.View>
     </View>
   );

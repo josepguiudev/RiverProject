@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -21,8 +22,10 @@ public class Genere {
     @Column(unique = true)
     private String description;
 
-    @ManyToMany(mappedBy = "genereList")
-    @JsonIgnore
+    //@ManyToMany(mappedBy = "genereList")
+    //@JsonIgnore
+    @ManyToMany(mappedBy = "genereList", fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("genereList") // Permite enviar los juegos ocultando solo el bucle inverso
     private List<Game> games = new ArrayList<>();
 
     @ManyToMany(mappedBy = "genereList")

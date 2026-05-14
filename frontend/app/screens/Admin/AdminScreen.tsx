@@ -17,6 +17,12 @@ export default function AdminScreen({ navigation }: any) {
     const [juegoDetalle, setJuegoDetalle] = useState<any>(null);
     const [estaCargando, setEstaCargando] = useState(false);
 
+    const [estaCargando, setEstaCargando] = useState(false);
+    const [estaCargando2, setEstaCargando2] = useState(false);
+    const [estaCargando3, setEstaCargando3] = useState(false);
+
+    const [steamIdBibliotecaActiva, setSteamIdBibliotecaActiva] = useState("");
+    
     // --- Función auxiliar para la URL base (web vs Android) ---
     const getBaseUrl = () => {
         if (isWeb) return strings.parte2Desktop;
@@ -54,6 +60,10 @@ export default function AdminScreen({ navigation }: any) {
 
     // --- Guardar biblioteca de juegos ---
     const guardarBiblio = async () => {
+        setEstaCargando2(true);
+        console.log("clic biblio")
+        if (!steamIdBibliotecaActiva || juegosEncontrados.length === 0) {
+            Alert.alert("Error", "No hay ninguna biblioteca cargada para guardar.");
         setEstaCargando(true);
         if (!juegosEncontrados.length || !usuariosEncontrados.length) {
             Alert.alert("Aviso", "Asegúrate de haber extraído el usuario y su biblioteca.");
@@ -66,12 +76,18 @@ export default function AdminScreen({ navigation }: any) {
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    steamid: steamIdBibliotecaActiva,      // <--- Enviamos el ID del dueño
+                    games: juegosEncontrados    // <--- El array de juegos de Steam
+                }),
                 body: JSON.stringify({ steamid: steamidOwner, games: juegosEncontrados }),
             });
             const mensaje = await response.text();
             Alert.alert(response.ok ? "Éxito" : "Error", mensaje);
         } catch (error: any) {
             Alert.alert("Error", error);
+        }finally {
+            setEstaCargando2(false);
         } finally {
             setEstaCargando(false);
         }
@@ -79,6 +95,9 @@ export default function AdminScreen({ navigation }: any) {
 
     // --- Guardar detalles de un juego ---
     const guardarJuego = async () => {
+        setEstaCargando3(true);
+        console.log("clic juego")
+            if (!juegoDetalle) {
         setEstaCargando(true);
         if (!juegoDetalle) {
             Alert.alert("Aviso", "Primero debes extraer los detalles de un juego.");
@@ -88,6 +107,11 @@ export default function AdminScreen({ navigation }: any) {
         try {
             const url = `${getBaseUrl()}api/generes/save-game-details`;
             const response = await fetch(url, {
+                method: 'POST', 
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(juegoDetalle), // Enviamos el JSON tal cual lo dio Steam
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(juegoDetalle),
@@ -101,6 +125,8 @@ export default function AdminScreen({ navigation }: any) {
         } catch (error) {
             console.error("Error al guardar juego:", error);
             Alert.alert("Error", "No se pudo conectar con el servidor.");
+        }finally {
+            setEstaCargando3(false);
         } finally {
             setEstaCargando(false);
         }
@@ -267,6 +293,17 @@ export default function AdminScreen({ navigation }: any) {
         );
     }
 
+            {/* --- COLUMNA 2: BIBLIOTECAS --- */}
+            <View style={{ flex: 1, marginHorizontal: 8, height: '100%' }}>
+                <CustomInputCard title='Extraer Bibliotecas' value={3} onResultFound={(responseObj: any) => {
+                    setJuegosEncontrados([]);
+                    const listaJuegos = responseObj?.games || [];
+                    setJuegosEncontrados([...listaJuegos]);
+
+                    if (responseObj?.steamid) {
+                        setSteamIdBibliotecaActiva(responseObj.steamid);
+                    }
+                }}/>
     // ============================================================
     //  VERSIÓN ANDROID (diseño táctil, scrollable, todas las features)
     // ============================================================
@@ -321,6 +358,37 @@ export default function AdminScreen({ navigation }: any) {
                         {user.personastate === 1 ? 'En línea' : 'Desconectado'}
                       </Text>
                     </View>
+                    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 10 }}>
+                        {juegosEncontrados.map((game: any, index: number) => (
+                            <View key={game.appid || index} style={{ flexDirection: 'row', alignItems: 'center', padding: 10, backgroundColor: '#1b2838', borderRadius: 8, marginBottom: 8, borderLeftWidth: 4, borderLeftColor: '#66c0f4' }}>
+                                <Image 
+                                    source={{ uri: `http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg` }} 
+                                    style={{ width: 32, height: 32, borderRadius: 4 }} 
+                                />
+                                <View style={{ marginLeft: 12, flex: 1 }}>
+                                    <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }} numberOfLines={1}>
+                                        {game.name}
+                                    </Text>
+                                    
+                                    {/* Añadimos el ID del juego aquí abajo */}
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
+                                        <Text style={{ color: '#888', fontSize: 10 }}>
+                                            ID: {game.appid}
+                                        </Text>
+                                        <Text style={{ color: '#66c0f4', fontSize: 10 }}>
+                                            {Math.floor(game.playtime_forever / 60)}h jugadas
+                                        </Text>
+                                    </View>
+                                </View>
+                            </View>
+                        ))}
+                    </ScrollView>
+                    <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#30363d', backgroundColor: '#0d1117' }}>
+                        {estaCargando2 ? (
+                            <ActivityIndicator color="gold" size="large" />
+                        ) : (
+                            <CustomButton title="Guardar biblioteca" onPress={guardarBiblio} isAdmin={true} />
+                        )}
                     <Text style={{ marginTop: 6, fontSize: 13, color: '#aaa' }}>ID: {user.steamid}</Text>
                   </View>
                 </View>
@@ -388,6 +456,29 @@ export default function AdminScreen({ navigation }: any) {
                           <Text style={{ fontSize: 12, color: '#66c0f4', fontWeight: 'bold' }}>{g.description}</Text>
                         </View>
                       ))}
+                    </View>
+                    <ScrollView style={{ flex: 1 }}>
+                        {juegoDetalle && Object.keys(juegoDetalle).map((key) => {
+                            const gameData = juegoDetalle[key].data;
+                            if (!gameData) return null;
+                            return (
+                                <View key={key} style={{ backgroundColor: '#171d25' }}>
+                                    <Image source={{ uri: gameData.header_image }} style={{ width: '100%', aspectRatio: 460 / 215, borderBottomWidth: 1 }} resizeMode="contain" />
+                                    <View style={{ padding: 20 }}>
+                                        <Text style={{ color: '#fff', fontWeight: '900', fontSize: 22 }}>{gameData.name}</Text>
+                                        <Text style={{ color: '#66c0f4', fontSize: 12, marginBottom: 15 }}>APP ID: {gameData.steam_appid}</Text>
+                                        <Text style={{ color: '#dcdedf', fontSize: 13, lineHeight: 20 }}>{gameData.short_description?.replace(/<[^>]*>?/gm, '')}</Text>
+                                    </View>
+                                </View>
+                            );
+                        })}
+                    </ScrollView>
+                    <View style={{ padding: 15, borderTopWidth: 1, borderTopColor: '#30363d', backgroundColor: '#0d1117' }}>
+                        {estaCargando3 ? (
+                            <ActivityIndicator color="gold" size="large" />
+                        ) : (
+                            <CustomButton title="Guardar juego en BD" onPress={guardarJuego} isAdmin={true} />
+                        )}
                     </View>
                   </View>
                   <Text style={{ fontSize: 13, color: '#aaa', marginBottom: 12 }}>Categorías: {gameData.categories?.map((c: any) => c.description).join(" • ")}</Text>
