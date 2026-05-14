@@ -142,4 +142,22 @@ public class SurveyAllUrlLogicController {
             return ResponseEntity.badRequest().body("Error al procesar métricas de votación: " + e.getMessage());
         }
     }
+
+    @GetMapping("/metrics/global-summary")
+    public ResponseEntity<?> getGlobalSurveyMetrics() {
+        try {
+            // Contamos directamente cuántas filas de la tabla intermedia están marcadas como respondidas (1)
+            long respondidas = userSurveysRepository.countByIsRespondida((byte) 1);
+            
+            // Contamos el total de plantillas de encuestas registradas en el sistema
+            long totales = formSurveyService.obtenerTodas().size();
+
+            return ResponseEntity.ok(Map.of(
+                "totalSurveys", totales,
+                "totalAnswered", respondidas
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al calcular métricas globales: " + e.getMessage());
+        }
+    }
 }

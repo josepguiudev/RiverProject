@@ -4,7 +4,7 @@ import { BarChart } from 'react-native-chart-kit';
 import strings from "../../../assets/supportFiles/strings.json";
 
 import MenuPrincipal from '@/app/components/Menu/CustomMenu';
-import CustomDropdown from '@/app/components/CustomDropDown/CustomDropDown'; // 🛠️ Importamos tu Dropdown
+import CustomDropdown from '@/app/components/CustomDropDown/CustomDropDown'; 
 import globalStyles from "@/assets/globalStyles/globalStyles";
 
 const screenWidth = Dimensions.get("window").width;
@@ -16,34 +16,48 @@ export default function AdminGraphics({ navigation }: any) {
     const [encuestasDisponibles, setEncuestasDisponibles] = useState<any[]>([]);
     const [idEncuestaSeleccionada, setIdEncuestaSeleccionada] = useState<number | null>(null);
     
+    // 🛠️ ESTADOS NUEVOS: Guardan los contadores numéricos globales
+    const [totalEncuestasSistema, setTotalEncuestasSistema] = useState(0);
+    const [totalRespondidasSistema, setTotalRespondidasSistema] = useState(0);
+
     const [chartData, setChartData] = useState<any>(null);
     const [totalVotos, setTotalVotos] = useState(0);
     const [menuVisible, setMenuVisible] = useState(false);
 
-    // 🛠️ 1. CARGA INICIAL: Extraemos todas las encuestas creadas en el sistema
+    // 1. CARGA INICIAL: Listado de encuestas + Contadores de participación globales
     useEffect(() => {
-        fetch(`${strings.parte2Desktop}api/surveys/all`)
-            .then(res => {
-                if (!res.ok) throw new Error("Error obteniendo el listado de encuestas");
-                return res.json();
-            })
-            .then((data: any[]) => {
-                if (Array.isArray(data)) {
-                    setEncuestasDisponibles(data);
-                    // Si existen encuestas, seleccionamos la primera por defecto
-                    if (data.length > 0) {
-                        setIdEncuestaSeleccionada(data[0].id);
+        const cargarDatosIniciales = async () => {
+            try {
+                // Petición A: Listado para el Dropdown
+                const resListado = await fetch(`${strings.parte2Desktop}api/surveys/all`);
+                const dataListado = await resListado.json();
+                
+                // Petición B: Métricas de las tarjetas numéricas
+                const resMetricas = await fetch(`${strings.parte2Desktop}api/surveys/metrics/global-summary`);
+                const dataMetricas = await resMetricas.json();
+
+                if (Array.isArray(dataListado)) {
+                    setEncuestasDisponibles(dataListado);
+                    if (dataListado.length > 0) {
+                        setIdEncuestaSeleccionada(dataListado[0].id);
                     }
                 }
+
+                // Guardamos los contadores numéricos devueltos por el backend
+                setTotalEncuestasSistema(dataMetricas.totalSurveys || 0);
+                setTotalRespondidasSistema(dataMetricas.totalAnswered || 0);
+
+            } catch (err) {
+                console.error("Error al cargar la configuración inicial de métricas:", err);
+            } finally {
                 setLoadingPantalla(false);
-            })
-            .catch(err => {
-                console.error("Error al cargar listado de encuestas:", err);
-                setLoadingPantalla(false);
-            });
+            }
+        };
+
+        cargarDatosIniciales();
     }, []);
 
-    // 🛠️ 2. CARGA REACTIVA: Se dispara cada vez que cambia 'idEncuestaSeleccionada'
+    // 2. CARGA REACTIVA: Se ejecuta al cambiar la selección en el desplegable
     useEffect(() => {
         if (idEncuestaSeleccionada == null) return;
 
@@ -70,7 +84,7 @@ export default function AdminGraphics({ navigation }: any) {
                 console.error("Fallo de red cargando gráfico dinámico:", err);
                 setLoadingGrafico(false);
             });
-    }, [idEncuestaSeleccionada]); // 👈 Escucha este estado de forma activa
+    }, [idEncuestaSeleccionada]);
 
     const chartConfig = {
         backgroundGradientFrom: "#1b2838",
@@ -83,7 +97,6 @@ export default function AdminGraphics({ navigation }: any) {
 
     if (loadingPantalla) return <ActivityIndicator size="large" color="gold" style={styles.loader} />;
 
-    // Mapeamos el listado al formato Option que exige tu CustomDropdown
     const opcionesDropdown = encuestasDisponibles.map(encuesta => ({
         id: encuesta.id,
         label: encuesta.name,
@@ -93,7 +106,7 @@ export default function AdminGraphics({ navigation }: any) {
     return (
         <View style={[globalStyles.padre, { flex: 1, backgroundColor: '#0d1117', padding: 15 }]}>
             {/* HEADER */}
-            <View style={[globalStyles.cajaMenu, globalStyles.borde, { height: 60, justifyContent: 'center', paddingHorizontal: 20 }]}>
+            <View style={[globalStyles.cajaMenu, { height: 60, justifyContent: 'center', paddingHorizontal: 20 }]}>
                 <TouchableOpacity onPress={() => setMenuVisible(true)}>
                     <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu}</Text>
                 </TouchableOpacity>
@@ -102,9 +115,22 @@ export default function AdminGraphics({ navigation }: any) {
             <ScrollView style={styles.contenedor}>
                 <Text style={styles.tituloHeader}>MÉTRICAS DE RESULTADOS</Text>
 
-                {/* 🛠️ SELECTOR DESPLEGABLE DINÁMICO */}
+                {/* 🛠️ SECCIÓN NUEVA: TARJETAS CON CONTADORES GLOBALES (KPI CARDS) */}
+                <View style={styles.filaTarjetas}>
+                    <View style={styles.tarjetaNumerica}>
+                        <Text style={styles.numeroKpi}>{totalEncuestasSistema}</Text>
+                        <Text style={styles.textoKpi}>Encuestas creadas</Text>
+                    </View>
+
+                    <View style={[styles.tarjetaNumerica, { borderLeftColor: 'gold' }]}>
+                        <Text style={[styles.numeroKpi, { color: 'gold' }]}>{totalRespondidasSistema}</Text>
+                        <Text style={styles.textoKpi}>Respondidas totales</Text>
+                    </View>
+                </View>
+
+                {/* SELECTOR DESPLEGABLE */}
                 <View style={styles.contenedorSelector}>
-                    <Text style={styles.labelSelector}>SELECCIONAR ENCUESTA</Text>
+                    <Text style={styles.labelSelector}>FILTRAR POR FORMULARIO</Text>
                     <CustomDropdown 
                         label="" 
                         options={opcionesDropdown} 
@@ -118,7 +144,7 @@ export default function AdminGraphics({ navigation }: any) {
                     chartData && (
                         <View style={styles.tarjetaGrafico}>
                             <Text style={styles.tituloTarjeta}>VOTOS DE LOS USUARIOS</Text>
-                            <Text style={styles.subtituloTarjeta}>Muestra total: {totalVotos} respuestas guardadas</Text>
+                            <Text style={styles.subtituloTarjeta}>Muestra específica: {totalVotos} votos de esta encuesta</Text>
                             
                             <BarChart
                                 data={chartData}
@@ -145,6 +171,13 @@ const styles = StyleSheet.create({
     contenedor: { flex: 1, backgroundColor: '#0d1117', padding: 15 },
     loader: { flex: 1, backgroundColor: '#000', justifyContent: 'center' },
     tituloHeader: { color: 'gold', fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', letterSpacing: 1 },
+    
+    // Estilos de las nuevas tarjetas KPI
+    filaTarjetas: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 12 },
+    tarjetaNumerica: { flex: 1, backgroundColor: '#1b2838', padding: 15, borderRadius: 10, borderWidth: 1, borderColor: '#2a475e', borderLeftWidth: 4, borderLeftColor: '#66c0f4', alignItems: 'center' },
+    numeroKpi: { color: '#66c0f4', fontSize: 26, fontWeight: '900', marginBottom: 2 },
+    textoKpi: { color: '#889fb2', fontSize: 11, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 0.5 },
+    
     contenedorSelector: { marginBottom: 20, backgroundColor: '#171d25', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#2a475e' },
     labelSelector: { color: '#66c0f4', fontSize: 10, fontWeight: '800', marginBottom: 6, letterSpacing: 1 },
     tarjetaGrafico: { backgroundColor: '#1b2838', borderRadius: 12, padding: 15, marginBottom: 20, borderWidth: 1, borderColor: '#2a475e' },
