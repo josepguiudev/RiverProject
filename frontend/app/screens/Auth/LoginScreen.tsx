@@ -14,6 +14,8 @@ import strings from "../../../assets/supportFiles/strings.json";
 // Usamos los estilos del register para que sean idénticos
 import styles, { colors } from "./styles"; 
 import { useLayout } from "@/app/utils/useLayout";
+import { useAuth } from "../Auth/AuthContext"; 
+import client from "../../api/client";
 import { useAuth } from "../Auth/AuthContext";
 
 export default function LoginScreen() {
@@ -32,7 +34,6 @@ export default function LoginScreen() {
         }
 
         setIsSubmitting(true);
-        const baseUrl = Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080';
         
         try {
             const response = await fetch(`${baseUrl}/api/auth2/login`, {
@@ -68,7 +69,8 @@ export default function LoginScreen() {
             }
         } catch (error) {
             console.error("Login Error:", error);
-            Alert.alert("Error de conexión", "Servidor no disponible");
+            const errorMsg = error.response?.data?.error || error.response?.data || "Error de conexión";
+            Alert.alert("Error de acceso", typeof errorMsg === 'string' ? errorMsg : "Credenciales incorrectas");
         } finally {
             setIsSubmitting(false);
         }

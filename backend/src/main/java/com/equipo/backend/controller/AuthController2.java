@@ -75,4 +75,24 @@ public class AuthController2 {
         return ResponseEntity.ok().body("{\"message\": \"Encuesta asignada con éxito\"}");
     }
 
+
+    /**
+     * Cambiar la contraseña de un usuario.
+     * Ruta: PUT /api/auth2/change-password
+     * 
+     * Body esperado: { "userId": 1, "currentPassword": "...", "newPassword": "..." }
+     */
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody java.util.Map<String, Object> body) {
+        try {
+            Long userId = Long.valueOf(body.get("userId").toString());
+            String currentPassword = (String) body.get("currentPassword");
+            String newPassword = (String) body.get("newPassword");
+
+            authService2.changePassword(userId, currentPassword, newPassword);
+            return ResponseEntity.ok(java.util.Map.of("message", "Contraseña actualizada correctamente"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }

@@ -15,18 +15,26 @@ interface AuthContextData {
   loading: boolean;
   login: (userData: any, token: string, role: string, step: number) => Promise<void>;
   logout: () => Promise<void>;
+  updateRegistrationStep: (step: number) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
+/**
+ * Proveedor de Autenticación.
+ * Gestiona el estado global del usuario, el token JWT y la persistencia en el almacenamiento local.
+ */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null); // 2. Estado para el token
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null); // Estado para el token JWT
+  const [loading, setLoading] = useState(true); // Estado para saber si estamos cargando los datos de storage
 
   useEffect(() => {
+    /**
+     * Carga los datos guardados en AsyncStorage al arrancar la aplicación.
+     * Esto permite que el usuario no tenga que loguearse cada vez que recarga.
+     */
     async function loadStorageData() {
-      // Cargamos tanto el usuario como el token al arrancar
       const [storageUser, storageToken] = await Promise.all([
         AsyncStorage.getItem('@River:user'),
         AsyncStorage.getItem('@River:token')
@@ -34,25 +42,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (storageUser && storageToken) {
         setUser(JSON.parse(storageUser));
-        setToken(storageToken); // 3. Seteamos el token en el estado
+        setToken(storageToken);
       }
       setLoading(false);
     }
     loadStorageData();
   }, []);
 
+  /**
+   * Inicia sesión y guarda los datos en el estado y en el almacenamiento persistente.
+   */
   const login = async (userData: any, token: string, role: string, step: number) => {
-    const completeUser: User = { ...userData, role, registrationStep: step };
+    const completeUser: User = { ...userData, role: role as any, registrationStep: step };
     
-    // 4. Guardamos en el estado
     setUser(completeUser);
     setToken(token);
 
-    // 5. Guardamos en el almacenamiento persistente
     await AsyncStorage.setItem('@River:user', JSON.stringify(completeUser));
     await AsyncStorage.setItem('@River:token', token);
   };
 
+  /**
+   * Actualiza el paso de registro actual (onboarding) tanto en el estado como en storage.
+   */
+  const updateRegistrationStep = async (step: number) => {
+    if (user) {
+      const updatedUser = { ...user, registrationStep: step };
+      setUser(updatedUser);
+      await AsyncStorage.setItem('@River:user', JSON.stringify(updatedUser));
+    }
+  };
+
+  /**
+   * Cierra la sesión limpiando el estado y eliminando los datos de storage.
+   */
   const logout = async () => {
     await AsyncStorage.removeItem('@River:user');
     await AsyncStorage.removeItem('@River:token');
@@ -61,8 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    // 6. Pasamos 'token' en el Provider
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, updateRegistrationStep }}>
       {children}
     </AuthContext.Provider>
   );

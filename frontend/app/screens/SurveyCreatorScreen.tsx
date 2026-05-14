@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import {
-	View,
+	ScrollView,
 	TextInput,
 	TouchableOpacity,
 	FlatList,
 	Text,
 	Alert,
 	ActivityIndicator,
+	View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Question, Survey, Category, Genere } from "../types/formsSurvey.types";
@@ -15,8 +16,8 @@ import { QuestionCard } from "../components/QuestionCard/QuestionCard";
 import { SurveySidebar } from "../components/QuestionCard/SurveySidebar";
 import styles, { colors } from "./stylesGlobal";
 import { useLayout } from "@/app/utils/useLayout";
-import { ResponsiveLayout } from "../components/ResponsiveLayout";
 import { useAuth } from "./Auth/AuthContext";
+import CustomButton from "../components/CustomButton/CustomButton";
 
 const SurveyCreatorScreen = ({ navigation }: any) => {
 	const { isDesktopView } = useLayout();
@@ -25,9 +26,7 @@ const SurveyCreatorScreen = ({ navigation }: any) => {
 	const [loading, setLoading] = useState(false);
 	const [loadingMetadata, setLoadingMetadata] = useState(true);
 
-	const [availableCategories, setAvailableCategories] = useState<Category[]>(
-		[],
-	);
+	const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
 	const [availableGeneres, setAvailableGeneres] = useState<Genere[]>([]);
 
 	const [survey, setSurvey] = useState<Survey>({
@@ -141,120 +140,101 @@ const SurveyCreatorScreen = ({ navigation }: any) => {
 		}
 	};
 
-	if (loadingMetadata)
-		return <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />;
+	if (loadingMetadata) {
+		return (
+			<View style={[styles.alineadoPersonal, { justifyContent: 'center' }]}>
+				<ActivityIndicator size="large" color={colors.primary} />
+				<Text style={{ color: '#fff', marginTop: 10 }}>Cargando configuración...</Text>
+			</View>
+		);
+	}
 
 	return (
-		<View style={styles.alineadoPersonal}>
-			<ResponsiveLayout fullWidth={true}>
-				<View style={{ padding: 20, width: "100%" }}>
-					{/* Títol Principal */}
-					<View style={{ marginBottom: 30 }}>
-						<Text style={styles.tituloHero}>
-							Nuevo{" "}
-							<Text style={styles.destaqueAzul}>Proyecto</Text>
-						</Text>
-					</View>
+		<ScrollView 
+			contentContainerStyle={[styles.scrollContainer, { paddingVertical: 40 }]}
+			style={{ backgroundColor: colors.background, flex: 1 }}
+		>
+			<View style={[styles.caja, { maxWidth: 800, width: '95%', alignSelf: 'center' }]}>
+				
+				{/* Botón Volver */}
+				<TouchableOpacity 
+					onPress={() => navigation.goBack()} 
+					style={{ alignSelf: 'flex-start', marginBottom: 20, flexDirection: 'row', alignItems: 'center' }}
+				>
+					<Ionicons name="arrow-back" size={20} color={colors.primary} />
+					<Text style={{ color: colors.primary, fontWeight: 'bold', marginLeft: 5 }}>VOLVER</Text>
+				</TouchableOpacity>
 
-					{/* Cos de la pantalla: 2 columnes en Desktop */}
-					<View
-						style={{
-							flexDirection: isDesktopView ? "row" : "column",
-							width: "100%",
-							gap: 30,
-						}}
-					>
-						{/* COLUMNA ESQUERRA (Preguntes) */}
-						<View style={{ flex: isDesktopView ? 2 : 1 }}>
-							<TextInput
-								placeholder="Título de la Encuesta..."
-								placeholderTextColor="#666"
-								style={styles.inputTitulo}
-								value={survey.name}
-								onChangeText={(text) =>
-									setSurvey({ ...survey, name: text })
+				{/* Títol Principal */}
+				<View style={{ marginBottom: 30, alignItems: 'center' }}>
+					<Text style={styles.tituloHero}>
+						Nuevo <Text style={styles.destaqueAzul}>Proyecto</Text>
+					</Text>
+				</View>
+
+				{/* Formulario */}
+				<View style={{ width: "100%" }}>
+					<TextInput
+						placeholder="Título de la Encuesta..."
+						placeholderTextColor="#666"
+						style={styles.inputTitulo}
+						value={survey.name}
+						onChangeText={(text) =>
+							setSurvey({ ...survey, name: text })
+						}
+					/>
+
+					<FlatList
+						data={survey.questionList}
+						keyExtractor={(_, index) => index.toString()}
+						scrollEnabled={false}
+						renderItem={({ item, index }) => (
+							<QuestionCard
+								question={
+									{
+										...item,
+										typeName: item.config?.typeName || "SHORT_TEXT",
+									} as any
 								}
+								index={index}
+								onUpdateQuestion={(text) => updateQuestionText(index, text)}
+								onRemoveQuestion={() => removeQuestion(index)}
+								onUpdateType={(type) => updateType(index, type)}
+								onAddOption={() => addOption(index)}
+								onUpdateOption={(text, oIndex) => updateOptionText(index, oIndex, text)}
 							/>
-
-							<FlatList
-								data={survey.questionList}
-								keyExtractor={(_, index) => index.toString()}
-								scrollEnabled={false}
-								renderItem={({ item, index }) => (
-									<QuestionCard
-										question={
-											{
-												...item,
-												typeName:
-													item.config?.typeName ||
-													"SHORT_TEXT",
-											} as any
-										}
-										index={index}
-										onUpdateQuestion={(text) =>
-											updateQuestionText(index, text)
-										}
-										onRemoveQuestion={() =>
-											removeQuestion(index)
-										}
-										onUpdateType={(type) =>
-											updateType(index, type)
-										}
-										onAddOption={() => addOption(index)}
-										onUpdateOption={(text, oIndex) =>
-											updateOptionText(
-												index,
-												oIndex,
-												text,
-											)
-										}
-									/>
-								)}
-								ListFooterComponent={
-									<TouchableOpacity
-										style={styles.btnSecondary}
-										onPress={addQuestion}
-									>
-										<Text
-											style={{
-												color: colors.text,
-												fontWeight: "bold",
-											}}
-										>
-											+ AÑADIR PREGUNTA
-										</Text>
-									</TouchableOpacity>
-								}
-							/>
-
+						)}
+						ListFooterComponent={
 							<TouchableOpacity
-								style={[styles.btnPrimary, { marginTop: 30 }]}
-								onPress={handleSaveSurvey}
+								style={styles.btnSecondary}
+								onPress={addQuestion}
 							>
-								<Text style={styles.btnPrimaryText}>
-									PUBLICAR PROYECTO
+								<Text style={{ color: colors.text, fontWeight: "bold" }}>
+									+ AÑADIR PREGUNTA
 								</Text>
 							</TouchableOpacity>
-						</View>
+						}
+					/>
 
-						{/* COLUMNA DRETA (Configuració/Sidebar) */}
-						<View
-							style={{
-								flex: 1,
-								minWidth: isDesktopView ? 300 : "100%",
-							}}
-						>
-							<SurveySidebar
-								survey={survey}
-								setSurvey={setSurvey}
-								availableCategories={availableCategories}
-								availableGeneres={availableGeneres}
-							/>
-						</View>
+					<View style={{ marginTop: 30 }}>
+						<SurveySidebar
+							survey={survey}
+							setSurvey={setSurvey}
+							availableCategories={availableCategories}
+							availableGeneres={availableGeneres}
+						/>
+					</View>
+					
+					<View style={{ alignItems: 'center', marginTop: 40 }}>
+						<CustomButton 
+							title="PUBLICAR PROYECTO" 
+							onPress={handleSaveSurvey} 
+							loading={loading}
+						/>
 					</View>
 				</View>
-			</ResponsiveLayout>
-		</View>
+			</View>
+		</ScrollView>
 	);
 };
 

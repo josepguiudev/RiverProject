@@ -14,6 +14,12 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
+    private final JwtAuthenticationFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -25,16 +31,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/auth2/**").permitAll()
-                .requestMatchers("/api/users/**").permitAll()
-                .requestMatchers("/api/queries/**").permitAll()
-                .requestMatchers("/api/surveys/**").permitAll() 
-                .requestMatchers(HttpMethod.POST, "/api/usersteam/**").permitAll()
-                .requestMatchers("/api/games/**").permitAll()
-                .requestMatchers("/api/generes/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/usersteam/**").permitAll()
-                .requestMatchers("/api/usersteam/**").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
-            );
+            )
+            .addFilterBefore(jwtAuthFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationToken.class);
 
         return http.build();
     }

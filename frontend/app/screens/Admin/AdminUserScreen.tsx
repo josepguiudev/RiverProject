@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, View, Text, Alert, ScrollView } from 'react-native';
+import { TouchableOpacity, View, Text, Alert, Scro                                      llView, Platform } from 'react-native';
 
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import styles from './styles';
 import MenuPrincipal from '@/app/components/Menu/CustomMenu';
-import strings from "../../../assets/supportFiles/strings.json";
+import strings from "@/assets/supportFiles/strings.json";
 import { FlatList, Image } from 'react-native';
 
 import { Modal, TextInput } from 'react-native';
@@ -228,10 +228,24 @@ export default function AdminUserScreen({ navigation }: any) {
     return (
 
         <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre, globalStyles.borde]}>
-            {/* 1. HEADER / BOTÓN MENU */}
-            <View style={[globalStyles.cajaMenu, globalStyles.alineadoPersonalVertical]}>
-                <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ padding: 20 }}>
-                    <Text style={{ color: 'white' }}>{strings.menu}</Text>
+            {/* BOTÓN MENU ESTANDARIZADO */}
+            <View style={{ 
+                position: 'absolute',
+                top: Platform.OS === 'ios' ? 50 : 20,
+                left: 20,
+                zIndex: 10,
+            }}>
+                <TouchableOpacity 
+                    onPress={() => setMenuVisible(true)} 
+                    style={{ 
+                        padding: 10, 
+                        backgroundColor: 'rgba(255,255,255,0.1)', 
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: 'rgba(255,255,255,0.1)'
+                    }}
+                >
+                    <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu || "MENÚ"}</Text>
                 </TouchableOpacity>
             </View>
 

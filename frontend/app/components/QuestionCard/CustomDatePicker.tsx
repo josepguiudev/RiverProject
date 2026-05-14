@@ -36,9 +36,10 @@ export const CustomDatePicker = ({ label, value, onChange }: Props) => {
                         borderRadius: "8px",
                         border: `1px solid ${isFocused ? "#007AFF" : "#333"}`, // Cambio de color dinámico
                         width: "100%",
+                        boxSizing: "border-box", 
                         outline: "none",
                         fontSize: "14px",
-                        transition: "border-color 0.2s ease-in-out", // Suavizado
+                        transition: "border-color 0.2s ease-in-out", 
                         fontFamily: "inherit"
                     }}
                 />

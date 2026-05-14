@@ -4,7 +4,7 @@ import { isWeb } from "@/app/utils/device";
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import styles from './styles';
 import MenuPrincipal from '@/app/components/Menu/CustomMenu';
-import strings from "../../../assets/supportFiles/strings.json";
+import strings from "@/assets/supportFiles/strings.json";
 import CustomInputCard from '@/app/components/CustomInputCard/CustomInputCard';
 import CustomButton from '@/app/components/CustomButton/CustomButton';
 import stylesGlobal, { colors } from "../../screens/stylesGlobal";

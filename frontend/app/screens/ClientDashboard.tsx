@@ -24,12 +24,16 @@ export default function ClientDashboard() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [assigningId, setAssigningId] = useState<number | null>(null);
+    const [menuVisible, setMenuVisible] = useState(false);
 
     // Definición de fuente neutral
     const neutralFont = Platform.OS === 'ios' ? 'System' : 'sans-serif';
 
     const fetchMySurveys = async () => {
-        if (!user?.id) return;
+        if (!user?.id) {
+            setLoading(false);
+            return;
+        }
         try {
             const data = await FormApiService.getSurveysByClient(user.id);
             setSurveys(data);

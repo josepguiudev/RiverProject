@@ -1,18 +1,28 @@
 import React, { useState } from "react";
 import { View, Text, Alert, Platform, ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
 import { useAuth } from "./Auth/AuthContext"; 
-import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
-import CustomButton from "@/app/components/CustomButton/CustomButton";
+import client from "../api/client";
+import CustomInputText from "../components/CustomInputText/CustomInputText";
+import CustomButton from "../components/CustomButton/CustomButton";
 import styles, { colors } from "./stylesGlobal";
 import Constants from 'expo-constants';
 
+/**
+ * Pantalla final de onboarding: Conexión con Steam.
+ * Permite al usuario vincular su Steam ID para que el sistema le asigne encuestas basadas en sus juegos.
+ */
 export default function ConnectSteamScreen({ navigation }: any) {
-    const { user, token } = useAuth(); 
+    // Extraemos los datos del usuario y la función para finalizar el onboarding
+    const { user, updateRegistrationStep } = useAuth(); 
     const [steamId, setSteamId] = useState("");
     const [loading, setLoading] = useState(false);
 
     const baseUrl = Platform.OS === "web" ? "http://localhost:8080" : "http://10.0.2.2:8080";
 
+    /**
+     * Envía el Steam ID al backend para finalizar el registro.
+     * Si la validación es correcta, marca el onboarding como completado.
+     */
     const handleFinalize = async () => {
         if (!steamId) {
             Alert.alert("Error", "Por favor, introduce tu Steam ID.");
@@ -57,8 +67,8 @@ export default function ConnectSteamScreen({ navigation }: any) {
 
     return (
         <ScrollView 
-            style={styles.alineadoPersonal} 
-            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}
+            style={[styles.alineadoPersonal, { flex: 1 }]} 
+            contentContainerStyle={[styles.scrollContainer, { justifyContent: 'center', padding: 20 }]}
         >
             <View style={styles.cajaDesktop}>
                 <Text style={styles.tituloHero}>
@@ -76,7 +86,7 @@ export default function ConnectSteamScreen({ navigation }: any) {
                     onChangeText={setSteamId} 
                 />
 
-                <View style={{ marginTop: 30, gap: 12 }}>
+                <View style={{ marginTop: 30, gap: 12, alignItems: 'center' }}>
                     {loading ? (
                         <ActivityIndicator size="large" color={colors.primary} />
                     ) : (
@@ -86,10 +96,13 @@ export default function ConnectSteamScreen({ navigation }: any) {
                             {/* BOTÓN DE TEST PARA DESARROLLO */}
                             <TouchableOpacity 
                                 style={[styles.btnSecondary, { borderStyle: 'solid', marginTop: 10 }]} 
-                                onPress={() => navigation.navigate("SurveyList")} 
+                                onPress={async () => {
+                                    await updateRegistrationStep(3);
+                                    // App.tsx hará el cambio automáticamente
+                                }} 
                             >
                                 <Text style={{ color: colors.text, fontWeight: 'bold' }}>
-                                    DEBUG: SALTAR A ENCUESTAS (TEST)
+                                    DEBUG: SALTAR A ENCUESTAS (PERSISTENTE)
                                 </Text>
                             </TouchableOpacity>
                         </>

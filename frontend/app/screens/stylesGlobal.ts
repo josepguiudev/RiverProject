@@ -33,6 +33,9 @@ export default StyleSheet.create({
         width: '100%',
         minHeight: Platform.OS === 'web' ? ('100vh' as any) : '100%',
     },
+    scrollContainer: {
+      flexGrow: 1,
+    },
     fullWidthContainer: {
         width: '100%',
         flex: 1,

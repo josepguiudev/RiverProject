@@ -1,5 +1,4 @@
 import axios, { AxiosError } from "axios";
-import { API_CONFIG } from "../../config/api.config";
 import {
 	Category,
 	EncuestaParcialDTO,
@@ -8,22 +7,20 @@ import {
 	Survey,
 	UserSurveyRel,
 } from "../../types/formsSurvey.types";
+import client from "../../api/client"; // Usamos el cliente centralizado con JWT
 
-const apiClient = axios.create({
-	baseURL: API_CONFIG.BASE_URL,
-	timeout: API_CONFIG.TIMEOUT,
-	headers: {
-		"Content-Type": "application/json",
-	},
-});
-
+/**
+ * Servicio para la gestión de formularios y encuestas.
+ * Utiliza el cliente Axios centralizado para incluir automáticamente el token JWT.
+ */
 export class FormApiService {
+  // Reemplazamos apiClient por client
 	/**
 	 * Obtener encuestas personalizadas para un usuario jugador
 	 */
 	static async getUserSurveys(userId: number): Promise<UserSurveyRel[]> {
 		try {
-			const response = await apiClient.get<UserSurveyRel[]>(
+			const response = await client.get<UserSurveyRel[]>(
 				`/api/surveys/user/${userId}`,
 			);
 			return response.data;
@@ -38,7 +35,7 @@ export class FormApiService {
 	 */
 	static async getSurveysByClient(clientId: number): Promise<Survey[]> {
 		try {
-			const response = await apiClient.get<Survey[]>(
+			const response = await client.get<Survey[]>(
 				`/api/surveys/my-surveys/${clientId}`,
 			);
 			return response.data;
@@ -78,7 +75,7 @@ export class FormApiService {
                 })),
             };
 
-            const response = await apiClient.post<Survey>(
+            const response = await client.post<Survey>(
                 "/api/surveys/submit",
                 payload,
                 {
@@ -95,7 +92,7 @@ export class FormApiService {
     static async getCategories(): Promise<Category[]> {
         try {
             // Añadimos /api al inicio de la ruta
-            const response = await apiClient.get('/api/surveys/categories'); 
+            const response = await client.get('/api/surveys/categories'); 
             return response.data;
         } catch (error) {
             throw this.handleError(error);
@@ -105,7 +102,7 @@ export class FormApiService {
     static async getGeneres(): Promise<Genere[]> {
         try {
             // Añadimos /api al inicio de la ruta
-            const response = await apiClient.get('/api/surveys/generes');
+            const response = await client.get('/api/surveys/generes');
             return response.data;
         } catch (error) {
             throw this.handleError(error);
@@ -120,7 +117,7 @@ export class FormApiService {
 		idUser: number,
 	): Promise<EncuestaParcialDTO> {
 		try {
-			const response = await apiClient.get<EncuestaParcialDTO>(
+			const response = await client.get<EncuestaParcialDTO>(
 				`/api/surveys/${idSurvey}/responses`,
 				{ params: { idUser: idUser } },
 			);
@@ -138,7 +135,7 @@ export class FormApiService {
 		isCompleted: boolean,
 	): Promise<any> {
 		try {
-			const response = await apiClient.post(
+			const response = await client.post(
 				`/api/surveys/responses/save?completada=${isCompleted}`,
 				data,
 			);
@@ -153,7 +150,7 @@ export class FormApiService {
 	 */
 	static async testConnection(): Promise<string> {
 		try {
-			const response = await apiClient.get<string>("/api/surveys/test");
+			const response = await client.get<string>("/api/surveys/test");
 			return response.data;
 		} catch (error) {
 			throw this.handleError(error);

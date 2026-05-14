@@ -214,6 +214,44 @@ public class AuthService2 {
         userSurveysRepository.saveAll(assignments);
     }
 
+   public boolean verifySteamIdExists(String steamId) {
+        try {
+            // Usamos las piezas de la DB para ser coherentes con el resto del service
+            String playerSummaryEndpoint = queriesRepository.findByType(1).stream()
+                    .filter(q -> q.getQuery().contains("GetPlayerSummaries"))
+                    .findFirst()
+                    .map(UserSteamQueries::getQuery)
+                    .orElse("ISteamUser/GetPlayerSummaries/v2/");
+
+            String url = steamBaseUrl + "/" + playerSummaryEndpoint + "?key=" + steamApiKey + "&steamids=" + steamId;
+            
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            Map<?, ?> responseBody = (Map<?, ?>) response.get("response");
+            List<?> players = (List<?>) responseBody.get("players");
+            return players != null && !players.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
+        
+    }
+
+    /**
+     * Cambia la contraseña de un usuario.
+     * Valida la contraseña actual antes de actualizar.
+     */
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar que la contraseña actual sea correcta
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("La contraseña actual es incorrecta");
+        }
+
+        // Codificar y guardar la nueva contraseña
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
    @Transactional
     public void assignSurveyToUsers(Long surveyId, Integer limit) {
         Survey survey = surveyRepository.findById(surveyId)

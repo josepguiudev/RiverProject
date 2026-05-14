@@ -37,6 +37,11 @@ export default function MenuLateral({ visible, onClose }: any) {
   const { user } = useAuth();  // ya tenemos cuentaBancaria si es cliente
   const slideAnim = useRef(new Animated.Value(-MENU_WIDTH)).current;
 
+  const navigateTo = (screen: string) => {
+    onClose();
+    navigation.navigate(screen);
+  };
+
   useEffect(() => {
     Animated.timing(slideAnim, {
       toValue: visible ? 0 : -MENU_WIDTH,
