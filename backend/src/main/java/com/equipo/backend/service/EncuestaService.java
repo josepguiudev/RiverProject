@@ -1,6 +1,7 @@
 package com.equipo.backend.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.equipo.backend.dto.EncuestaParcialDTO;
 import com.equipo.backend.dto.EncuestaRespuestaDTO;
@@ -20,5 +21,7 @@ public interface EncuestaService {
     EncuestaParcialDTO cargarRespuestas(Long idEncuesta, Long idUser);
     
     List<SurveySummaryDTO> obtenerResumenEncuestasPorUsuario(Long idUser);
+
+    List<Map<String, Object>> obtenerEstadisticasVotos(Long idSurvey);
 
 }

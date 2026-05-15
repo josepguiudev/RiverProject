@@ -8,6 +8,8 @@ import globalStyles from "@/assets/globalStyles/globalStyles";
 export default function AdminGenresGames({ navigation }: any) {  
     const [menuVisible, setMenuVisible] = useState(false);
     const [generos, setGeneros] = useState<any[]>([]);
+
+    const [metaComunidad, setMetaComunidad] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -45,7 +47,7 @@ export default function AdminGenresGames({ navigation }: any) {
     return (
         <View style={[globalStyles.padre, { flex: 1, backgroundColor: '#0d1117', padding: 15 }]}>
             {/* 1. HEADER */}
-            <View style={[globalStyles.cajaMenu, globalStyles.borde, { height: 60, justifyContent: 'center', paddingHorizontal: 20 }]}>
+            <View style={[globalStyles.cajaMenu, { height: 60, justifyContent: 'center', paddingHorizontal: 20 }]}>
                 <TouchableOpacity onPress={() => setMenuVisible(true)}>
                     <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu}</Text>
                 </TouchableOpacity>
