@@ -9,13 +9,21 @@ import io.jsonwebtoken.security.Keys;
 
 import java.util.Date;
 
+/**
+ * Servicio para la gestión de tokens JWT (JSON Web Tokens).
+ * Se encarga de la generación y validación de tokens tanto para usuarios como para clientes.
+ */
 @Service
 public class JwtService {
-    //TODO -> este tipo de variables han de ir a un archivo interno, un ejemplo seria en el .env
+    // Clave secreta para firmar los tokens.
+    // TODO -> este tipo de variables han de ir a un archivo interno, un ejemplo sería en el .env
     private final String SECRET = "Pepe_Moha_Hugo_Joako_Clave_HEXADECIMAL!2026";
 
-    //Creacion del TOKEN del usuario
-    // Método para Usuarios (Jugadores)
+    /**
+     * Genera un token JWT para un Usuario (Jugador).
+     * @param user La entidad del usuario.
+     * @return El token JWT generado.
+     */
     public String generateToken(User user) {
         String token = Jwts.builder()
                 .setSubject(user.getEmail())
@@ -29,14 +37,18 @@ public class JwtService {
         return token;
     }
 
-    // Método para Clientes (Empresas) - ESTE ES EL QUE TE FALTA
+    /**
+     * Genera un token JWT para un Cliente (Empresa).
+     * @param client La entidad del cliente.
+     * @return El token JWT generado.
+     */
     public String generateTokenForClient(Client client) {
         String token = Jwts.builder()
                 .setSubject(client.getEmail())
-                .claim("role", client.getId()) // ID del cliente
-                .claim("type", "CLIENT")      // Extra para identificar que es empresa
+                .claim("role", client.getId()) 
+                .claim("type", "CLIENT")      
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 horas
                 .signWith(Keys.hmacShaKeyFor(SECRET.getBytes()))
                 .compact();
 
@@ -44,4 +56,34 @@ public class JwtService {
         return token;
     }
 
+    /**
+     * Extrae el email (subject) de un token JWT.
+     * @param token El token JWT.
+     * @return El email del usuario.
+     */
+    public String extractUsername(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(SECRET.getBytes()))
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    /**
+     * Valida si un token es correcto y no ha expirado.
+     * @param token El token JWT.
+     * @return true si es válido, false en caso contrario.
+     */
+    public boolean isTokenValid(String token) {
+        try {
+            Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(SECRET.getBytes()))
+                .build()
+                .parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

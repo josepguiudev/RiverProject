@@ -38,7 +38,7 @@ public class User {
     private String password;
     private String urlImgUsuario;
     private Byte banned;
-    private Byte id_rol;
+    private Byte id_rol = 0;
     private Integer registrationStep; // 1: Básico, 2: Perfil, 3: Steam, 4: Completado
     @Column(name = "is_active")
     private Boolean isActive = false; //

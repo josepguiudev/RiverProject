@@ -78,7 +78,7 @@ public class AuthService2 {
                 user.setEmail(request.getEmail());
                 user.setPassword(passwordEncoder.encode(request.getPassword()));
                 user.setName(request.getName());
-                user.setId_rol((byte) 1);
+                user.setId_rol((byte) 0);
                 user.setRegistrationStep(1);
                 user.setCreacionCuentaUsuario(new Date());
                 
@@ -241,4 +241,36 @@ public class AuthService2 {
         userSurveysRepository.saveAll(newAssignments);
     }
 
+    public LoginResponse getCurrentUser(String token) {
+        String email = jwtService.extractUsername(token);
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return new LoginResponse(token, user, "USER", user.getRegistrationStep());
+        }
+
+        Optional<Client> clientOpt = clientRepository.findByEmail(email);
+        if (clientOpt.isPresent()) {
+            Client client = clientOpt.get();
+            return new LoginResponse(token, client, "CLIENT", 3); // 3 o el paso que definas
+        }
+
+        throw new RuntimeException("Usuario no encontrado con el token proporcionado");
+    }
+
+
+        public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar que la contraseña actual sea correcta
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("La contraseña actual es incorrecta");
+        }
+
+        // Codificar y guardar la nueva contraseña
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 }
