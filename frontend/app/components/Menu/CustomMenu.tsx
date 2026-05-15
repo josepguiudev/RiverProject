@@ -48,13 +48,18 @@ export default function MenuLateral({ visible, onClose }: any) {
 
   if (!visible) return null;
 
-  // MISMA LÓGICA QUE EN LoginScreen
+  // LÓGICA CORREGIDA: Valida cuentaBancaria o Rol, y asegura un fallback seguro si da un string vacío
   const goToDashboard = () => {
-    const isClient = user?.hasOwnProperty('cuentaBancaria');
-    if (isClient) {
+    const isClient = user?.hasOwnProperty('cuentaBancaria') || user?.role === 'CLIENT';
+    const isAdmin = user?.role === 'ADMIN';
+
+    if (isAdmin) {
+      navigation.navigate("Admin" as never);
+    } else if (isClient) {
       navigation.navigate("ClientDashboard" as never);
     } else {
-      navigation.navigate("SurveyList" as never);
+      // Si no es admin ni cliente, va a tu lista de encuestas base
+      navigation.navigate("ClientDashboard" as never); 
     }
     onClose();
   };
@@ -90,8 +95,9 @@ export default function MenuLateral({ visible, onClose }: any) {
         <View style={styles.linea} />
         
         {/* Aquí tus opciones de menú */}
-        <SteamMenuItem label={strings.home} onPress={() => navigation.navigate("SurveyList" as never)}/>
-        <SteamMenuItem label={strings.cerarEncuesta} onPress={() => navigation.navigate("CrearEncuesta" as never)}/>
+        <SteamMenuItem label={strings.home} onPress={goToDashboard}/>
+        <SteamMenuItem label={strings.cerarEncuesta} onPress={goToDashboard}/>
+        
         <SteamMenuItem label={strings.adminScreen} onPress={() => navigation.navigate("Admin" as never)}/>
         <SteamMenuItem label={strings.usersScreen} onPress={() => navigation.navigate("AdminUser" as never)}/>
         <SteamMenuItem label={strings.usersGenreGames} onPress={() => navigation.navigate("AdminGenresGames" as never)}/>

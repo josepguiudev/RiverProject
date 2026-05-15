@@ -3,10 +3,10 @@ import { StyleSheet, Platform, Dimensions } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Colores unificados (combinación de todas tus definiciones)
+// Colores unificados y corregidos
 export const colors = {
-    // Paleta principal
-    background: '#0e0d0df1',
+    // MODIFICADO: Negro puro para fondo
+    background: '#000000', 
     cardBg: '#161616',
     primary: '#5b55c0',
     secondary: '#3b82f6',
@@ -16,13 +16,13 @@ export const colors = {
     white: '#ffffff',
     darkCard: '#161616',
     borderDark: '#1A1A1A',
-    // Colores adicionales (para web, login, etc.)
     surface: '#161616',
     text: '#ffffff',
     textSecondary: '#a0a0a0',
     border: '#2a2a2a',
     blue: '#4a90e2',
-    danger: '#ff4d4d'
+    danger: '#ff4d4d',
+    dashboardBtn: '#3b82f6' 
 };
 
 export default StyleSheet.create({
@@ -31,7 +31,17 @@ export default StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background,
         width: '100%',
-        minHeight: Platform.OS === 'web' ? ('100vh' as any) : '100%',
+        ...Platform.select({
+            web: {
+                // Usamos 'as any' para que TypeScript no se queje de la unidad CSS web
+                minHeight: '100vh' as any,
+                display: 'flex' as any,
+                flexDirection: 'column' as any,
+            },
+            default: {
+                minHeight: '100%',
+            }
+        })
     },
     fullWidthContainer: {
         width: '100%',
@@ -55,7 +65,8 @@ export default StyleSheet.create({
         borderColor: colors.border,
         ...Platform.select({
             ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
-            android: { elevation: 4 }
+            android: { elevation: 4 },
+            web: { marginTop: '5%' }
         })
     },
     cajaDesktop: {
@@ -147,10 +158,11 @@ export default StyleSheet.create({
     // ========== BOTONES ==========
     btnPrimary: {
         backgroundColor: colors.cta,
-        width: '90%',
+        width: '100%', // Ajustado para ocupar la caja
         paddingVertical: 16,
         borderRadius: 15,
         alignItems: 'center',
+        marginBottom: 12,
     },
     btnPrimaryText: {
         color: '#1D2735',
@@ -158,13 +170,52 @@ export default StyleSheet.create({
         fontWeight: '800',
     },
     btnSecondary: {
-        width: '90%',
+        width: '100%',
         paddingVertical: 15,
         borderRadius: 15,
         alignItems: 'center',
         borderWidth: 1.5,
         borderColor: colors.textMain,
         backgroundColor: 'transparent',
+    },
+    // AGREGADO: Botón Dashboard integrado en el set de estilos
+    btnDashboard: {
+        backgroundColor: colors.dashboardBtn,
+        width: '100%',
+        paddingVertical: 16,
+        borderRadius: 15,
+        alignItems: 'center',
+        marginTop: 10,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        ...Platform.select({
+            web: { cursor: 'pointer' }
+        })
+    },
+    btnDashboardText: {
+        color: colors.white,
+        fontSize: 16,
+        fontWeight: '800',
+    },
+    botonGrande: {
+        backgroundColor: colors.primary,
+        paddingVertical: 20,
+        paddingHorizontal: 40,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: isWeb ? 'auto' : '90%',
+        minWidth: 200,
+        marginVertical: 10,
+        ...Platform.select({
+            web: { cursor: 'pointer', transition: 'transform 0.2s' },
+            android: { elevation: 6 }
+        })
+    },
+    textoBotonGrande: {
+        color: colors.white,
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 
     // ========== ENCUESTAS (compartido web/Android) ==========

@@ -35,6 +35,7 @@ export interface Survey {
   SurveyReward?: number;
   idPagoPanelista?: number;
   completada?: boolean;
+  status: boolean;
   supersetID?:string;
 }
 

@@ -1,7 +1,7 @@
 import { StyleSheet, Platform } from 'react-native';
 
 export const colors = {
-    background: '#0e0d0df1',
+    background: '#000000', // CORREGIDO: Negro absoluto (antes #0e0d0df1)
     cardBg: '#161616',
     inputBg: '#1A1A1A',
     primary: '#5b55c0',
@@ -10,6 +10,7 @@ export const colors = {
     white: '#ffffff',
     textSecondary: '#888888',
     border: '#333333',
+    dashboardBtn: '#3b82f6' // Color para el nuevo botón
 };
 
 export default StyleSheet.create({
@@ -19,7 +20,7 @@ export default StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        paddingVertical: 40, // Evita que se pegue arriba/abajo en web
+        paddingVertical: 40,
         ...Platform.select({
             web: { minHeight: '100vh' as any },
             default: { minHeight: '100%' as any }
@@ -39,7 +40,7 @@ export default StyleSheet.create({
         maxWidth: 950, 
         padding: 40,
         ...Platform.select({
-            web: { boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }
+            web: { boxShadow: '0 20px 40px rgba(0,0,0,0.4)' as any }
         })
     },
     contendorLogoTitulos: {
@@ -79,7 +80,7 @@ export default StyleSheet.create({
         padding: 4,
         marginBottom: 30,
         width: '100%',
-        maxWidth: 500, // No queremos el selector gigante en PC
+        maxWidth: 500, 
     },
     selectorBtn: {
         flex: 1,
@@ -126,10 +127,46 @@ export default StyleSheet.create({
     },
     row: { 
         flexDirection: 'row',
-         alignItems: 'center' 
+        alignItems: 'center' 
     },
     margen2: { 
         marginTop: 20 
     },
 
+    // AGREGADO: Estilo para el botón Dashboard que faltaba
+    btnDashboard: {
+        backgroundColor: colors.dashboardBtn,
+        width: '100%',
+        paddingVertical: 16,
+        borderRadius: 15,
+        alignItems: 'center',
+        marginTop: 15,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        ...Platform.select({
+            web: { cursor: 'pointer' as any }
+        })
+    },
+    btnDashboardText: {
+        color: colors.white,
+        fontSize: 16,
+        fontWeight: '800',
+    },
+    
+    // AGREGADO: Estilo 'botonGrande' para evitar errores de TypeScript en otras pantallas
+    botonGrande: {
+        backgroundColor: colors.primary,
+        paddingVertical: 20,
+        paddingHorizontal: 40,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        marginVertical: 10,
+    },
+    textoBotonGrande: {
+        color: colors.white,
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
 });

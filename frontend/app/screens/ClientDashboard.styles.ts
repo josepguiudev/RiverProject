@@ -58,5 +58,6 @@ export const dashboardStyles = StyleSheet.create({
     buttonContainer: {
         minWidth: 200,
         alignItems: Platform.OS === 'web' ? 'flex-end' : 'center',
-    }
+    },
+
 });
