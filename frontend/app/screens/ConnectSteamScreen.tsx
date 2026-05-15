@@ -31,35 +31,22 @@ export default function ConnectSteamScreen({ navigation }: any) {
 
         setLoading(true);
         try {
-            // Buscamos la clave en el objeto 'extra' que definiste en app.config.js
-            const apiKey = Constants.expoConfig?.extra?.STEAM_API_KEY;
-
-            if (!apiKey) {
-                console.error("No se encontró STEAM_API_KEY en app.config.js");
-            }
-
-            const url = `${baseUrl}/api/auth2/complete-profile-steam/${user?.id}?steamId=${steamId}&steamApiKey=${apiKey}`;
+            const url = `/api/auth2/complete-profile-steam/${user?.id}?steamId=${steamId}`;
 
             console.log("Enviando a:", url);
 
-            const response = await fetch(url, {
-                method: "PUT",
-                headers: { 
-                    "Authorization": `Bearer ${token}`, 
-                    "Content-Type": "application/json" 
-                }
-            });
+            const response = await client.put(url);
 
-            if (response.ok) {
+            if (response.status === 200) {
                 Alert.alert("¡Configuración Completa!", "Perfil vinculado correctamente.");
-                navigation.replace("SurveyList"); 
+                await updateRegistrationStep(3);
             } else {
-                const errorMsg = await response.text();
-                Alert.alert("Error", errorMsg || "No se pudo validar el Steam ID.");
+                Alert.alert("Error", "No se pudo validar el Steam ID.");
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error en conexión:", error);
-            Alert.alert("Error", "Error de conexión con el servidor.");
+            const errorMsg = error.response?.data || "Error de conexión con el servidor.";
+            Alert.alert("Error", typeof errorMsg === 'string' ? errorMsg : "No se pudo validar el Steam ID.");
         } finally {
             setLoading(false);
         }

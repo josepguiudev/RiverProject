@@ -34,7 +34,7 @@ const SteamMenuItem = ({ label, icon, onPress }: any) => {
 
 export default function MenuLateral({ visible, onClose }: any) {
   const navigation = useNavigation();
-  const { user } = useAuth();  // ya tenemos cuentaBancaria si es cliente
+  const { user, logout } = useAuth();  // ya tenemos cuentaBancaria si es cliente
   const slideAnim = useRef(new Animated.Value(-MENU_WIDTH)).current;
 
   const navigateTo = (screen: string) => {
@@ -80,7 +80,7 @@ export default function MenuLateral({ visible, onClose }: any) {
       
       <View style={{ flex: 1 }} />
       <View style={styles.linea} />
-      <SteamMenuItem icon="log-out-outline" label={strings.cerrarSesion} onPress={() => { /* lógica cerrar sesión */ onClose(); }}/>
+      <SteamMenuItem icon="log-out-outline" label={strings.cerrarSesion} onPress={async () => { await logout(); onClose(); }}/>
     </>
   );
 

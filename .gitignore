@@ -68,3 +68,5 @@ ios/build/
 .env
 *storybook.log
 storybook-static
+
+*.class
