@@ -306,7 +306,7 @@ return (
                                         )}
                                     </TouchableOpacity>
                                     <TouchableOpacity 
-                                        onPress={() => item.supersetID ? navigation.navigate("SurveyAnalytics", { supersetID: item.supersetID, title: item.name }) : Alert.alert("Aviso", "Sin dashboard")}
+                                        onPress={() => item.supersetID ? navigation.navigate("AdminGraphics", { supersetID: item.supersetID, title: item.name }) : Alert.alert("Aviso", "Sin dashboard")}
                                         style={{ flex: 1, backgroundColor: 'rgba(91,85,192,0.1)', paddingVertical: 14, borderRadius: 14, alignItems: 'center', borderWidth: 1, borderColor: colors.primary }}
                                     >
                                         <Text style={{ color: colors.primary, fontWeight: '700', fontFamily: neutralFont }}>ANÁLISIS</Text>
