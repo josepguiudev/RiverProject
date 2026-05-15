@@ -1,6 +1,7 @@
 package com.equipo.backend.repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,5 +26,11 @@ public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
     void deleteByUserIdAndOption_Question_Survey_Id(Long userId, Long surveyId);
     
     List<Respuesta> findByOption_Question_Survey_IdAndUserId(Long surveyId, Long userId);
+
+    @Query("SELECT r.option.textOpcion as opcion, COUNT(r.id) as votos " +
+           "FROM Respuesta r " +
+           "WHERE r.option.question.survey.id = :idSurvey " +
+           "GROUP BY r.option.id, r.option.textOpcion")
+    List<Map<String, Object>> countVotosBySurveyId(@Param("idSurvey") Long idSurvey);
 }
 

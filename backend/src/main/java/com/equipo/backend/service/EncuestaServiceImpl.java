@@ -2,6 +2,7 @@ package com.equipo.backend.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -198,6 +199,12 @@ public class EncuestaServiceImpl implements EncuestaService {
                 )
             ))
             .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> obtenerEstadisticasVotos(Long idSurvey) {
+        return respuestaRepository.countVotosBySurveyId(idSurvey);
     }
 
    @Override

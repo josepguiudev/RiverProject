@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.equipo.backend.model.Genere;
 import com.equipo.backend.service.GenereService;
+import com.equipo.backend.repository.GenereRepository;
 
 import reactor.core.publisher.Mono;
 
@@ -63,6 +64,31 @@ public class GenereController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(null);
+        }
+    }
+    
+    @Autowired
+    private GenereRepository genereRepository; 
+
+    @GetMapping("/all2")
+    public ResponseEntity<?> getAllGeneres2() {
+        try {
+            // 1. Obtenemos el árbol de géneros y juegos normal
+            List<Genere> list = genereService.findAll();
+            
+            // 2. Ejecutamos la función de agregación SQL nativa que cuenta y agrupa avatars
+            List<Map<String, Object>> metadata = genereRepository.countAndAvatarsPerGenere();
+            
+            // 3. Empaquetamos todo de forma segura para evitar alterar la seguridad
+            Map<String, Object> responseMap = Map.of(
+                "generes", list,
+                "metadata", metadata
+            );
+            
+            return ResponseEntity.ok(responseMap);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error al recuperar géneros y comunidad: " + e.getMessage());
         }
     }
 }

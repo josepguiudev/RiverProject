@@ -132,6 +132,15 @@ export default function AdminScreen({ navigation }: any) {
         }
     };
 
+    return (
+    <View style={[globalStyles.padre, { flex: 1, backgroundColor: '#000' }]}>
+        
+        {/* 1. HEADER */}
+        <View style={[globalStyles.cajaMenu, { height: 60, justifyContent: 'center', paddingHorizontal: 20 }]}>
+            <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu}</Text>
+            </TouchableOpacity>
+        </View>
     // ============================================================
     //  VERSIÓN WEB (diseño mejorado de tu compañero)
     // ============================================================
