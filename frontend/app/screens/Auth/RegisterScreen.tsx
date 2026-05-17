@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Image, Animated, Platform, ScrollView, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Animated,
+  Platform,
+  ScrollView,
+  Alert,
+} from "react-native";
 import TypeWriter from "react-native-typewriter";
 import styles from "./styles";
 import CustomButton from "@/app/components/CustomButton/CustomButton";
@@ -13,8 +22,8 @@ export default function RegisterScreen({ navigation, route }: any) {
   const cursorOpacity = React.useRef(new Animated.Value(1)).current;
 
   // --- ESTADOS SIMPLIFICADOS (Solo Paso 1) ---
-  const initialType = route?.params?.type || "USER";
-  const [type, setType] = useState<"USER" | "CLIENT">(initialType);
+  const initialType = route?.params?.type || "PLAYER";
+  const [type, setType] = useState<"PLAYER" | "CLIENT">(initialType);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repassword, setRepassword] = useState("");
@@ -26,9 +35,17 @@ export default function RegisterScreen({ navigation, route }: any) {
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(cursorOpacity, { toValue: 0, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
-        Animated.timing(cursorOpacity, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
-      ])
+        Animated.timing(cursorOpacity, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: Platform.OS !== "web",
+        }),
+        Animated.timing(cursorOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: Platform.OS !== "web",
+        }),
+      ]),
     ).start();
   }, []);
 
@@ -48,54 +65,101 @@ export default function RegisterScreen({ navigation, route }: any) {
       email: email.trim(),
       password,
       name,
-      ...(type === "CLIENT" && { cuentaBancaria })
+      ...(type === "CLIENT" && { cuentaBancaria }),
     };
 
     try {
       const res = await client.post("/api/auth2/register", bodyData);
 
-      Alert.alert("¡Éxito!", "Cuenta creada. Ahora inicia sesión para completar tu perfil.");
+      Alert.alert(
+        "¡Éxito!",
+        "Cuenta creada. Ahora inicia sesión para completar tu perfil.",
+      );
       navigation.navigate("Login");
-
     } catch (error: any) {
-      const errorMsg = error.response?.data || "No se pudo conectar con el servidor";
-      Alert.alert("Error", typeof errorMsg === 'string' ? errorMsg : "Error en el registro");
+      const errorMsg =
+        error.response?.data || "No se pudo conectar con el servidor";
+      Alert.alert(
+        "Error",
+        typeof errorMsg === "string" ? errorMsg : "Error en el registro",
+      );
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#000000' }}>
+    <ScrollView
+      contentContainerStyle={{ flexGrow: 1, backgroundColor: "#000000" }}
+    >
       <View style={styles.alineadoPersonal}>
-
         <View style={styles.contendorLogoTitulos}>
-          <Image source={require('../../../assets/images/logo.png')} style={styles.logo} />
+          <Image
+            source={require("../../../assets/images/logo.png")}
+            style={styles.logo}
+          />
           <View style={styles.contenedorWritter}>
-            <Text style={[styles.tituloHero, isDesktopView && styles.tituloHeroDesktop]}>
-              {strings.nameMayus} <TypeWriter typing={1} style={styles.destaqueAzul}>{strings.appMayus}</TypeWriter>
+            <Text
+              style={[
+                styles.tituloHero,
+                isDesktopView && styles.tituloHeroDesktop,
+              ]}
+            >
+              {strings.nameMayus}{" "}
+              <TypeWriter typing={1} style={styles.destaqueAzul}>
+                {strings.appMayus}
+              </TypeWriter>
             </Text>
           </View>
         </View>
 
         <View style={[styles.caja, isDesktopView && { width: 500 }]}>
-          <Text style={[styles.mainText, { marginBottom: 20 }]}>Crear Cuenta</Text>
+          <Text style={[styles.mainText, { marginBottom: 20 }]}>
+            Crear Cuenta
+          </Text>
 
           {/* SELECTOR TIPO */}
           <View style={styles.selectorContainer}>
             <TouchableOpacity
-              onPress={() => setType("USER")}
-              style={[styles.selectorBtn, type === "USER" && styles.selectorBtnActive]}>
-              <Text style={[styles.selectorText, type === "USER" && styles.selectorTextActive]}>Soy Jugador</Text>
+              onPress={() => setType("PLAYER")}
+              style={[
+                styles.selectorBtn,
+                type === "PLAYER" && styles.selectorBtnActive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.selectorText,
+                  type === "PLAYER" && styles.selectorTextActive,
+                ]}
+              >
+                Soy Jugador
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setType("CLIENT")}
-              style={[styles.selectorBtn, type === "CLIENT" && styles.selectorBtnActive]}>
-              <Text style={[styles.selectorText, type === "CLIENT" && styles.selectorTextActive]}>Soy Empresa</Text>
+              style={[
+                styles.selectorBtn,
+                type === "CLIENT" && styles.selectorBtnActive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.selectorText,
+                  type === "CLIENT" && styles.selectorTextActive,
+                ]}
+              >
+                Soy Empresa
+              </Text>
             </TouchableOpacity>
           </View>
 
           {/* FORMULARIO PASO 1 */}
           <View style={styles.formStack}>
-            <CustomInputText label="Email" placeholder="ejemplo@correo.com" onChangeText={setEmail} value={email} />
+            <CustomInputText
+              label="Email"
+              placeholder="ejemplo@correo.com"
+              onChangeText={setEmail}
+              value={email}
+            />
 
             <CustomInputText
               label={type === "USER" ? "Nombre" : "Nombre de la Empresa"}
@@ -105,19 +169,42 @@ export default function RegisterScreen({ navigation, route }: any) {
             />
 
             {type === "CLIENT" && (
-              <CustomInputText label="Cuenta Bancaria (IBAN)" placeholder="ES00 0000..." onChangeText={setCuentaBancaria} value={cuentaBancaria} />
+              <CustomInputText
+                label="Cuenta Bancaria (IBAN)"
+                placeholder="ES00 0000..."
+                onChangeText={setCuentaBancaria}
+                value={cuentaBancaria}
+              />
             )}
 
-            <CustomInputText label="Contraseña" placeholder="****" secureTextEntry onChangeText={setPassword} value={password} />
-            <CustomInputText label="Confirmar Contraseña" placeholder="****" secureTextEntry onChangeText={setRepassword} value={repassword} />
+            <CustomInputText
+              label="Contraseña"
+              placeholder="****"
+              secureTextEntry
+              onChangeText={setPassword}
+              value={password}
+            />
+            <CustomInputText
+              label="Confirmar Contraseña"
+              placeholder="****"
+              secureTextEntry
+              onChangeText={setRepassword}
+              value={repassword}
+            />
           </View>
 
-          <View style={{ width: '100%', marginTop: 25, alignItems: "center" }}>
+          <View style={{ width: "100%", marginTop: 25, alignItems: "center" }}>
             <CustomButton title="CREAR CUENTA" onPress={handleRegister} />
           </View>
 
-          <TouchableOpacity onPress={() => navigation.navigate("Login")} style={{ marginTop: 20, alignItems: 'center' }}>
-            <Text style={styles.texto}>¿Ya tienes cuenta? <Text style={styles.blueText}>Inicia sesión</Text></Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Login")}
+            style={{ marginTop: 20, alignItems: "center" }}
+          >
+            <Text style={styles.texto}>
+              ¿Ya tienes cuenta?{" "}
+              <Text style={styles.blueText}>Inicia sesión</Text>
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

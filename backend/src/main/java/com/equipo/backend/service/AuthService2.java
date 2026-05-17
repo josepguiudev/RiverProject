@@ -148,15 +148,23 @@ public class AuthService2 {
     @Transactional
     public User completeSteamRegistration(Long userId, String steamId) {
         
-        // 1. Buscamos el ENDPOINT en la base de datos (Type 1: GetPlayerSummaries)
-        String playerSummaryEndpoint = queriesRepository.findByType(1).stream()
-                .filter(q -> q.getQuery().contains("GetPlayerSummaries"))
-                .findFirst()
-                .map(UserSteamQueries::getQuery)
-                .orElse("ISteamUser/GetPlayerSummaries/v2/"); // Fallback de seguridad
+    // Sacamos la base (Type 0)
+    String baseDesdeDb = queriesRepository.findByType(0).stream()
+            .filter(q -> q.getQuery().contains("ISteamUser"))
+            .findFirst()
+            .map(UserSteamQueries::getQuery)
+            .orElse(steamBaseUrl + "/ISteamUser/");
 
-        // 2. Construimos la URL completa
-        String finalUrl = steamBaseUrl + "/" + playerSummaryEndpoint + "?key=" + steamApiKey + "&steamids=" + steamId;
+    // Sacamos el endpoint (Type 1)
+    String playerSummaryEndpoint = queriesRepository.findByType(1).stream()
+            .filter(q -> q.getQuery().contains("GetPlayerSummaries"))
+            .findFirst()
+            .map(UserSteamQueries::getQuery)
+            .orElse("GetPlayerSummaries/v2/");
+
+    // Sumamos las dos piezas de la DB
+    String finalUrl = baseDesdeDb + playerSummaryEndpoint + "?key=" + steamApiKey + "&steamids=" + steamId;
+
 
         try {
             // 3. Validamos contra Steam

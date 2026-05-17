@@ -3,7 +3,10 @@ import { View, Text, Alert, Platform, ScrollView, TouchableOpacity } from "react
 import { useAuth } from "./Auth/AuthContext";
 import client from "../api/client";
 import { CustomDatePicker } from "../components/QuestionCard/CustomDatePicker";
-// ... (resto de imports)
+import styles, { colors } from "./stylesGlobal";
+import CustomButton from "../components/CustomButton/CustomButton";
+import CustomInputText from "../components/CustomInputText/CustomInputText";
+
 
 /**
  * Pantalla de completar perfil (Paso 2 del onboarding).

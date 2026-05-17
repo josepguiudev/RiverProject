@@ -64,8 +64,22 @@ export default function ProfileScreen({ navigation, route }: any) {
     const { data: profileData, isLoading: loading } = useQuery({
         queryKey: ['profile', steamId, user?.id],
         queryFn: async () => {
-            // Si es PLAYER → hacer todas las llamadas Steam, juegos, encuestas...
-            if (user?.role === 'PLAYER') {
+            if (user?.role === "CLIENT") {
+                let clientData = null;
+                if (user?.id) {
+                    try {
+                        const res = await apiFetch(`/api/clients/${user.id}`);
+                        if (res.ok) clientData = await res.json();
+                    } catch (e) {}
+                }
+        return {
+          steamProfile: null,
+          topGames: [],
+          surveys: [],
+          genres: [],
+          userDb: clientData,
+        };
+      }
             try {
                 // 1. Fetch user data from DB first to get correct steamId
                 let userDbData = null;
@@ -84,14 +98,14 @@ export default function ProfileScreen({ navigation, route }: any) {
 
                 // 2. Synchronize library if steamId and apiKey are present
                 if (cleanSteamId && apiKey) {
-                    await fetch(`${BASE_URL}/api/games/sync-library?steamid=${cleanSteamId}&apiKey=${apiKey}`).catch(() => { });
+                    await apiFetch(`/api/games/sync-library?steamid=${cleanSteamId}&apiKey=${apiKey}`).catch(() => { });
                 }
 
                 // 3. Load Profile
                 let profileJson = MOCK_PROFILE;
                 if (cleanSteamId) {
                     try {
-                        const profileRes = await fetch(`${BASE_URL}/api/usersteam/by-bd-steamid/${cleanSteamId}`);
+                        const profileRes = await apiFetch(`/api/usersteam/by-bd-steamid/${cleanSteamId}`);
                         if (profileRes.ok) {
                             profileJson = await profileRes.json();
                         } else {
@@ -104,7 +118,7 @@ export default function ProfileScreen({ navigation, route }: any) {
                 let gamesJson = MOCK_GAMES;
                 if (cleanSteamId) {
                     try {
-                        const gamesRes = await fetch(`${BASE_URL}/api/games/top3/${cleanSteamId}`);
+                        const gamesRes = await apiFetch(`/api/games/top3/${cleanSteamId}`);
                         if (gamesRes.ok) gamesJson = await gamesRes.json();
                     } catch (e) { console.log("Fallo conexión juegos"); }
                 }
@@ -114,8 +128,8 @@ export default function ProfileScreen({ navigation, route }: any) {
                 const userId = user?.id;
                 if (userId && !isNaN(Number(userId))) {
                     try {
-                        const surveysRes = await axios.get(`${BASE_URL}/api/surveys/user/${userId}`);
-                        surveysData = surveysRes.data;
+                        const surveysRes = await apiFetch(`/api/surveys/user/${userId}`);
+                        if (surveysRes.ok) surveysData = await surveysRes.json();
                     } catch (e) { console.log("Fallo conexión encuestas"); }
                 } else {
                     console.log("Usando encuestas mock porque el userId es inválido:", userId);
@@ -125,7 +139,7 @@ export default function ProfileScreen({ navigation, route }: any) {
                 let genresData: { name: string; percentage: number }[] = [];
                 if (cleanSteamId) {
                     try {
-                        const genresRes = await fetch(`${BASE_URL}/api/games/top-genres/${cleanSteamId}`);
+                        const genresRes = await apiFetch(`/api/games/top-genres/${cleanSteamId}`);
                         if (genresRes.ok) genresData = await genresRes.json();
                     } catch (e) { }
                 }
@@ -147,7 +161,6 @@ export default function ProfileScreen({ navigation, route }: any) {
                 };
             }
         }
-    }
     });
 
     // Aquí he definido esto para que los componentes reciban las props que se guardan 
@@ -165,11 +178,24 @@ export default function ProfileScreen({ navigation, route }: any) {
     const handleSettingsSave = async (payload: SavePayload) => {
         const { userData, passwordChange } = payload;
 
-        // 1. Actualizar datos del usuario
+        // 1. Actualizar datos del usuario según rol (CLIENT o PLAYER)
         // Ruta real: PUT /api/users/{id}
-        if (user?.id) {
-            const updateRes = await apiFetch(`/api/users/${user.id}`, {
-                method: 'PUT',
+            if (user?.id) {
+            if (user.role === "CLIENT") {
+                const updateRes = await apiFetch(`/api/clients/${user.id}`, {
+                method: "PUT",
+                body: JSON.stringify({
+                    nombre: userData.name,
+                    email: userData.email,
+                }),
+                });
+                if (!updateRes.ok) {
+                const errData = await updateRes.json().catch(() => ({}));
+                throw new Error(errData.error || "Error al actualizar cliente.");
+                }
+            } else {
+                const updateRes = await apiFetch(`/api/users/${user.id}`, {
+                method: "PUT",
                 body: JSON.stringify({
                     name: userData.name,
                     apellido1: userData.apellido1,
@@ -177,18 +203,17 @@ export default function ProfileScreen({ navigation, route }: any) {
                     email: userData.email,
                     edad: userData.edad ? parseInt(userData.edad) : null,
                     localizacion: userData.localizacion,
-                    urlIdStream: userData.steamId, // El campo en el modelo User es urlIdStream
+                    urlIdStream: userData.steamId,
                 }),
-            });
-
-            if (!updateRes.ok) {
+                });
+                if (!updateRes.ok) {
                 const errData = await updateRes.json().catch(() => ({}));
-                throw new Error(errData.error || 'Error al actualizar los datos del usuario.');
+                throw new Error(errData.error || "Error al actualizar los datos del usuario.");
+                }
             }
-        }
+            }
 
-        // 2. Cambiar contraseña (solo si el usuario rellenó los campos)
-        // Ruta real: PUT /api/auth2/change-password
+        // 2. Cambiar contraseña (común para ambos roles)
         if (passwordChange && user?.id) {
             const pwRes = await apiFetch('/api/auth2/change-password', {
                 method: 'PUT',
@@ -204,23 +229,7 @@ export default function ProfileScreen({ navigation, route }: any) {
                 throw new Error(errData.error || 'Error al cambiar la contraseña.');
             }
         }
-
-        if (user?.role === 'CLIENT') {
-        let clientData = null;
-        try {
-            const res = await apiFetch(`/api/clients/${user.id}`);
-            if (res.ok) clientData = await res.json();
-        } catch (e) {}
-        
-        return {
-            steamProfile: null,
-            topGames: [],
-            surveys: [],
-            genres: [],
-            userDb: clientData,
-        };
-    }
-}
+    };
 
     return (
         <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre, { backgroundColor: '#1a1919' }]}>
@@ -312,7 +321,12 @@ export default function ProfileScreen({ navigation, route }: any) {
                         <View style={{ alignItems: 'center', marginTop: 50 }}>
                             <View style={[globalStyles.caja, { padding: 40, width: '100%', maxWidth: 500 }]}>
                                 <Text style={[styles.tabTextActive, { fontSize: 24, marginBottom: 10 }]}>
-                                    {[userDb?.name || user?.name, userDb?.apellido1, userDb?.apellido2].filter(Boolean).join(' ') || "Usuario"}
+                                  {user?.role === "CLIENT"
+                                    ? (userDb?.nombre || user?.name || "Usuario")
+                                    : ([userDb?.name || user?.name, userDb?.apellido1, userDb?.apellido2]
+                                        .filter(Boolean)
+                                        .join(" ") || "Usuario")
+                                  }
                                 </Text>
                                 <Text style={{ color: '#888', fontSize: 16, marginBottom: 20 }}>
                                     Rol: <Text style={{ color: '#5b55c0', fontWeight: 'bold' }}>{user?.role}</Text>
@@ -335,17 +349,23 @@ export default function ProfileScreen({ navigation, route }: any) {
                 ]}>
                     <SettingsTab
                         isMobile={isMobileView}
-                        initialData={{
-                            // Primero intenta con los datos reales de la BD (GET /api/users/{id})
-                            // Fallback: usa lo que tenga del AuthContext o del perfil Steam
-                            name: userDb?.name || user?.name || steamProfile?.personaName || steamProfile?.personaName || '',
-                            apellido1: userDb?.apellido1 || '',
-                            apellido2: userDb?.apellido2 || '',
-                            email: userDb?.email || user?.email || '',
-                            edad: userDb?.edad ? String(userDb.edad) : '',
-                            localizacion: userDb?.localizacion || '',
+                        initialData={user?.role === "CLIENT" ? {
+                            name: userDb?.nombre || user?.name || "",
+                            apellido1: "",
+                            apellido2: "",
+                            email: userDb?.email || user?.email || "",
+                            edad: "",
+                            localizacion: "",
+                            steamId: "",
+                            } : {
+                            name: userDb?.name || user?.name || steamProfile?.personaName || "",
+                            apellido1: userDb?.apellido1 || "",
+                            apellido2: userDb?.apellido2 || "",
+                            email: userDb?.email || user?.email || "",
+                            edad: userDb?.edad ? String(userDb.edad) : "",
+                            localizacion: userDb?.localizacion || "",
                             steamId: userDb?.urlIdStream || steamId,
-                        }}
+                            }}
                         userRole={user?.role}
                         onSave={handleSettingsSave}
                     />
