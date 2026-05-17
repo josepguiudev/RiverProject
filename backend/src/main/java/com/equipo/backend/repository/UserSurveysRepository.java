@@ -27,4 +27,6 @@ public interface UserSurveysRepository extends JpaRepository<UserSurveys, Long> 
 
     @Query("SELECT us FROM UserSurveys us WHERE us.user.id = :userId AND us.survey.id = :surveyId")
     Optional<UserSurveys> findByUserIdAndSurveyId(@Param("userId") Long userId, @Param("surveyId") Long surveyId);
+
+    long countByIsRespondida(byte isRespondida);
 }

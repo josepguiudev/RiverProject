@@ -57,10 +57,37 @@ public class GenereService {
                     });
                 fullGenreList.add(genre);
             }
+
+
+
         }
 
         // 4. Actualizar relación N:M (JPA inserta en 'game_generes')
-        game.setGenereList(fullGenreList);
+        //game.setGenereList(fullGenreList);
+
+        if (game.getGenereList() == null) {
+            game.setGenereList(new ArrayList<>());
+        }
+
+        for (Genere genre : fullGenreList) {
+            // LADO A: Añadimos el género al juego si no estaba asociado previamente
+            if (!game.getGenereList().contains(genre)) {
+                game.getGenereList().add(genre);
+            }
+
+            // LADO B (CRUCIAL): Sincronizamos la lista inversa de juegos dentro del género en memoria
+            if (genre.getGames() == null) {
+                genre.setGames(new ArrayList<>());
+            }
+            if (!genre.getGames().contains(game)) {
+                genre.getGames().add(game);
+            }
+        }
+        
         gameRepository.save(game);
+    }
+
+    public List<Genere> findAll() {
+        return genereRepository.findAll();
     }
 }
