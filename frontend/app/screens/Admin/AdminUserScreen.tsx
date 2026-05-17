@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, View, Text, Alert, Scro                                      llView, Platform } from 'react-native';
+import { TouchableOpacity, View, Text, Alert, ScrollView, Platform } from 'react-native';
 
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import styles from './styles';

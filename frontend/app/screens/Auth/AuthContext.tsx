@@ -5,7 +5,7 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: 'USER' | 'CLIENT';
+  role: 'PLAYER' | 'CLIENT' | 'ADMIN';
   registrationStep?: number; // 1, 2 o 3
 }
 

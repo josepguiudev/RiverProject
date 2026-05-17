@@ -69,8 +69,8 @@ export default function MenuLateral({ visible, onClose }: any) {
         {/* FILTRADO POR ROL */}
         {user?.role === "PLAYER" && (
           <>
-            <SteamMenuItem label={strings.inicio} onPress={() => navigateTo("Home")} />
-            <SteamMenuItem label="Mis Encuestas" onPress={() => navigateTo("SurveyList")} />
+            {/* <SteamMenuItem label={strings.inicio} onPress={() => navigateTo("Home")} /> */}
+            <SteamMenuItem label="Inicio" onPress={() => navigateTo("SurveyList")} />
           </>
         )}
 

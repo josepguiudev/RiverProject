@@ -114,7 +114,7 @@ export default function LoginScreen() {
                         </View>
 
                         {/* Footer de Registro */}
-                        <View style={[styles.row, { marginTop: 25, justifyContent: 'center' }]}>
+                        <View style={[styles.row, { marginTop: 25, justifyContent: 'center', alignItems: 'center' }]}>
                             <Text style={styles.texto}>¿No tienes cuenta? </Text>
                             <TouchableOpacity onPress={() => navigation.navigate("Register")}>
                                 <Text style={[styles.texto, styles.blueText, { fontWeight: 'bold' }]}>

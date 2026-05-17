@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class LoginResponse {
     private String token;
     private Object user;
-    private String role;           // "USER" o "CLIENT"
+    private String role;           // "PLAYER" o "CLIENT"
     private Integer registrationStep; // 1, 2, 3 o null para clientes
 }
 

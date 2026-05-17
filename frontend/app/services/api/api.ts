@@ -6,7 +6,7 @@ export async function apiFetch(
   endpoint: string,
   options: RequestInit = {}
 ) {
-  const token = await AsyncStorage.getItem("token");
+  const token = await AsyncStorage.getItem("@River:token");
 
   const headers = {
     "Content-Type": "application/json",

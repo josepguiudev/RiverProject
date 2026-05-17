@@ -1,7 +1,7 @@
 import { StyleSheet, Platform } from 'react-native';
 
 export const colors = {
-    background: '#0e0d0df1',
+    background: '#000000',
     cardBg: '#161616',
     inputBg: '#1A1A1A',
     primary: '#5b55c0',
@@ -34,7 +34,7 @@ export default StyleSheet.create({
         borderColor: 'rgba(255,255,255,0.05)',
     },
     cajaDesktop: {
-        width: '70%',
+        width: '100%',
         maxWidth: 950, 
         padding: 40,
         ...Platform.select({

@@ -64,6 +64,8 @@ export default function ProfileScreen({ navigation, route }: any) {
     const { data: profileData, isLoading: loading } = useQuery({
         queryKey: ['profile', steamId, user?.id],
         queryFn: async () => {
+            // Si es PLAYER → hacer todas las llamadas Steam, juegos, encuestas...
+            if (user?.role === 'PLAYER') {
             try {
                 // 1. Fetch user data from DB first to get correct steamId
                 let userDbData = null;
@@ -145,6 +147,7 @@ export default function ProfileScreen({ navigation, route }: any) {
                 };
             }
         }
+    }
     });
 
     // Aquí he definido esto para que los componentes reciban las props que se guardan 
@@ -201,10 +204,26 @@ export default function ProfileScreen({ navigation, route }: any) {
                 throw new Error(errData.error || 'Error al cambiar la contraseña.');
             }
         }
-    };
+
+        if (user?.role === 'CLIENT') {
+        let clientData = null;
+        try {
+            const res = await apiFetch(`/api/clients/${user.id}`);
+            if (res.ok) clientData = await res.json();
+        } catch (e) {}
+        
+        return {
+            steamProfile: null,
+            topGames: [],
+            surveys: [],
+            genres: [],
+            userDb: clientData,
+        };
+    }
+}
 
     return (
-        <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre]}>
+        <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre, { backgroundColor: '#1a1919' }]}>
 
             {/* BOTÓN MENU ESTANDARIZADO */}
             <View style={{ 
@@ -293,7 +312,7 @@ export default function ProfileScreen({ navigation, route }: any) {
                         <View style={{ alignItems: 'center', marginTop: 50 }}>
                             <View style={[globalStyles.caja, { padding: 40, width: '100%', maxWidth: 500 }]}>
                                 <Text style={[styles.tabTextActive, { fontSize: 24, marginBottom: 10 }]}>
-                                    {userDb?.name || user?.name || "Usuario"}
+                                    {[userDb?.name || user?.name, userDb?.apellido1, userDb?.apellido2].filter(Boolean).join(' ') || "Usuario"}
                                 </Text>
                                 <Text style={{ color: '#888', fontSize: 16, marginBottom: 20 }}>
                                     Rol: <Text style={{ color: '#5b55c0', fontWeight: 'bold' }}>{user?.role}</Text>
@@ -346,10 +365,12 @@ const styles = StyleSheet.create({
     // ── Tab bar ──
     tabBar: {
         flexDirection: 'row',
-        backgroundColor: '#0a0a18',
+        backgroundColor: '#17171b',
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a2e',
         paddingHorizontal: 16,
+        paddingVertical: 10,
+        paddingLeft: 110,
     },
     tab: {
         paddingVertical: 14,
