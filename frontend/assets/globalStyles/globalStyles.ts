@@ -45,5 +45,11 @@ export default StyleSheet.create({
     filas: {
         flexDirection: 'row',
         justifyContent: 'space-between'
+    },
+    subtituloWritter: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#5b55c0', // Color lila para coincidir con el tema
+        textAlign: 'center',
     }
 });

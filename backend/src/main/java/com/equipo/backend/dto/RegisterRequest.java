@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class RegisterRequest {
-    // Discriminador: "USER" o "CLIENT"
+    // Discriminador: "PLAYER" o "CLIENT"
     private String type;
 
     // Campos Comunes
@@ -12,7 +12,7 @@ public class RegisterRequest {
     private String password;
     private String name; // Para Cliente es 'nombre', para User es 'name'
 
-    // Campos específicos de USER (Jugador)
+    // Campos específicos de PLAYER (Jugador)
     private String apellido1;
     private String apellido2;
     private Integer edad;
@@ -41,7 +41,7 @@ public class RegisterRequest {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    // --- GETTERS Y SETTERS DE USUARIO (USER) ---
+    // --- GETTERS Y SETTERS DE USUARIO (PLAYER) ---
 
     public String getApellido1() { return apellido1; }
     public void setApellido1(String apellido1) { this.apellido1 = apellido1; }

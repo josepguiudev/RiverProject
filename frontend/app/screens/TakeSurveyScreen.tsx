@@ -7,6 +7,7 @@ import { FormApiService } from "../services/api/service";
 import { EncuestaParcialDTO, EncuestaRespuestaDTO } from "../types/formsSurvey.types";
 import { useAuth } from "../screens/Auth/AuthContext";
 import { useLayout } from '@/app/utils/useLayout';
+import stylesGlobal, { colors } from "./stylesGlobal";
 
 const TakeSurveyScreen = ({ route, navigation }: any) => {
     const { surveyId } = route.params;
@@ -118,16 +119,16 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
     };
 
     if (authLoading || loading) return (
-        <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#5b55c0" />
+        <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+            <ActivityIndicator size="large" color={colors.primary} />
         </View>
     );
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: "#000" }}>
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
             <ScrollView 
-                style={styles.mainScroll}
-                contentContainerStyle={[styles.scrollContent, isDesktopView && styles.scrollContentDesktop]}
+                style={{ flex: 1 }}
+                contentContainerStyle={[stylesGlobal.scrollContainer, { padding: 20, paddingBottom: 150 }, isDesktopView && { alignSelf: 'center', width: '100%', maxWidth: 900 }]}
             >
                 <TouchableOpacity style={styles.backButtonTop} onPress={() => navigation.navigate("SurveyList")}>
                     <Text style={styles.backButtonText}>← Volver al listado</Text>
@@ -209,7 +210,7 @@ const TakeSurveyScreen = ({ route, navigation }: any) => {
                     </View>
                 </View>
             )}
-        </KeyboardAvoidingView>
+        </View>
     );
 };
 

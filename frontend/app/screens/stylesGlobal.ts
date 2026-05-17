@@ -43,6 +43,9 @@ export default StyleSheet.create({
             }
         })
     },
+    scrollContainer: {
+      flexGrow: 1,
+    },
     fullWidthContainer: {
         width: '100%',
         flex: 1,

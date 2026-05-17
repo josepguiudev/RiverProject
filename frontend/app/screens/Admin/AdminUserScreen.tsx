@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, View, Text, Alert, ScrollView } from 'react-native';
+import { TouchableOpacity, View, Text, Alert, ScrollView, Platform } from 'react-native';
 
 import globalStyles from "@/assets/globalStyles/globalStyles";
 import styles from './styles';
 import MenuPrincipal from '@/app/components/Menu/CustomMenu';
-import strings from "../../../assets/supportFiles/strings.json";
+import strings from "@/assets/supportFiles/strings.json";
 import { FlatList, Image } from 'react-native';
 
 import { Modal, TextInput } from 'react-native';

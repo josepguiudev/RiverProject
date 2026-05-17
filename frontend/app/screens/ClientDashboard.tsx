@@ -23,6 +23,7 @@ export default function ClientDashboard() {
     const [surveys, setSurveys] = useState<Survey[]>([]);
     const [loading, setLoading] = useState(true);
     const [assigningId, setAssigningId] = useState<number | null>(null);
+    const [menuVisible, setMenuVisible] = useState(false);
 
     const isAdmin = user?.role === 'ADMIN';
     const neutralFont = Platform.OS === 'ios' ? 'System' : 'sans-serif';

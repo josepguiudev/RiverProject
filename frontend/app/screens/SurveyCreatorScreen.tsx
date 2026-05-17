@@ -15,8 +15,8 @@ import { QuestionCard } from "../components/QuestionCard/QuestionCard";
 import { SurveySidebar } from "../components/QuestionCard/SurveySidebar";
 import styles, { colors } from "./stylesGlobal";
 import { useLayout } from "@/app/utils/useLayout";
-import { ResponsiveLayout } from "../components/ResponsiveLayout";
 import { useAuth } from "./Auth/AuthContext";
+import CustomButton from "../components/CustomButton/CustomButton";
 
 const SurveyCreatorScreen = ({ navigation, route }: any) => {
     const { isDesktopView } = useLayout();

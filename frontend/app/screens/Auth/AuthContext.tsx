@@ -22,12 +22,20 @@ interface AuthContextData {
 
 export const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
+/**
+ * Proveedor de Autenticación.
+ * Gestiona el estado global del usuario, el token JWT y la persistencia en el almacenamiento local.
+ */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    /**
+     * Carga los datos guardados en AsyncStorage al arrancar la aplicación.
+     * Esto permite que el usuario no tenga que loguearse cada vez que recarga.
+     */
     async function loadStorageData() {
       try {
         const storageToken = await AsyncStorage.getItem('@River:token');
@@ -67,6 +75,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadStorageData();
   }, []);
 
+  /**
+   * Inicia sesión y guarda los datos en el estado y en el almacenamiento persistente.
+   */
   const login = async (userData: any, token: string, role: string, step: number) => {
     const finalRole = (userData.id_rol === 1) ? 'ADMIN' : role;
     const completeUser: User = { ...userData, role: finalRole as any, registrationStep: step };

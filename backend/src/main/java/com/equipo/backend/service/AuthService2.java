@@ -73,7 +73,7 @@ public class AuthService2 {
 
         // 2. Switch por tipo para crear la entidad
         return switch (request.getType().toUpperCase()) {
-            case "USER" -> {
+            case "PLAYER" -> {
                 User user = new User();
                 user.setEmail(request.getEmail());
                 user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -83,7 +83,7 @@ public class AuthService2 {
                 user.setCreacionCuentaUsuario(new Date());
                 
                 userRepository.save(user);
-                yield new LoginResponse(jwtService.generateToken(user), user, "USER", 1);
+                yield new LoginResponse(jwtService.generateToken(user), user, "PLAYER", 1);
             }
             case "CLIENT" -> {
                 Client client = new Client();
@@ -104,16 +104,16 @@ public class AuthService2 {
         Optional<Client> clientOpt = clientRepository.findByEmail(request.getEmail());
 
         String role = "NONE";
-        if (userOpt.isPresent()) role = "USER";
+        if (userOpt.isPresent()) role = "PLAYER";
         else if (clientOpt.isPresent()) role = "CLIENT";
 
         switch (role) {
-            case "USER":
+            case "PLAYER":
                 User user = userOpt.get();
                 if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                     throw new RuntimeException("Credenciales incorrectas");
                 }
-                return new LoginResponse(jwtService.generateToken(user), user, "USER", user.getRegistrationStep());
+                return new LoginResponse(jwtService.generateToken(user), user, "PLAYER", user.getRegistrationStep());
 
             case "CLIENT":
                 Client client = clientOpt.get();

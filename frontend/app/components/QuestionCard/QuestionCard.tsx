@@ -93,7 +93,7 @@ export const QuestionCard = ({
 };
 
 const styles = StyleSheet.create({
-  card: { padding: 20, backgroundColor: '#1a1a1a', marginBottom: 20, borderRadius: 15 },
+  card: { padding: 20, backgroundColor: '#1a1a2e', marginBottom: 20, borderRadius: 12, borderWidth: 1, borderColor: '#263238' },
   header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
   label: { fontWeight: 'bold', color: '#64B5F6' },
   remove: { color: '#F44336', fontSize: 12 },

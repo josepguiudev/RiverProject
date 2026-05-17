@@ -36,7 +36,7 @@ export default StyleSheet.create({
         borderColor: 'rgba(255,255,255,0.05)',
     },
     cajaDesktop: {
-        width: '70%',
+        width: '100%',
         maxWidth: 950, 
         padding: 40,
         ...Platform.select({
