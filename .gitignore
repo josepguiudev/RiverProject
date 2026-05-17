@@ -1,70 +1,57 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# ==========================================
+# DEPENDENCIAS GENERALES Y COMPILACIONES
+# ==========================================
 node_modules/
+backend/target/
 target/
 
-# Expo
+# ==========================================
+# EXPO & FRONTEND (REACT NATIVE WEB)
+# ==========================================
 .expo/
+.expo-shared/
 dist/
 web-build/
 expo-env.d.ts
+.metro-health-check*
+app-example/
 
-# Native
+# ==========================================
+# ANDROID NATIVO
+# ==========================================
+android/
 .kotlin/
-*.orig.*
 *.jks
+android/.gradle/
+android/build/
+android/app/build/
+
+# ==========================================
+# IOS NATIVO
+# ==========================================
+ios/
+ios/Pods/
+ios/build/
 *.p8
 *.p12
 *.key
 *.mobileprovision
 
-# Metro
-.metro-health-check*
+# ==========================================
+# CONFIGURACIONES LOCALES Y VARIABLES (ENV)
+# ==========================================
+.env
+.env*.local
+*.pem
 
-# debug
+# ==========================================
+# ARCHIVOS DE SISTEMA Y DEBUG
+# ==========================================
+.DS_Store
 npm-debug.*
 yarn-debug.*
 yarn-error.*
-
-# macOS
-.DS_Store
-*.pem
-
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-
-app-example
-
-# generated native folders
-/ios
-/android
-
-
-# PEPE
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# React Native
-.expo/
-.expo-shared/
-
-# Android
-android/.gradle/
-android/build/
-android/app/build/
-
-# iOS
-ios/Pods/
-ios/build/
-
-# Env
-.env
 *storybook.log
-storybook-static
+storybook-static/
+*.tsbuildinfo
+*.orig.*
