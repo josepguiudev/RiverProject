@@ -173,4 +173,17 @@ export class FormApiService {
         }
         return new Error("No se pudo conectar con River DB. Revisa tu conexión.");
     }
+    
+    /**
+     * Obtener TODAS las encuestas de la base de datos (Solo Admin)
+     */
+    static async getAllSurveys(): Promise<Survey[]> {
+        try {
+            // Asegúrate de que este mapeo coincida con el @GetMapping de tu Controller en Spring Boot
+            const response = await client.get<Survey[]>("/api/surveys/all"); 
+            return response.data;
+        } catch (error) {
+            throw this.handleError(error);
+        }
+    }
 }

@@ -37,19 +37,14 @@ export default function LoginScreen() {
                 password
             });
             const data = response.data;
+            
+            /**
+             * ACTUALIZACIÓN DEL CONTEXTO GLOBAL:
+             * Al mutar el estado 'user', React Navigation desmonta automáticamente
+             * esta pantalla y monta el stack correspondiente sin necesidad de hacer redirecciones manuales.
+             */
             await login(data.user, data.token, data.role, data.registrationStep);
 
-            if (data.role === 'ADMIN') {
-                navigation.replace("Admin");
-            } else if (data.role === 'CLIENT') {
-                navigation.replace("ClientDashboard");
-            } else {
-                switch (data.registrationStep) {
-                    case 1: navigation.replace("CompleteProfile"); break;
-                    case 2: navigation.replace("ConnectSteam"); break;
-                    default: navigation.replace("SurveyList");
-                }
-            }
         } catch (error: any) {
             console.error("Login Error:", error);
             const errorMessage = error.response?.data?.error || "Credenciales incorrectas";
@@ -65,7 +60,11 @@ export default function LoginScreen() {
             <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: colors.background }}>
                 <View style={styles.alineadoPersonal}>
                     <View style={styles.contendorLogoTitulos}>
-                        <Image source={require('../../../assets/images/logo.png')} style={styles.logo} />
+                        <Image 
+                            source={require('../../../assets/images/logo.png')} 
+                            style={styles.logo} 
+                            resizeMode="contain"
+                        />
                         <View style={styles.contenedorWritter}>
                             <Text style={[styles.tituloHero, isDesktopView && styles.tituloHeroDesktop]}>
                                 {strings.nameMayus} <TypeWriter typing={1} style={styles.destaqueAzul}>{strings.appMayus}</TypeWriter>
@@ -95,7 +94,6 @@ export default function LoginScreen() {
                             </View>
                         </View>
 
-                        {/* Botón centrado y sin Dashboard */}
                         <View style={{ width: '100%', marginTop: 30, alignItems: 'center' }}>
                             <CustomButton 
                                 title={isSubmitting ? "ENTRANDO..." : "INICIAR SESIÓN"} 
@@ -131,7 +129,11 @@ export default function LoginScreen() {
                 >
                     <View style={[styles.alineadoPersonal, { paddingVertical: 40 }]}>
                         <View style={styles.contendorLogoTitulos}>
-                            <Image source={require('../../../assets/images/logo.png')} style={styles.logo} />
+                            <Image 
+                                source={require('../../../assets/images/logo.png')} 
+                                style={styles.logo} 
+                                resizeMode="contain"
+                            />
                             <View style={styles.contenedorWritter}>
                                 <Text style={styles.tituloHero}>
                                     {strings.nameMayus} <TypeWriter typing={1} style={styles.destaqueAzul}>{strings.appMayus}</TypeWriter>
@@ -148,6 +150,7 @@ export default function LoginScreen() {
                                     placeholder="ejemplo@correo.com"
                                     onChangeText={setEmail}
                                     value={email}
+                                    autoCapitalize="none"
                                 />
                                 <View style={{ marginTop: 20 }}>
                                     <CustomInputText
@@ -160,7 +163,6 @@ export default function LoginScreen() {
                                 </View>
                             </View>
                             
-                            {/* Botón centrado y sin Dashboard */}
                             <View style={{ width: '100%', marginTop: 35, alignItems: 'center' }}>
                                 <CustomButton 
                                     title={isSubmitting ? "ENTRANDO..." : "INICIAR SESIÓN"} 

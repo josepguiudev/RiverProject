@@ -75,18 +75,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadStorageData();
   }, []);
 
-  /**
-   * Inicia sesión y guarda los datos en el estado y en el almacenamiento persistente.
-   */
   const login = async (userData: any, token: string, role: string, step: number) => {
-    const finalRole = (userData.id_rol === 1) ? 'ADMIN' : role;
-    const completeUser: User = { ...userData, role: finalRole as any, registrationStep: step };
-    
-    setUser(completeUser);
-    setToken(token);
+    try {
+      const finalRole = (userData.id_rol === 1) ? 'ADMIN' : role;
+      const completeUser: User = { ...userData, role: finalRole as any, registrationStep: step };
+      
+      // 1. Guardamos de forma asíncrona y esperamos estrictamente que termine la escritura en disco
+      await AsyncStorage.setItem('@River:user', JSON.stringify(completeUser));
+      await AsyncStorage.setItem('@River:token', token);
 
-    await AsyncStorage.setItem('@River:user', JSON.stringify(completeUser));
-    await AsyncStorage.setItem('@River:token', token);
+      // 2. Una vez guardados con éxito, actualizamos los estados de React.
+      // Así, cuando las nuevas pantallas lean el interceptor, el token existirá sí o sí.
+      setToken(token);
+      setUser(completeUser);
+      
+    } catch (error) {
+      console.error("Error al persistir los datos de sesión:", error);
+      throw error; // Propaga el error para que LoginScreen pueda manejarlo si es necesario
+    }
   };
 
   const updateRegistrationStep = async (step: number) => {

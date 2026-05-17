@@ -15,14 +15,20 @@ import { ResponsiveLayout } from "../components/ResponsiveLayout";
 import { isWeb } from "../utils/device";
 import client from "../api/client"; 
 
+// IMPORTAMOS EL COMPONENTE COMPLEMENTO MENUBUTTON Y EL DRAWERS
+import MenuButton from '@/app/components/Menu/MenuButton'; // Ajusta la ruta si es necesario
+import MenuPrincipal from '@/app/components/Menu/CustomMenu';
+import strings from "@/assets/supportFiles/strings.json";
+
 export default function ClientDashboard() {
     const navigation = useNavigation<any>();
-    const { user, logout } = useAuth(); // Extraemos logout del contexto
+    const { user, logout } = useAuth(); 
     const { isDesktopView } = useLayout();
     
     const [surveys, setSurveys] = useState<Survey[]>([]);
     const [loading, setLoading] = useState(true);
     const [assigningId, setAssigningId] = useState<number | null>(null);
+    
     const [menuVisible, setMenuVisible] = useState(false);
 
     const isAdmin = user?.role === 'ADMIN';
@@ -32,10 +38,20 @@ export default function ClientDashboard() {
         if (!user?.id) return;
         try {
             setLoading(true);
-            const data = await FormApiService.getSurveysByClient(user.id);
+            let data: Survey[] = [];
+
+            if (isAdmin) {
+                data = await FormApiService.getAllSurveys(); 
+                console.log("Cargando todas las encuestas de la base de datos (Modo Admin)");
+            } else {
+                data = await FormApiService.getSurveysByClient(user.id);
+                console.log(`Cargando encuestas asignadas al cliente: ${user.id}`);
+            }
+
             setSurveys(data);
         } catch (error) {
-            console.error("Error al cargar proyectos:", error);
+            console.error("Error al cargar proyectos/encuestas:", error);
+            Alert.alert("Error", "No se pudieron recuperar las encuestas.");
         } finally {
             setLoading(false);
         }
@@ -44,7 +60,7 @@ export default function ClientDashboard() {
     useFocusEffect(
         useCallback(() => {
             fetchSurveys();
-        }, [user?.id])
+        }, [user?.id, user?.role])
     );
 
     const handleLogout = () => {
@@ -53,7 +69,7 @@ export default function ClientDashboard() {
             if (confirmLogout) logout();
         } else {
             Alert.alert(
-                "DEBUG: Cerrar Sesión",
+                "Cerrar Sesión",
                 "¿Estás seguro de que quieres salir?",
                 [
                     { text: "Cancelar", style: "cancel" },
@@ -133,10 +149,10 @@ export default function ClientDashboard() {
                             {assigningId === item.id ? (
                                 <ActivityIndicator size="small" color={colors.secondary} />
                             ) : (
-                                <>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <Ionicons name="person-add-outline" size={20} color={colors.secondary} />
                                     <Text style={[styles.textoBotonResultados, { color: colors.secondary, fontWeight: '700', marginLeft: 8 }]}>ASIGNAR</Text>
-                                </>
+                                </View>
                             )}
                         </TouchableOpacity>
                     </>
@@ -165,11 +181,16 @@ export default function ClientDashboard() {
     };
 
     return (
-        <SafeAreaView style={[styles.alineadoPersonal, { backgroundColor: colors.background }]}>
+        <SafeAreaView style={[styles.alineadoPersonal, { backgroundColor: colors.background, flex: 1 }]}>
+            
+            {/* 🛠️ SOLUCIÓN: Usamos únicamente el recurso unificado MenuButton */}
+            <MenuButton onPress={() => setMenuVisible(true)} />
+
             <ResponsiveLayout fullWidth={true}>
-                <ScrollView contentContainerStyle={{ padding: isWeb ? 40 : 20 }}>
+                {/* Agregamos una separación superior condicional para que el contenido no se solape con el menú absoluto */}
+                <ScrollView contentContainerStyle={{ padding: isWeb ? 40 : 20, paddingTop: Platform.OS === 'web' ? 80 : 90 }}>
                     
-                    {/* CABECERA CON BOTÓN SALIR */}
+                    {/* CABECERA */}
                     <View style={{ 
                         flexDirection: 'row', 
                         justifyContent: 'space-between', 
@@ -178,7 +199,7 @@ export default function ClientDashboard() {
                     }}>
                         <View>
                             <Text style={[styles.tituloHero, { textAlign: 'left', marginBottom: 0 }]}>
-                                Panel de <Text style={styles.destaqueAzul}>{isAdmin ? "Administrador" : "Empresa"}</Text>
+                                Panel de <Text style={styles.destaqueAzul}>{isAdmin ? "Administrador global" : "Empresa"}</Text>
                             </Text>
                             <Text style={{ color: '#888', marginTop: 5, fontSize: 14 }}>
                                 {user?.email || 'Bienvenido'}
@@ -199,15 +220,15 @@ export default function ClientDashboard() {
                             }}
                         >
                             <Ionicons name="log-out-outline" size={20} color="#FF3B30" />
-                            {isDesktopView && (
+                            {isDesktopView ? (
                                 <Text style={{ color: '#FF3B30', fontWeight: 'bold', marginLeft: 8, fontSize: 12 }}>
-                                    Debug: CERRAR SESIÓN
+                                    CERRAR SESIÓN
                                 </Text>
-                            )}
+                            ) : null}
                         </TouchableOpacity>
                     </View>
 
-                    {/* Botón Nueva Encuesta: Solo visible para Clientes */}
+                    {/* Botón Nueva Encuesta: Solo para clientes */}
                     {!isAdmin && (
                         <TouchableOpacity 
                             onPress={() => navigation.navigate("SurveyCreator")}
@@ -242,6 +263,9 @@ export default function ClientDashboard() {
                     )}
                 </ScrollView>
             </ResponsiveLayout>
+
+            {/* MENÚ DESPLEGABLE */}
+            <MenuPrincipal visible={menuVisible} onClose={() => setMenuVisible(false)} navigation={navigation} />
         </SafeAreaView>
     );
 }

@@ -7,6 +7,7 @@ import {
     TouchableOpacity,
     ScrollView,
     Pressable,
+    Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../screens/stylesGlobal";
@@ -38,7 +39,6 @@ export const MetadataSelectorModal = ({
     return (
         <Modal animationType="fade" transparent visible={visible} onRequestClose={onClose}>
             <View style={styles.overlay}>
-                {/* Pressable fuera para cerrar al tocar el fondo oscuro */}
                 <Pressable style={styles.dismissArea} onPress={onClose} />
                 
                 <View style={styles.content}>
@@ -104,19 +104,28 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     content: {
-        backgroundColor: "#121212", // Negro profundo
+        backgroundColor: "#121212",
         borderRadius: 24,
         width: "100%",
-        maxWidth: 500, // Para que no se vea gigante en Web
+        maxWidth: 500,
         maxHeight: "75%",
         padding: 24,
         borderWidth: 1,
         borderColor: "rgba(255,255,255,0.1)",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
-        elevation: 10,
+        ...Platform.select({
+            ios: {
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: 0.5,
+                shadowRadius: 20,
+            },
+            android: {
+                elevation: 10,
+            },
+            web: {
+                boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.5)",
+            }
+        })
     },
     header: {
         flexDirection: 'row',
@@ -145,7 +154,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 14,
         paddingVertical: 10,
-        borderRadius: 100, // Estilo píldora
+        borderRadius: 100,
         backgroundColor: "#1e1e1e",
         borderWidth: 1,
         borderColor: "#333",
@@ -153,11 +162,20 @@ const styles = StyleSheet.create({
     chipActive: {
         backgroundColor: colors.primary,
         borderColor: colors.primary,
-        // Un poco de glow si es posible
-        shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
+        ...Platform.select({
+            ios: {
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+            },
+            android: {
+                elevation: 4,
+            },
+            web: {
+                boxShadow: `0px 4px 8px ${colors.primary}4D`,
+            }
+        })
     },
     chipText: { 
         color: "#999", 

@@ -21,13 +21,9 @@ import AdminGraphics from "./screens/Admin/AdminGraphics";
 
 const Stack = createNativeStackNavigator();
 
-/**
- * Componente de Navegación que decide qué mostrar según el estado de AuthContext
- */
 function Navigation() {
     const { user, loading } = useAuth();
 
-    // Mientras el AuthContext verifica el token con el backend (/api/auth2/me)
     if (loading) {
         return (
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0F172A" }}>
@@ -51,28 +47,23 @@ function Navigation() {
                     <Stack.Screen name="AdminUser" component={AdminUserScreen} />
                     <Stack.Screen name="AdminGenresGames" component={AdminGenresGames} />
                     <Stack.Screen name="AdminGraphics" component={AdminGraphics} />
+                    <Stack.Screen name="ClientDashboard" component={ClientDashboard} /> 
                 </>
             ) : user.role === "CLIENT" ? (
-                /* STACK DE EMPRESA (CLIENTE) */
+                /* STACK DE EMPRESA */
                 <>
                     <Stack.Screen name="ClientDashboard" component={ClientDashboard} />
                     <Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen} />
                 </>
             ) : (
-                /* STACK DE JUGADOR (USER) */
+                /* STACK DE USER (PLAYER) */
                 <>
                     {user.registrationStep && user.registrationStep < 3 ? (
-                        /* Flujo de Onboarding */
                         <>
-                            {user.registrationStep === 1 && (
-                                <Stack.Screen name="CompleteProfile" component={CompleteProfile} />
-                            )}
-                            {user.registrationStep === 2 && (
-                                <Stack.Screen name="ConnectSteam" component={ConnectSteam} />
-                            )}
+                            {user.registrationStep === 1 && <Stack.Screen name="CompleteProfile" component={CompleteProfile} />}
+                            {user.registrationStep === 2 && <Stack.Screen name="ConnectSteam" component={ConnectSteam} />}
                         </>
                     ) : (
-                        /* Flujo Principal */
                         <>
                             <Stack.Screen name="SurveyList" component={SurveyListScreen} />
                             <Stack.Screen name="Home" component={HomeScreen} />
@@ -83,7 +74,7 @@ function Navigation() {
             )}
         </Stack.Navigator>
     );
-}
+    }
 
 export default function App() {
     return (

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { 
   View, Text, TouchableWithoutFeedback, Animated, Dimensions, 
-  Pressable, Easing, SafeAreaView, Platform, TouchableOpacity 
+  Pressable, Easing, TouchableOpacity, Alert, Platform 
 } from 'react-native';
 import styles from './styles';
 import strings from "../../../assets/supportFiles/strings.json";
@@ -25,7 +25,14 @@ const SteamMenuItem = ({ label, icon, onPress }: any) => {
       style={[styles.itemContenedor, hovered && styles.itemHover]}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        {icon && <Ionicons name={icon} size={isWeb ? 18 : 24} color={hovered ? '#66c0f4' : 'white'} style={{ marginRight: 12 }} />}
+        {icon && (
+          <Ionicons 
+            name={icon} 
+            size={isWeb ? 18 : 24} 
+            color={hovered ? '#66c0f4' : 'white'} 
+            style={{ marginRight: 12 }} 
+          />
+        )}
         <Text style={[styles.item, hovered && styles.itemTextHover]}>{label}</Text>
       </View>
     </Pressable>
@@ -33,9 +40,14 @@ const SteamMenuItem = ({ label, icon, onPress }: any) => {
 };
 
 export default function MenuLateral({ visible, onClose }: any) {
-  const navigation = useNavigation();
-  const { user } = useAuth();  // ya tenemos cuentaBancaria si es cliente
+  const navigation = useNavigation<any>();
+  const { user, logout } = useAuth();  
   const slideAnim = useRef(new Animated.Value(-MENU_WIDTH)).current;
+
+  // Clasificación de Roles según tus especificaciones
+  const isAdmin = user?.role === 'ADMIN';
+  const isClient = user?.hasOwnProperty('cuentaBancaria') || user?.role === 'CLIENT';
+  const isRegularUser = !isAdmin && !isClient; // User estándar (no admin, no client)
 
   const navigateTo = (screen: string) => {
     onClose();
@@ -51,43 +63,35 @@ export default function MenuLateral({ visible, onClose }: any) {
     }).start();
   }, [visible]);
 
-  if (!visible) return null;
+  // Método para gestionar el Log Out y redirigir al Login
+  const handleLogoutClick = () => {
+    onClose(); // Cierra el menú antes de la acción
 
-  // LÓGICA CORREGIDA: Valida cuentaBancaria o Rol, y asegura un fallback seguro si da un string vacío
-  const goToDashboard = () => {
-    const isClient = user?.hasOwnProperty('cuentaBancaria') || user?.role === 'CLIENT';
-    const isAdmin = user?.role === 'ADMIN';
+    const ejecutarCierre = () => {
+      logout(); // Limpia el contexto de autenticación
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }], // Redirige de raíz a la pantalla de Login
+      });
+    };
 
-    if (isAdmin) {
-      navigation.navigate("Admin" as never);
-    } else if (isClient) {
-      navigation.navigate("ClientDashboard" as never);
+    if (Platform.OS === 'web') {
+      if (window.confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+        ejecutarCierre();
+      }
     } else {
-      // Si no es admin ni cliente, va a tu lista de encuestas base
-      navigation.navigate("ClientDashboard" as never); 
+      Alert.alert(
+        "Cerrar Sesión",
+        "¿Estás seguro de que deseas salir?",
+        [
+          { text: "Cancelar", style: "cancel" },
+          { text: "Salir", style: "destructive", onPress: ejecutarCierre }
+        ]
+      );
     }
-    onClose();
   };
 
-  const MenuContent = () => (
-    <>
-      <TouchableOpacity onPress={goToDashboard} activeOpacity={0.7} style={{ paddingHorizontal: 10 }}>
-        <Text style={styles.title}>{strings.name}</Text>
-        <Text style={{ color: '#66c0f4', fontSize: 10, paddingLeft: 10, marginTop: -5 }}>ONLINE</Text>
-      </TouchableOpacity>
-      
-      <View style={styles.linea} />
-      
-      <SteamMenuItem icon="stats-chart-outline" label={strings.adminScreen} onPress={() => { navigation.navigate("Admin" as never); onClose(); }}/>
-      <SteamMenuItem icon="people-outline" label={strings.usersScreen} onPress={() => { navigation.navigate("AdminUser" as never); onClose(); }}/>
-      <SteamMenuItem icon="person-circle-outline" label={strings.perfil} onPress={() => { navigation.navigate("Profile" as never); onClose(); }}/>
-      <SteamMenuItem icon="settings-outline" label={strings.configuracion} onPress={() => { navigation.navigate("Settings" as never); onClose(); }}/>
-      
-      <View style={{ flex: 1 }} />
-      <View style={styles.linea} />
-      <SteamMenuItem icon="log-out-outline" label={strings.cerrarSesion} onPress={() => { /* lógica cerrar sesión */ onClose(); }}/>
-    </>
-  );
+  if (!visible) return null;
 
   return (
     <View style={styles.overlay}>
@@ -96,20 +100,64 @@ export default function MenuLateral({ visible, onClose }: any) {
       </TouchableWithoutFeedback>
 
       <Animated.View style={[styles.menuContainer, { transform: [{ translateX: slideAnim }] }]}>
-        <Text style={styles.title}>{strings.name}</Text>
+        
+        {/* CABECERA */}
+        <View style={{ paddingHorizontal: 10, marginBottom: 5 }}>
+          <Text style={styles.title}>{strings.name}</Text>
+          <Text style={{ color: '#66c0f4', fontSize: 10, paddingLeft: 10, marginTop: -5 }}>
+            {isAdmin ? "MODO ADMIN" : isClient ? "MODO EMPRESA" : "ONLINE"}
+          </Text>
+        </View>
+        
         <View style={styles.linea} />
         
-        {/* Aquí tus opciones de menú */}
-        <SteamMenuItem label={strings.home} onPress={goToDashboard}/>
-        <SteamMenuItem label={strings.cerarEncuesta} onPress={goToDashboard}/>
+        {/* ==========================================
+            OPCIONES PARA USER (NO ADMIN / NO CLIENT)
+           ========================================== */}
+        {isRegularUser && (
+          <>
+            <SteamMenuItem icon="home-outline" label="Home" onPress={() => navigateTo("UserDashboard")} />
+            <SteamMenuItem icon="document-text-outline" label="surveyList" onPress={() => navigateTo("SurveyList")} />
+          </>
+        )}
+
+        {/* ==========================================
+            OPCIONES PARA ADMIN
+           ========================================== */}
+        {isAdmin && (
+          <>
+            <Text style={{ color: '#555', fontSize: 11, fontWeight: 'bold', paddingLeft: 15, marginVertical: 5 }}>ADMINISTRACIÓN</Text>
+            <SteamMenuItem icon="stats-chart-outline" label={strings.adminScreen} onPress={() => navigateTo("Admin")} />
+            <SteamMenuItem icon="people-outline" label={strings.usersScreen} onPress={() => navigateTo("AdminUser")} />
+            <SteamMenuItem icon="game-controller-outline" label={strings.usersGenreGames} onPress={() => navigateTo("AdminGenresGames")} />
+            <SteamMenuItem icon="pie-chart-outline" label={strings.graphics} onPress={() => navigateTo("AdminGraphics")} />
+            
+            <View style={styles.linea} />
+            <Text style={{ color: '#555', fontSize: 11, fontWeight: 'bold', paddingLeft: 15, marginVertical: 5 }}>VISTAS EMPRESA</Text>
+            <SteamMenuItem icon="briefcase-outline" label="Dashboard Client" onPress={() => navigateTo("ClientDashboard")} />
+          </>
+        )}
+
+        {/* ==========================================
+            OPCIONES PARA CLIENT
+           ========================================== */}
+        {isClient && (
+          <>
+            <SteamMenuItem icon="briefcase-outline" label="Dashboard Client" onPress={() => navigateTo("ClientDashboard")} />
+          </>
+        )}
+
+        {/* ==========================================
+            PIE DEL MENÚ (CERRAR SESIÓN)
+           ========================================== */}
+        <View style={{ flex: 1 }} /> {/* Empuja el botón al fondo */}
+        <View style={styles.linea} />
+        <SteamMenuItem 
+          icon="log-out-outline" 
+          label={strings.cerrarSesion} 
+          onPress={handleLogoutClick} 
+        />
         
-        <SteamMenuItem label={strings.adminScreen} onPress={() => navigation.navigate("Admin" as never)}/>
-        <SteamMenuItem label={strings.usersScreen} onPress={() => navigation.navigate("AdminUser" as never)}/>
-        <SteamMenuItem label={strings.usersGenreGames} onPress={() => navigation.navigate("AdminGenresGames" as never)}/>
-        <SteamMenuItem label={strings.graphics} onPress={() => navigation.navigate("AdminGraphics" as never)}/>
-        <SteamMenuItem label={strings.perfil} />
-        <SteamMenuItem label={strings.configuracion} />
-        <SteamMenuItem label={strings.cerrarSesion} />
       </Animated.View>
     </View>
   );
