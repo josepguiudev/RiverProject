@@ -21,9 +21,6 @@ spring:
                     physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
             format_sql: true
             dialect: org.hibernate.dialect.SQLServerDialect
-    steam:
-        api:
-            key: "BA9965C760565512F17B2D6648110A9C"
 
     server:
     port: 8080
