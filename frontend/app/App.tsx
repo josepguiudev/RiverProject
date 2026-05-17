@@ -3,6 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { AuthProvider, useAuth } from './screens/Auth/AuthContext';
 import { ActivityIndicator, View } from "react-native";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Importaciones de pantallas
 import LoginScreen from "./screens/Auth/LoginScreen";
@@ -10,7 +11,6 @@ import RegisterScreen from "./screens/Auth/RegisterScreen";
 import SurveyCreatorScreen from "./screens/SurveyCreatorScreen";
 import TakeSurveyScreen from "./screens/TakeSurveyScreen";
 import SurveyListScreen from "./screens/SurveyListScreen";
-import HomeScreen from "./screens/Home/HomeScreen";
 import ClientDashboard from "./screens/ClientDashboard";
 import CompleteProfile from "./screens/CompleteProfileScreen";
 import ConnectSteam from "./screens/ConnectSteamScreen";
@@ -18,8 +18,10 @@ import AdminScreen from "./screens/Admin/AdminScreen";
 import AdminUserScreen from "./screens/Admin/AdminUserScreen";
 import AdminGenresGames from "./screens/Admin/AdminGenresGames";
 import AdminGraphics from "./screens/Admin/AdminGraphics";
+import InfoPerfil from "./screens/Profile/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
+const queryClient = new QueryClient();
 
 function Navigation() {
     const { user, loading } = useAuth();
@@ -58,15 +60,15 @@ function Navigation() {
             ) : (
                 /* STACK DE USER (PLAYER) */
                 <>
-                    {user.registrationStep && user.registrationStep < 3 ? (
-                        <>
-                            {user.registrationStep === 1 && <Stack.Screen name="CompleteProfile" component={CompleteProfile} />}
-                            {user.registrationStep === 2 && <Stack.Screen name="ConnectSteam" component={ConnectSteam} />}
-                        </>
+                    {/* 🛠️ CORRECCIÓN: Estructuración correcta de pantallas condicionales sin operadores lógicos directos */}
+                    {user.registrationStep === 1 ? (
+                        <Stack.Screen name="CompleteProfile" component={CompleteProfile} />
+                    ) : user.registrationStep === 2 ? (
+                        <Stack.Screen name="ConnectSteam" component={ConnectSteam} />
                     ) : (
                         <>
                             <Stack.Screen name="SurveyList" component={SurveyListScreen} />
-                            <Stack.Screen name="Home" component={HomeScreen} />
+                            <Stack.Screen name="Profile" component={InfoPerfil} />
                             <Stack.Screen name="TakeSurvey" component={TakeSurveyScreen} />
                         </>
                     )}
@@ -74,14 +76,16 @@ function Navigation() {
             )}
         </Stack.Navigator>
     );
-    }
+}
 
 export default function App() {
     return (
-        <AuthProvider>
-            <NavigationContainer>
-                <Navigation />
-            </NavigationContainer>
-        </AuthProvider>
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+                <NavigationContainer>
+                    <Navigation />
+                </NavigationContainer>
+            </AuthProvider>
+        </QueryClientProvider>
     );
 }

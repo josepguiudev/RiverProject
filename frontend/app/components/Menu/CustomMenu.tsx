@@ -116,8 +116,8 @@ export default function MenuLateral({ visible, onClose }: any) {
            ========================================== */}
         {isRegularUser && (
           <>
-            <SteamMenuItem icon="home-outline" label="Home" onPress={() => navigateTo("UserDashboard")} />
-            <SteamMenuItem icon="document-text-outline" label="surveyList" onPress={() => navigateTo("SurveyList")} />
+            <SteamMenuItem icon="document-text-outline" label="Encuestas" onPress={() => navigateTo("SurveyList")} />
+            <SteamMenuItem icon="person-outline" label="Mi Perfil" onPress={() => navigateTo("Profile")} />
           </>
         )}
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, Text, StyleSheet, Platform, Alert } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import globalStyles from '@/assets/globalStyles/globalStyles';
@@ -9,6 +9,9 @@ import { useLayout } from '@/app/utils/useLayout';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/app/services/api/api';
 import { useAuth } from '@/app/screens/Auth/AuthContext';
+
+// ── IMPORTAMOS EL BOTÓN ESTANDARIZADO ──
+import MenuButton from '@/app/components/Menu/MenuButton';
 
 import ProfileHeader from '@/app/components/Profile/ProfileHeader';
 import DonutGenresCard from '@/app/components/Profile/DonutGenresCard';
@@ -38,16 +41,13 @@ const MOCK_SURVEYS = [
     { id_survey: 2, name: "Encuesta de hardware", creationDate: new Date().toISOString() }
 ];
 
-// La Screen del Perfil es la que se encarga de llamar a la API y a la BD.
-
-// ── Sub-pestañas del perfil ──
 type ProfileTab = 'perfil' | 'configuracion';
 
 export default function ProfileScreen({ navigation, route }: any) {
     const { isMobileView, isDesktopView } = useLayout();
     const [menuVisible, setMenuVisible] = useState(false);
     const [activeTab, setActiveTab] = useState<ProfileTab>('perfil');
-    const { user } = useAuth(); // Usuario logueado (contiene id, name, email)
+    const { user } = useAuth();
 
     // Efecto para detectar si venimos desde el menú de configuración
     React.useEffect(() => {
@@ -64,109 +64,106 @@ export default function ProfileScreen({ navigation, route }: any) {
     const { data: profileData, isLoading: loading } = useQuery({
         queryKey: ['profile', steamId, user?.id],
         queryFn: async () => {
-            // Si es PLAYER → hacer todas las llamadas Steam, juegos, encuestas...
-            if (user?.role === 'PLAYER') {
-            try {
-                // 1. Fetch user data from DB first to get correct steamId
-                let userDbData = null;
-                if (user?.id) {
-                    try {
-                        const userRes = await apiFetch(`/api/users/${user.id}`);
-                        if (userRes.ok) {
-                            userDbData = await userRes.json();
-                        }
-                    } catch (e) { }
+            if (user?.role === 'USER') {
+                try {
+                    let userDbData = null;
+                    if (user?.id) {
+                        try {
+                            const userRes = await apiFetch(`/api/users/${user.id}`);
+                            if (userRes.ok) {
+                                userDbData = await userRes.json();
+                            }
+                        } catch (e) { }
+                    }
+
+                    const finalSteamId = userDbData ? (userDbData.urlIdStream || '') : steamId;
+                    const cleanSteamId = finalSteamId ? finalSteamId.trim() : '';
+
+                    if (cleanSteamId && apiKey) {
+                        await fetch(`${BASE_URL}/api/games/sync-library?steamid=${cleanSteamId}&apiKey=${apiKey}`).catch(() => { });
+                    }
+
+                    let profileJson = MOCK_PROFILE;
+                    if (cleanSteamId) {
+                        try {
+                            const profileRes = await fetch(`${BASE_URL}/api/usersteam/by-bd-steamid/${cleanSteamId}`);
+                            if (profileRes.ok) {
+                                profileJson = await profileRes.json();
+                            }
+                        } catch (e) { console.log("Fallo conexión perfil"); }
+                    }
+
+                    let gamesJson = MOCK_GAMES;
+                    if (cleanSteamId) {
+                        try {
+                            const gamesRes = await fetch(`${BASE_URL}/api/games/top3/${cleanSteamId}`);
+                            if (gamesRes.ok) gamesJson = await gamesRes.json();
+                        } catch (e) { console.log("Fallo conexión juegos"); }
+                    }
+
+                    let surveysData = MOCK_SURVEYS;
+                    const userId = user?.id;
+                    if (userId && !isNaN(Number(userId))) {
+                        try {
+                            const surveysRes = await axios.get(`${BASE_URL}/api/surveys/user/${userId}`);
+                            surveysData = surveysRes.data;
+                        } catch (e) { console.log("Fallo conexión encuestas"); }
+                    }
+
+                    let genresData: { name: string; percentage: number }[] = [];
+                    if (cleanSteamId) {
+                        try {
+                            const genresRes = await fetch(`${BASE_URL}/api/games/top-genres/${cleanSteamId}`);
+                            if (genresRes.ok) genresData = await genresRes.json();
+                        } catch (e) { }
+                    }
+
+                    return {
+                        steamProfile: profileJson,
+                        topGames: gamesJson,
+                        surveys: surveysData,
+                        genres: genresData,
+                        userDb: userDbData,
+                    };
+                } catch (error) {
+                    return {
+                        steamProfile: MOCK_PROFILE,
+                        topGames: MOCK_GAMES,
+                        surveys: MOCK_SURVEYS,
+                        genres: [],
+                        userDb: null,
+                    };
                 }
-
-                // Determine final steam ID from DB or fallback to default
-                const finalSteamId = userDbData ? (userDbData.urlIdStream || '') : steamId;
-                const cleanSteamId = finalSteamId ? finalSteamId.trim() : '';
-
-                // 2. Synchronize library if steamId and apiKey are present
-                if (cleanSteamId && apiKey) {
-                    await fetch(`${BASE_URL}/api/games/sync-library?steamid=${cleanSteamId}&apiKey=${apiKey}`).catch(() => { });
-                }
-
-                // 3. Load Profile
-                let profileJson = MOCK_PROFILE;
-                if (cleanSteamId) {
-                    try {
-                        const profileRes = await fetch(`${BASE_URL}/api/usersteam/by-bd-steamid/${cleanSteamId}`);
-                        if (profileRes.ok) {
-                            profileJson = await profileRes.json();
-                        } else {
-                            console.log("Error en by-bd-steamid:", profileRes.status);
-                        }
-                    } catch (e) { console.log("Fallo conexión perfil"); }
-                }
-
-                // 4. Load Top 3 Games
-                let gamesJson = MOCK_GAMES;
-                if (cleanSteamId) {
-                    try {
-                        const gamesRes = await fetch(`${BASE_URL}/api/games/top3/${cleanSteamId}`);
-                        if (gamesRes.ok) gamesJson = await gamesRes.json();
-                    } catch (e) { console.log("Fallo conexión juegos"); }
-                }
-
-                // 5. Load Surveys (only if valid userId)
-                let surveysData = MOCK_SURVEYS;
-                const userId = user?.id;
-                if (userId && !isNaN(Number(userId))) {
-                    try {
-                        const surveysRes = await axios.get(`${BASE_URL}/api/surveys/user/${userId}`);
-                        surveysData = surveysRes.data;
-                    } catch (e) { console.log("Fallo conexión encuestas"); }
-                } else {
-                    console.log("Usando encuestas mock porque el userId es inválido:", userId);
-                }
-
-                // 6. Load Genres
-                let genresData: { name: string; percentage: number }[] = [];
-                if (cleanSteamId) {
-                    try {
-                        const genresRes = await fetch(`${BASE_URL}/api/games/top-genres/${cleanSteamId}`);
-                        if (genresRes.ok) genresData = await genresRes.json();
-                    } catch (e) { }
-                }
-
+            }
+            
+            // Si el rol no es PLAYER sino CLIENT / ADMIN
+            if (user?.role === 'CLIENT' || user?.role === 'ADMIN') {
+                let clientData = null;
+                try {
+                    const res = await apiFetch(`/api/clients/${user?.id}`);
+                    if (res.ok) clientData = await res.json();
+                } catch (e) {}
+                
                 return {
-                    steamProfile: profileJson,
-                    topGames: gamesJson,
-                    surveys: surveysData,
-                    genres: genresData,
-                    userDb: userDbData,
-                };
-            } catch (error) {
-                return {
-                    steamProfile: MOCK_PROFILE,
-                    topGames: MOCK_GAMES,
-                    surveys: MOCK_SURVEYS,
+                    steamProfile: null,
+                    topGames: [],
+                    surveys: [],
                     genres: [],
-                    userDb: null,
+                    userDb: clientData,
                 };
             }
         }
-    }
     });
 
-    // Aquí he definido esto para que los componentes reciban las props que se guardan 
-    // en profileData tras la función de arriba. Así los componentes muestran x datos.
     const steamProfile = profileData?.steamProfile || null;
-    // El "?" está básicamente para que no pete la cosa si los datos de profileData 
-    // aún no están disponibles (es la promesa de loading ;)).
     const topGames = profileData?.topGames || [];
     const surveys = profileData?.surveys || [];
     const genres = profileData?.genres || [];
     const userDb = profileData?.userDb || null;
 
-    // ── Callback para guardar datos de configuración ──
-    // Llama a las rutas REALES del backend con fallback si no están disponibles.
     const handleSettingsSave = async (payload: SavePayload) => {
         const { userData, passwordChange } = payload;
 
-        // 1. Actualizar datos del usuario
-        // Ruta real: PUT /api/users/{id}
         if (user?.id) {
             const updateRes = await apiFetch(`/api/users/${user.id}`, {
                 method: 'PUT',
@@ -177,7 +174,7 @@ export default function ProfileScreen({ navigation, route }: any) {
                     email: userData.email,
                     edad: userData.edad ? parseInt(userData.edad) : null,
                     localizacion: userData.localizacion,
-                    urlIdStream: userData.steamId, // El campo en el modelo User es urlIdStream
+                    urlIdStream: userData.steamId,
                 }),
             });
 
@@ -187,8 +184,6 @@ export default function ProfileScreen({ navigation, route }: any) {
             }
         }
 
-        // 2. Cambiar contraseña (solo si el usuario rellenó los campos)
-        // Ruta real: PUT /api/auth2/change-password
         if (passwordChange && user?.id) {
             const pwRes = await apiFetch('/api/auth2/change-password', {
                 method: 'PUT',
@@ -204,47 +199,13 @@ export default function ProfileScreen({ navigation, route }: any) {
                 throw new Error(errData.error || 'Error al cambiar la contraseña.');
             }
         }
-
-        if (user?.role === 'CLIENT') {
-        let clientData = null;
-        try {
-            const res = await apiFetch(`/api/clients/${user.id}`);
-            if (res.ok) clientData = await res.json();
-        } catch (e) {}
-        
-        return {
-            steamProfile: null,
-            topGames: [],
-            surveys: [],
-            genres: [],
-            userDb: clientData,
-        };
-    }
-}
+    };
 
     return (
         <View style={[globalStyles.padre, globalStyles.tamanoCajaPadre, { backgroundColor: '#1a1919' }]}>
 
-            {/* BOTÓN MENU ESTANDARIZADO */}
-            <View style={{ 
-                position: 'absolute',
-                top: Platform.OS === 'ios' ? 50 : 20,
-                left: 20,
-                zIndex: 10,
-            }}>
-                <TouchableOpacity 
-                    onPress={() => setMenuVisible(true)} 
-                    style={{ 
-                        padding: 10, 
-                        backgroundColor: 'rgba(255,255,255,0.1)', 
-                        borderRadius: 8,
-                        borderWidth: 1,
-                        borderColor: 'rgba(255,255,255,0.1)'
-                    }}
-                >
-                    <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu || "MENÚ"}</Text>
-                </TouchableOpacity>
-            </View>
+            {/* 🛠️ SOLUCIÓN: Botón unificado utilizando tu componente modular */}
+            <MenuButton onPress={() => setMenuVisible(true)} />
 
             {/* ── Sub-pestañas ── */}
             <View style={styles.tabBar}>
@@ -277,9 +238,8 @@ export default function ProfileScreen({ navigation, route }: any) {
                         isDesktopView && styles.contentDesktop
                     ]}
                 >
-                    {user?.role === 'PLAYER' ? (
+                    {user?.role === 'USER' ? (
                         <>
-                            {/* Vista de Jugador — Steam & Encuestas */}
                             <ProfileHeader profile={steamProfile} loading={loading} />
 
                             <View style={[
@@ -305,12 +265,8 @@ export default function ProfileScreen({ navigation, route }: any) {
                             />
                         </>
                     ) : (
-                        /**
-                         * VISTA PARA EMPRESA / ADMIN
-                         * Mostramos un resumen básico sin datos de Steam.
-                         */
                         <View style={{ alignItems: 'center', marginTop: 50 }}>
-                            <View style={[globalStyles.caja, { padding: 40, width: '100%', maxWidth: 500 }]}>
+                            <View style={[styles.fallbackCard, { padding: 40, width: '100%', maxWidth: 500 }]}>
                                 <Text style={[styles.tabTextActive, { fontSize: 24, marginBottom: 10 }]}>
                                     {[userDb?.name || user?.name, userDb?.apellido1, userDb?.apellido2].filter(Boolean).join(' ') || "Usuario"}
                                 </Text>
@@ -336,9 +292,7 @@ export default function ProfileScreen({ navigation, route }: any) {
                     <SettingsTab
                         isMobile={isMobileView}
                         initialData={{
-                            // Primero intenta con los datos reales de la BD (GET /api/users/{id})
-                            // Fallback: usa lo que tenga del AuthContext o del perfil Steam
-                            name: userDb?.name || user?.name || steamProfile?.personaName || steamProfile?.personaName || '',
+                            name: userDb?.name || user?.name || steamProfile?.personaName || '',
                             apellido1: userDb?.apellido1 || '',
                             apellido2: userDb?.apellido2 || '',
                             email: userDb?.email || user?.email || '',
@@ -362,7 +316,6 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a2e',
     },
-    // ── Tab bar ──
     tabBar: {
         flexDirection: 'row',
         backgroundColor: '#17171b',
@@ -370,7 +323,7 @@ const styles = StyleSheet.create({
         borderBottomColor: '#1a1a2e',
         paddingHorizontal: 16,
         paddingVertical: 10,
-        paddingLeft: 110,
+        paddingLeft: Platform.OS === 'web' ? 110 : 120, // Se ajusta dinámicamente para dar espacio al MenuButton absoluto
     },
     tab: {
         paddingVertical: 14,
@@ -393,14 +346,12 @@ const styles = StyleSheet.create({
         textShadowOffset: { width: 0, height: 0 },
         textShadowRadius: 8,
     },
-    // ── Scroll / layout ──
     scroll: {
         flex: 1,
     },
     content: {
         padding: 16,
     },
-    // En desktop centramos y limitamos el ancho máximo
     contentDesktop: {
         maxWidth: 1100,
         alignSelf: 'center',
@@ -424,7 +375,6 @@ const styles = StyleSheet.create({
     halfWidth: {
         flex: 1,
     },
-    // ── Settings wrapper ──
     settingsWrapper: {
         flex: 1,
         padding: 16,
@@ -435,4 +385,10 @@ const styles = StyleSheet.create({
         width: '100%',
         paddingHorizontal: 40,
     },
+        fallbackCard: {
+        backgroundColor: '#17171b', // Color oscuro integrado con tu interfaz
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#2a2a3a',
+    }
 });
