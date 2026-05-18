@@ -32,5 +32,8 @@ export default StyleSheet.create({
   input: {
     paddingHorizontal: 16,
     color: '#FFFFFF',
+    ...Platform.select({
+      web: { boxSizing: 'border-box' as any }
+    })
   },
 });

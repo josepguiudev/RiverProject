@@ -73,17 +73,17 @@ public class AuthService2 {
 
         // 2. Switch por tipo para crear la entidad
         return switch (request.getType().toUpperCase()) {
-            case "USER" -> {
+            case "PLAYER" -> {
                 User user = new User();
                 user.setEmail(request.getEmail());
                 user.setPassword(passwordEncoder.encode(request.getPassword()));
                 user.setName(request.getName());
-                user.setId_rol((byte) 1);
+                user.setId_rol((byte) 0);
                 user.setRegistrationStep(1);
                 user.setCreacionCuentaUsuario(new Date());
                 
                 userRepository.save(user);
-                yield new LoginResponse(jwtService.generateToken(user), user, "USER", 1);
+                yield new LoginResponse(jwtService.generateToken(user), user, "PLAYER", 1);
             }
             case "CLIENT" -> {
                 Client client = new Client();
@@ -104,16 +104,23 @@ public class AuthService2 {
         Optional<Client> clientOpt = clientRepository.findByEmail(request.getEmail());
 
         String role = "NONE";
-        if (userOpt.isPresent()) role = "USER";
-        else if (clientOpt.isPresent()) role = "CLIENT";
+        if (userOpt.isPresent()) {
+            // Si está en la tabla User, verificamos si es ADMIN por su id_rol
+            User u = userOpt.get();
+            role = (u.getId_rol() != null && u.getId_rol() == 1) ? "ADMIN" : "PLAYER";
+        } else if (clientOpt.isPresent()) {
+            role = "CLIENT";
+        }
 
         switch (role) {
-            case "USER":
+            case "ADMIN":
+            case "PLAYER":
                 User user = userOpt.get();
                 if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                     throw new RuntimeException("Credenciales incorrectas");
                 }
-                return new LoginResponse(jwtService.generateToken(user), user, "USER", user.getRegistrationStep());
+                // Devolvemos el rol explícito ("ADMIN" o "PLAYER")
+                return new LoginResponse(jwtService.generateToken(user), user, role, user.getRegistrationStep());
 
             case "CLIENT":
                 Client client = clientOpt.get();
@@ -126,6 +133,7 @@ public class AuthService2 {
                 throw new RuntimeException("Usuario no encontrado");
         }
     }
+    
     // PASO 2: Completar perfil
     public User completeProfile(Long userId, RegisterRequest request) {
         User user = userRepository.findById(userId)
@@ -241,4 +249,37 @@ public class AuthService2 {
         userSurveysRepository.saveAll(newAssignments);
     }
 
+    public LoginResponse getCurrentUser(String token) {
+        String email = jwtService.extractUsername(token);
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            // Validación id_rol = 1 para ADMIN
+            String role = (user.getId_rol() != null && user.getId_rol() == 1) ? "ADMIN" : "PLAYER";
+            return new LoginResponse(token, user, role, user.getRegistrationStep());
+        }
+
+        Optional<Client> clientOpt = clientRepository.findByEmail(email);
+        if (clientOpt.isPresent()) {
+            Client client = clientOpt.get();
+            return new LoginResponse(token, client, "CLIENT", 3);
+        }
+
+        throw new RuntimeException("Usuario no encontrado con el token proporcionado");
+    }
+
+        public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar que la contraseña actual sea correcta
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("La contraseña actual es incorrecta");
+        }
+
+        // Codificar y guardar la nueva contraseña
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 }

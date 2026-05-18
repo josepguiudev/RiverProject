@@ -11,10 +11,10 @@ import { isWeb } from "@/app/utils/device";
 import CustomButton from "@/app/components/CustomButton/CustomButton";
 import CustomInputText from "@/app/components/CustomInputText/CustomInputText";
 import strings from "../../../assets/supportFiles/strings.json";
-// Usamos los estilos del register para que sean idénticos
 import styles, { colors } from "./styles"; 
 import { useLayout } from "@/app/utils/useLayout";
 import { useAuth } from "../Auth/AuthContext";
+import client from "../../api/client";
 
 export default function LoginScreen() {
     const navigation = useNavigation<any>();
@@ -30,59 +30,41 @@ export default function LoginScreen() {
             Alert.alert("Error", "Por favor, rellena todos los campos");
             return;
         }
-
         setIsSubmitting(true);
-        const baseUrl = Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080';
-        
         try {
-            const response = await fetch(`${baseUrl}/api/auth2/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email.trim(), password }),
+            const response = await client.post("/api/auth2/login", {
+                email: email.trim(),
+                password
             });
-
-            const contentType = response.headers.get("content-type");
-            let data;
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                data = await response.json();
-            } else {
-                const textError = await response.text();
-                data = { error: textError };
-            }
-
-            if (!response.ok) {
-                Alert.alert("Error de acceso", data.error || "Credenciales incorrectas");
-                return;
-            }
-
+            const data = response.data;
+            
+            /**
+             * ACTUALIZACIÓN DEL CONTEXTO GLOBAL:
+             * Al mutar el estado 'user', React Navigation desmonta automáticamente
+             * esta pantalla y monta el stack correspondiente sin necesidad de hacer redirecciones manuales.
+             */
             await login(data.user, data.token, data.role, data.registrationStep);
 
-            if (data.role === 'CLIENT') {
-                navigation.replace("ClientDashboard");
-            } else {
-                switch (data.registrationStep) {
-                    case 1: navigation.replace("CompleteProfile"); break;
-                    case 2: navigation.replace("ConnectSteam"); break;
-                    default: navigation.replace("SurveyList");
-                }
-            }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Login Error:", error);
-            Alert.alert("Error de conexión", "Servidor no disponible");
+            const errorMessage = error.response?.data?.error || "Credenciales incorrectas";
+            Alert.alert("Error de acceso", errorMessage);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    // ------------------------------------------------------------
-    // VERSIÓN WEB
-    // ------------------------------------------------------------
+    // --- RENDER WEB ---
     if (isWeb) {
         return (
-            <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0e0d0df1' }}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: colors.background }}>
                 <View style={styles.alineadoPersonal}>
                     <View style={styles.contendorLogoTitulos}>
-                        <Image source={require('../../../assets/images/logo.png')} style={styles.logo} />
+                        <Image 
+                            source={require('../../../assets/images/logo.png')} 
+                            style={styles.logo} 
+                            resizeMode="contain"
+                        />
                         <View style={styles.contenedorWritter}>
                             <Text style={[styles.tituloHero, isDesktopView && styles.tituloHeroDesktop]}>
                                 {strings.nameMayus} <TypeWriter typing={1} style={styles.destaqueAzul}>{strings.appMayus}</TypeWriter>
@@ -90,9 +72,8 @@ export default function LoginScreen() {
                         </View>
                     </View>
 
-                    {/* Caja con tamaño 500 en Desktop igual que el Register */}
                     <View style={[styles.caja, isDesktopView && { width: 500 }]}>
-                        <Text style={[styles.mainText, { marginBottom: 20 }]}>Iniciar Sesión</Text>
+                        <Text style={[styles.mainText, { marginBottom: 20, textAlign: 'center' }]}>Iniciar Sesión</Text>
 
                         <View style={styles.formStack}>
                             <CustomInputText 
@@ -102,7 +83,6 @@ export default function LoginScreen() {
                                 value={email} 
                                 autoCapitalize="none"
                             />
-                            
                             <View style={{ marginTop: 20 }}>
                                 <CustomInputText 
                                     label="Contraseña" 
@@ -112,13 +92,9 @@ export default function LoginScreen() {
                                     value={password} 
                                 />
                             </View>
-
-                            <TouchableOpacity style={{ alignSelf: 'flex-end', marginTop: 10 }}>
-                                <Text style={styles.texto}>¿Has olvidado tu contraseña?</Text>
-                            </TouchableOpacity>
                         </View>
 
-                        <View style={{ width: '100%', marginTop: 30 }}>
+                        <View style={{ width: '100%', marginTop: 30, alignItems: 'center' }}>
                             <CustomButton 
                                 title={isSubmitting ? "ENTRANDO..." : "INICIAR SESIÓN"} 
                                 onPress={handleLogin} 
@@ -127,7 +103,7 @@ export default function LoginScreen() {
 
                         <TouchableOpacity 
                             onPress={() => navigation.navigate("Register")} 
-                            style={{ marginTop: 25 }}
+                            style={{ marginTop: 25, alignItems: 'center' }}
                         >
                             <Text style={styles.texto}>
                                 ¿No tienes cuenta? <Text style={styles.blueText}>Regístrate aquí</Text>
@@ -139,11 +115,9 @@ export default function LoginScreen() {
         );
     }
 
-    // ------------------------------------------------------------
-    // VERSIÓN MOBILE (Android / iOS)
-    // ------------------------------------------------------------
+    // --- RENDER MOBILE ---
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#0e0d0df1' }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
             <KeyboardAvoidingView 
                 style={{ flex: 1 }} 
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -155,7 +129,11 @@ export default function LoginScreen() {
                 >
                     <View style={[styles.alineadoPersonal, { paddingVertical: 40 }]}>
                         <View style={styles.contendorLogoTitulos}>
-                            <Image source={require('../../../assets/images/logo.png')} style={styles.logo} />
+                            <Image 
+                                source={require('../../../assets/images/logo.png')} 
+                                style={styles.logo} 
+                                resizeMode="contain"
+                            />
                             <View style={styles.contenedorWritter}>
                                 <Text style={styles.tituloHero}>
                                     {strings.nameMayus} <TypeWriter typing={1} style={styles.destaqueAzul}>{strings.appMayus}</TypeWriter>
@@ -164,7 +142,7 @@ export default function LoginScreen() {
                         </View>
 
                         <View style={styles.caja}>
-                            <Text style={[styles.mainText, { marginBottom: 25 }]}>Iniciar Sesión</Text>
+                            <Text style={[styles.mainText, { marginBottom: 25, textAlign: 'center' }]}>Iniciar Sesión</Text>
                             
                             <View style={styles.formStack}>
                                 <CustomInputText
@@ -172,6 +150,7 @@ export default function LoginScreen() {
                                     placeholder="ejemplo@correo.com"
                                     onChangeText={setEmail}
                                     value={email}
+                                    autoCapitalize="none"
                                 />
                                 <View style={{ marginTop: 20 }}>
                                     <CustomInputText
@@ -184,7 +163,7 @@ export default function LoginScreen() {
                                 </View>
                             </View>
                             
-                            <View style={{ width: '100%', marginTop: 35 }}>
+                            <View style={{ width: '100%', marginTop: 35, alignItems: 'center' }}>
                                 <CustomButton 
                                     title={isSubmitting ? "ENTRANDO..." : "INICIAR SESIÓN"} 
                                     onPress={handleLogin} 

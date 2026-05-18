@@ -13,6 +13,7 @@ export default StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+    textAlign: 'center',
   },
   disabled: {
     opacity: 0.5,

@@ -87,6 +87,7 @@ public class Survey {
     @ToString.Exclude
     private List<UserSurveys> userSurveysList = new ArrayList<>();
 
+    private Boolean isPublished = false;
     private String urlGraficoSuperset;
 
     public void setCreationDate(LocalDateTime timestamp) {
@@ -94,6 +95,18 @@ public class Survey {
         throw new UnsupportedOperationException("Unimplemented method 'setCreationDate'");
     }
 
+
+    public Boolean isIsPublished() {
+        return this.isPublished;
+    }
+
+    public Boolean getIsPublished() {
+        return this.isPublished;
+    }
+
+    public void setIsPublished(Boolean isPublished) {
+        this.isPublished = isPublished;
+    }
 
 
     public Long getId() {
@@ -213,7 +226,8 @@ public class Survey {
     public Survey() {
     }
 
-    public Survey(Long id, Integer numQuestions, Integer numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList, List<Category> categoryList, Client client, List<UserSurveys> userSurveysList, String urlGraficoSuperset) {
+
+    public Survey(Long id, Integer numQuestions, Integer numUsers, String name, LocalDateTime creationDate, LocalDateTime launchDate, LocalDateTime closeDate, List<Question> questionList, PagoPanelista pagoPanelista, List<Genere> genereList, List<Category> categoryList, Client client, List<UserSurveys> userSurveysList, Boolean isPublished, String urlGraficoSuperset) {
         this.id = id;
         this.numQuestions = numQuestions;
         this.numUsers = numUsers;
@@ -227,6 +241,7 @@ public class Survey {
         this.categoryList = categoryList;
         this.client = client;
         this.userSurveysList = userSurveysList;
+        this.isPublished = isPublished;
         this.urlGraficoSuperset = urlGraficoSuperset;
     }
 
