@@ -20,7 +20,7 @@ import AdminUserScreen from "./screens/Admin/AdminUserScreen";
 import AdminGenresGames from "./screens/Admin/AdminGenresGames";
 import AdminGraphics from "./screens/Admin/AdminGraphics";
 import InfoPerfil from "./screens/Profile/ProfileScreen";
-import SurveyAnalyticsScreen from "./screens/SurveyAnalyticsScreen";
+
 
 const Stack = createNativeStackNavigator();
 const queryClient = new QueryClient();
@@ -58,7 +58,7 @@ function Navigation() {
                 <>
                     <Stack.Screen name="ClientDashboard" component={ClientDashboard} />
                     <Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen} />
-                    <Stack.Screen name="SurveyAnalytics" component={SurveyAnalyticsScreen} />
+                    <Stack.Screen name="SurveyAnalytics" component={SurveyAnalytics} />
 
                 </>
             ) : (

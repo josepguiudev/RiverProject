@@ -17,6 +17,7 @@ export default StyleSheet.create({
         alignItems: 'center',
         justifyContent: "center",
     },
+    caja:{},
     alineadoPersonalVertical: {
         flexDirection: 'row',
         alignItems: 'center',
