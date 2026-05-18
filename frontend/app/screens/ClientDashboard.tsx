@@ -99,33 +99,44 @@ export default function ClientDashboard() {
 			setAssigningId(null);
 		}
 	};
-    
-    const handlePressAnalysis = (item: any) => {
-        navigation.navigate("SurveyAnalytics", {
-            surveyId: item.id,            // ID de la encuesta pulsada
-            title: item.name,             // Título de la encuesta
-            idCreador: item.idClient      // El ID del propietario/cliente que creó la encuesta (viene del backend)
-        });
-    };
+
+	const handlePressAnalysis = (item: any) => {
+		navigation.navigate("SurveyAnalytics", {
+			surveyId: item.id, // ID de la encuesta pulsada
+			title: item.name, // Título de la encuesta
+			idCreador: item.idClient, // El ID del propietario/cliente
+		});
+	};
 
 	const renderActionButtons = (item: Survey) => {
 		const isPublished = item.status === true;
 
 		return (
 			<View style={styles.contenedorBotonesTarjeta}>
+				{/* BOTÓN ANÁLISIS CON SEGREGACIÓN DE ROLES (ADMIN -> AdminGraphics / CLIENT -> SurveyAnalytics) */}
 				<TouchableOpacity
 					style={[
 						styles.botonResultados,
 						{ flex: 1, minWidth: 100, height: 42 },
 					]}
-					onPress={() =>
-						item.supersetID
-							? navigation.navigate("AdminGraphics", {
+					onPress={() => {
+						if (isAdmin) {
+							if (item.supersetID) {
+								navigation.navigate("AdminGraphics", {
 									supersetID: item.supersetID,
 									title: item.name,
-								})
-							: Alert.alert("Aviso", "Sin dashboard vinculado.")
-					}
+								});
+							} else {
+								Alert.alert(
+									"Aviso",
+									"Sin dashboard vinculado para Administrador.",
+								);
+							}
+						} else {
+							// Si es cliente, ejecuta la navegación hacia SurveyAnalyticsScreen
+							handlePressAnalysis(item);
+						}
+					}}
 				>
 					<MaterialCommunityIcons
 						name="chart-box-outline"
@@ -364,14 +375,12 @@ export default function ClientDashboard() {
 					)}
 
 					{loading ? (
-						// Muestra la ruedita de carga si está buscando en la base de datos
 						<ActivityIndicator
 							size="large"
 							color={colors.primary}
 							style={{ marginTop: 50 }}
 						/>
 					) : surveys.length > 0 ? (
-						/* Si ya cargó y SÍ hay encuestas, dibuja el Grid Ancho */
 						<View style={styles.contenedorListado}>
 							<View style={styles.gridEncuestas}>
 								{surveys.map((item) => (
@@ -408,7 +417,6 @@ export default function ClientDashboard() {
 							</View>
 						</View>
 					) : (
-						/* Si ya cargó pero NO hay encuestas, muestra el aviso de vacío */
 						<View style={{ marginTop: 100, alignItems: "center" }}>
 							<Ionicons
 								name="document-text-outline"

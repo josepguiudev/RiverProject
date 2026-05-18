@@ -12,6 +12,7 @@ import SurveyCreatorScreen from "./screens/SurveyCreatorScreen";
 import TakeSurveyScreen from "./screens/TakeSurveyScreen";
 import SurveyListScreen from "./screens/SurveyListScreen";
 import ClientDashboard from "./screens/ClientDashboard";
+import SurveyAnalytics from "./screens/SurveyAnalyticsScreen";
 import CompleteProfile from "./screens/CompleteProfileScreen";
 import ConnectSteam from "./screens/ConnectSteamScreen";
 import AdminScreen from "./screens/Admin/AdminScreen";
@@ -19,6 +20,7 @@ import AdminUserScreen from "./screens/Admin/AdminUserScreen";
 import AdminGenresGames from "./screens/Admin/AdminGenresGames";
 import AdminGraphics from "./screens/Admin/AdminGraphics";
 import InfoPerfil from "./screens/Profile/ProfileScreen";
+import SurveyAnalyticsScreen from "./screens/SurveyAnalyticsScreen";
 
 const Stack = createNativeStackNavigator();
 const queryClient = new QueryClient();
@@ -56,6 +58,8 @@ function Navigation() {
                 <>
                     <Stack.Screen name="ClientDashboard" component={ClientDashboard} />
                     <Stack.Screen name="SurveyCreator" component={SurveyCreatorScreen} />
+                    <Stack.Screen name="SurveyAnalytics" component={SurveyAnalyticsScreen} />
+
                 </>
             ) : (
                 /* STACK DE USER (PLAYER) */
