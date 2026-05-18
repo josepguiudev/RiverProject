@@ -392,6 +392,15 @@ export default StyleSheet.create({
 		backgroundColor: colors.secondary,
 		marginHorizontal: 8,
 	},
+    disabled: {
+        opacity: 0.5,
+    },
+    labelCustom: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        marginBottom: 5,
+        fontWeight: "600",
+    },
 
 	borde: { borderWidth: 1, borderColor: "red" },
 	borde2: { borderWidth: 1, borderColor: "green" },

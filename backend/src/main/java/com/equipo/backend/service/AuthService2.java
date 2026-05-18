@@ -71,9 +71,10 @@ public class AuthService2 {
             throw new RuntimeException("El email ya está registrado");
         }
 
-        // 2. Switch por tipo para crear la entidad
+        // 2. Switch modificado para aceptar múltiples variantes
         return switch (request.getType().toUpperCase()) {
-            case "PLAYER" -> {
+            // Al añadir una coma, ambas palabras clave ejecutarán el mismo código
+            case "PLAYER", "USER" -> {
                 User user = new User();
                 user.setEmail(request.getEmail());
                 user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -83,9 +84,11 @@ public class AuthService2 {
                 user.setCreacionCuentaUsuario(new Date());
                 
                 userRepository.save(user);
+                // IMPORTANTE: Sigues devolviendo "PLAYER" en el DTO de respuesta 
+                // para no romper la lógica interna de roles del resto de la app
                 yield new LoginResponse(jwtService.generateToken(user), user, "PLAYER", 1);
             }
-            case "CLIENT" -> {
+            case "CLIENT", "EMPRESA" -> {
                 Client client = new Client();
                 client.setEmail(request.getEmail());
                 client.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -95,10 +98,10 @@ public class AuthService2 {
                 clientRepository.save(client);
                 yield new LoginResponse(jwtService.generateTokenForClient(client), client, "CLIENT", 3);
             }
-            default -> throw new RuntimeException("Tipo de cuenta no soportado");
+            default -> throw new RuntimeException("Tipo de cuenta no soportado: " + request.getType());
         };
     }
-
+    
     public LoginResponse login(LoginRequest request) {
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
         Optional<Client> clientOpt = clientRepository.findByEmail(request.getEmail());
