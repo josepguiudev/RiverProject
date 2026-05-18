@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { 
     View, FlatList, Text, ActivityIndicator, RefreshControl, 
-    TouchableOpacity, Platform, SafeAreaView, StatusBar 
+    TouchableOpacity, Platform, SafeAreaView, StatusBar, StyleSheet 
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from "@expo/vector-icons";
@@ -55,7 +55,7 @@ const SurveyListScreen = ({ navigation }: any) => {
     }
 
     // ============================================================
-    //  VERSIÓN WEB (nuevo diseño de tu compañero)
+    //  VERSIÓN WEB OPTIMIZADA PARA ESCRITORIO ANCHO
     // ============================================================
     if (isWeb) {
         return (
@@ -67,7 +67,7 @@ const SurveyListScreen = ({ navigation }: any) => {
                     justifyContent: 'flex-start', 
                     zIndex: 10,
                     paddingTop: Platform.OS === 'ios' ? 50 : 20,
-                    paddingHorizontal: 20 
+                    paddingHorizontal: 40 
                 }}>
                     <TouchableOpacity 
                         onPress={() => setMenuVisible(true)} 
@@ -81,26 +81,28 @@ const SurveyListScreen = ({ navigation }: any) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Lista de encuestas con cabecera y diseño mejorado */}
+                {/* Lista de encuestas adaptada a múltiples columnas */}
                 <FlatList
                     data={surveys}
+                    /* Forzamos 3 columnas si es pantalla desktop, sino 1 */
+                    key={isDesktopView ? 'web-desktop-grid' : 'web-mobile-list'}
+                    numColumns={isDesktopView ? 3 : 1}
                     keyExtractor={(item, index) => 
                         item?.id?.toString() || 
                         item?.survey?.id?.toString() || 
                         `survey-${index}`
                     }
-                    contentContainerStyle={{ 
-                        alignItems: 'center', 
-                        paddingBottom: 60,
-                        width: '100%',
-                        paddingHorizontal: 15
-                    }}
+                    columnWrapperStyle={isDesktopView ? stylesLocales.webGridFila : null}
+                    contentContainerStyle={[
+                        stylesLocales.webContenedorLista,
+                        { paddingHorizontal: isDesktopView ? 40 : 15 }
+                    ]}
                     ListHeaderComponent={
-                        <View style={{ width: '100%', maxWidth: 800, marginVertical: 40 }}>
+                        <View style={stylesLocales.webHeaderContainer}>
                             <Text style={[
                                 stylesGlobal.tituloHero, 
                                 isDesktopView && stylesGlobal.tituloHeroDesktop,
-                                { textAlign: 'center' }
+                                { textAlign: isDesktopView ? 'left' : 'center' }
                             ]}>
                                 Mis Encuestas
                             </Text>
@@ -110,7 +112,7 @@ const SurveyListScreen = ({ navigation }: any) => {
                         if (!item || !item.survey) return null;
                         const isCompleted = Number(item.isRespondida) === 1;
                         return (
-                            <View style={{ width: '100%', maxWidth: 800 }}>
+                            <View style={[stylesLocales.webItemWrapper, { maxWidth: isDesktopView ? '32%' : '100%' }]}>
                                 <TouchableOpacity 
                                     activeOpacity={0.7}
                                     disabled={isCompleted}
@@ -121,16 +123,17 @@ const SurveyListScreen = ({ navigation }: any) => {
                                             flexDirection: 'row', 
                                             alignItems: 'center',
                                             justifyContent: 'space-between',
-                                            padding: isDesktopView ? 30 : 20,
+                                            padding: isDesktopView ? 24 : 20,
                                             backgroundColor: isCompleted ? '#0a0a0a' : '#141414',
                                             borderColor: isCompleted ? '#28a745' : '#333',
                                             borderWidth: 1.5,
                                             opacity: isCompleted ? 0.7 : 1,
-                                            marginBottom: 15
+                                            margin: 0,
+                                            width: '100%'
                                         }
                                     ]}
                                 >
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 }}>
                                         {/* Círculo de estado */}
                                         <View style={{
                                             width: 14,
@@ -140,7 +143,7 @@ const SurveyListScreen = ({ navigation }: any) => {
                                             marginRight: 15,
                                         }} />
                                         <View style={{ flex: 1 }}>
-                                            <Text style={[
+                                            <Text numberOfLines={2} style={[
                                                 stylesGlobal.tittleTextSurvey, 
                                                 isDesktopView && stylesGlobal.tittleTextSurveyDesktop,
                                                 isCompleted && { color: '#666' }
@@ -165,7 +168,6 @@ const SurveyListScreen = ({ navigation }: any) => {
                                         backgroundColor: isCompleted ? 'rgba(40,167,69,0.1)' : 'rgba(91, 85, 192, 0.1)',
                                         borderWidth: 1,
                                         borderColor: isCompleted ? '#28a745' : '#5b55c0',
-                                        marginLeft: 10
                                     }}>
                                         <Text style={{ 
                                             color: isCompleted ? '#28a745' : '#5b55c0', 
@@ -187,7 +189,7 @@ const SurveyListScreen = ({ navigation }: any) => {
                         />
                     }
                     ListEmptyComponent={
-                        <View style={{ marginTop: 50 }}>
+                        <View style={{ marginTop: 50, width: '100%', alignItems: 'center' }}>
                             <Text style={[stylesGlobal.texto, { opacity: 0.5 }]}>
                                 No tienes encuestas asignadas por ahora.
                             </Text>
@@ -201,7 +203,7 @@ const SurveyListScreen = ({ navigation }: any) => {
     }
 
     // ============================================================
-    //  VERSIÓN ANDROID (original, con diseño táctil)
+    //  VERSIÓN ANDROID (intacta)
     // ============================================================
     return (
         <SafeAreaView style={stylesGlobal.alineadoPersonal}>
@@ -301,5 +303,30 @@ const SurveyListScreen = ({ navigation }: any) => {
         </SafeAreaView>
     );
 };
+
+// ============================================================
+//  ESTILOS LOCALES PARA AJUSTAR LA RED DESKTOP
+// ============================================================
+const stylesLocales = StyleSheet.create({
+    webContenedorLista: {
+        paddingBottom: 60,
+        width: '100%',
+        maxWidth: 1400, // Deja expandir el layout completo horizontalmente
+        alignSelf: 'center',
+    },
+    webHeaderContainer: {
+        width: '100%', 
+        marginVertical: 40,
+        paddingHorizontal: 10
+    },
+    webGridFila: {
+        justifyContent: 'flex-start',
+        gap: 20, // Espacio entre las columnas
+    },
+    webItemWrapper: {
+        flex: 1,
+        marginBottom: 20,
+    }
+});
 
 export default SurveyListScreen;
