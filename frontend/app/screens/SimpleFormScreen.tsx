@@ -12,99 +12,94 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
 } from 'react-native';
 import { FormApiService } from '../services/api/service';
-import { FormState, FormErrors, FormResponse } from '../types/forms.types';
+import { FormState, FormErrors } from '../types/forms.types';
+import { Survey, Question } from '../types/formsSurvey.types';
 import { useLayout } from '../utils/useLayout';
+import { isWeb } from '../utils/device';
+import { useAuth } from './Auth/AuthContext';
 
-/**
- * Pantalla de formulario simple
- * Permite al usuario ingresar nombre y email, y enviarlos al backend
- */
 const SimpleFormScreen: React.FC = () => {
-  const { isDesktopView, isTabletView } = useLayout();
+  const { isDesktopView } = useLayout();
+  const { user } = useAuth();
 
-  // Estado del formulario
   const [formData, setFormData] = useState<FormState>({
     nombre: '',
     email: '',
   });
-
-  // Estado de errores de validación
   const [errors, setErrors] = useState<FormErrors>({});
-
-  // Estado de carga
   const [loading, setLoading] = useState<boolean>(false);
 
-  /**
-   * Validar email con expresión regular
-   */
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  /**
-   * Validar todos los campos del formulario
-   */
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-
     if (!formData.nombre.trim()) {
       newErrors.nombre = 'El nombre es requerido';
     } else if (formData.nombre.trim().length < 2) {
       newErrors.nombre = 'El nombre debe tener al menos 2 caracteres';
     }
-
     if (!formData.email.trim()) {
       newErrors.email = 'El email es requerido';
     } else if (!validateEmail(formData.email)) {
       newErrors.email = 'Email inválido';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  /**
-   * Actualizar un campo del formulario
-   */
   const updateField = (field: keyof FormState, value: string): void => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-
+    setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: undefined,
-      }));
+      setErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
 
-  /**
-   * Enviar formulario al backend
-   */
   const handleSubmit = async (): Promise<void> => {
     if (!validateForm()) {
       Alert.alert('Error de validación', 'Por favor corrige los errores');
       return;
     }
-
+    if (!user?.id) {
+      Alert.alert('Error', 'Usuario no identificado');
+      return;
+    }
     setLoading(true);
-
     try {
-      const dataToSend: FormResponse = {
-        nombre: formData.nombre.trim(),
-        email: formData.email.trim().toLowerCase(),
+      // Construcción correcta de la pregunta según los tipos
+      const question: Question = {
+        textQuestion: `Correo electrónico: ${formData.email.trim().toLowerCase()}`,
+        config: {
+          typeName: 'SHORT_TEXT',
+          isMultiple: false,
+          attributes: '',
+        },
+        option: [],
+        options: [],
+      };
+      const surveyData: Survey = {
+        name: formData.nombre.trim(),
+        questionList: [question],
+        numQuestions: 1,
+        numUsers: 0,
+        status: true, // boolean
+        categoryList: [],
+        genereList: [],
+        launchDate: new Date().toISOString(),
+        closeDate: '',
+        creationDate: new Date().toISOString(),
+        SurveyReward: 0,
       };
 
-      const response = await FormApiService.submitForm(dataToSend);
-
+      const response = await FormApiService.submitForm(surveyData, user.id);
       Alert.alert(
         '✅ Éxito',
-        `Formulario enviado correctamente!\nID: ${response.id}`,
+        `Formulario enviado correctamente!\nID de encuesta: ${response.id}`,
         [{ text: 'OK', onPress: resetForm }]
       );
     } catch (error) {
@@ -115,9 +110,6 @@ const SimpleFormScreen: React.FC = () => {
     }
   };
 
-  /**
-   * Probar conexión con el backend
-   */
   const testConnection = async (): Promise<void> => {
     setLoading(true);
     try {
@@ -130,75 +122,202 @@ const SimpleFormScreen: React.FC = () => {
     }
   };
 
-  /**
-   * Resetear formulario a valores iniciales
-   */
   const resetForm = (): void => {
     setFormData({ nombre: '', email: '' });
     setErrors({});
   };
 
-  return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={[styles.scrollContent, isDesktopView && styles.scrollContentDesktop]}
-        keyboardShouldPersistTaps="handled"
+  // ============================================================
+  //  VERSIÓN WEB (original con estilos condicionales corregidos)
+  // ============================================================
+  if (isWeb) {
+    return (
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={[styles.formContainer, isDesktopView && styles.formContainerDesktop]}>
-          <Text style={[styles.title, isDesktopView && styles.titleDesktop]}>Formulario Simple</Text>
-          <Text style={[styles.subtitle, isDesktopView && styles.subtitleDesktop]}>
-            Prueba de conexión con Spring Boot usando TypeScript
-          </Text>
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, isDesktopView && styles.scrollContentDesktop]}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={[styles.formContainer, isDesktopView && styles.formContainerDesktop]}>
+            <Text style={[styles.title, isDesktopView && styles.titleDesktop]}>Formulario Simple</Text>
+            <Text style={[styles.subtitle, isDesktopView && styles.subtitleDesktop]}>
+              Prueba de conexión con Spring Boot usando TypeScript
+            </Text>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Nombre <Text style={styles.required}>*</Text></Text>
-            <TextInput
-              style={[styles.input, errors.nombre && styles.inputError, isDesktopView && styles.inputDesktop]}
-              placeholder="Tu nombre completo"
-              value={formData.nombre}
-              onChangeText={(value) => updateField('nombre', value)}
-              editable={!loading}
-              autoCapitalize="words"
-            />
-            {errors.nombre && <Text style={styles.errorText}>{errors.nombre}</Text>}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Nombre <Text style={styles.required}>*</Text></Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  isDesktopView && styles.inputDesktop,
+                  errors.nombre ? styles.inputError : undefined,
+                ]}
+                placeholder="Tu nombre completo"
+                value={formData.nombre}
+                onChangeText={(value) => updateField('nombre', value)}
+                editable={!loading}
+                autoCapitalize="words"
+              />
+              {errors.nombre && <Text style={styles.errorText}>{errors.nombre}</Text>}
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email <Text style={styles.required}>*</Text></Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  isDesktopView && styles.inputDesktop,
+                  errors.email ? styles.inputError : undefined,
+                ]}
+                placeholder="tu@email.com"
+                value={formData.email}
+                onChangeText={(value) => updateField('email', value)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                editable={!loading}
+              />
+              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, styles.submitButton, loading && styles.buttonDisabled]}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>📤 Enviar Formulario</Text>}
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.button, styles.testButton]} onPress={testConnection} disabled={loading}>
+              <Text style={styles.buttonText}>🔌 Probar Conexión</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.button, styles.resetButton]} onPress={resetForm} disabled={loading}>
+              <Text style={styles.resetButtonText}>🔄 Limpiar Formulario</Text>
+            </TouchableOpacity>
           </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    );
+  }
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email <Text style={styles.required}>*</Text></Text>
-            <TextInput
-              style={[styles.input, errors.email && styles.inputError, isDesktopView && styles.inputDesktop]}
-              placeholder="tu@email.com"
-              value={formData.email}
-              onChangeText={(value) => updateField('email', value)}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              editable={!loading}
-            />
-            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+  // ============================================================
+  //  VERSIÓN ANDROID (diseño táctil)
+  // ============================================================
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 20, paddingVertical: 30 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={{ backgroundColor: '#fff', borderRadius: 24, padding: 24, elevation: 4 }}>
+            <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 8 }}>
+              Formulario Simple
+            </Text>
+            <Text style={{ fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
+              Prueba de conexión con Spring Boot usando TypeScript
+            </Text>
+
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 8 }}>
+                Nombre <Text style={{ color: '#e74c3c' }}>*</Text>
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: '#f9f9f9',
+                  borderWidth: 1,
+                  borderColor: errors.nombre ? '#e74c3c' : '#ddd',
+                  borderRadius: 12,
+                  padding: 14,
+                  fontSize: 16,
+                  color: '#333',
+                }}
+                placeholder="Tu nombre completo"
+                value={formData.nombre}
+                onChangeText={(value) => updateField('nombre', value)}
+                editable={!loading}
+                autoCapitalize="words"
+              />
+              {errors.nombre && <Text style={{ color: '#e74c3c', fontSize: 12, marginTop: 4 }}>{errors.nombre}</Text>}
+            </View>
+
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 8 }}>
+                Email <Text style={{ color: '#e74c3c' }}>*</Text>
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: '#f9f9f9',
+                  borderWidth: 1,
+                  borderColor: errors.email ? '#e74c3c' : '#ddd',
+                  borderRadius: 12,
+                  padding: 14,
+                  fontSize: 16,
+                  color: '#333',
+                }}
+                placeholder="tu@email.com"
+                value={formData.email}
+                onChangeText={(value) => updateField('email', value)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                editable={!loading}
+              />
+              {errors.email && <Text style={{ color: '#e74c3c', fontSize: 12, marginTop: 4 }}>{errors.email}</Text>}
+            </View>
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#4CAF50',
+                borderRadius: 16,
+                paddingVertical: 16,
+                alignItems: 'center',
+                marginTop: 12,
+                opacity: loading ? 0.6 : 1,
+              }}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>📤 Enviar Formulario</Text>}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#2196F3',
+                borderRadius: 16,
+                paddingVertical: 16,
+                alignItems: 'center',
+                marginTop: 12,
+              }}
+              onPress={testConnection}
+              disabled={loading}
+            >
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>🔌 Probar Conexión</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: 'transparent',
+                borderWidth: 1.5,
+                borderColor: '#999',
+                borderRadius: 16,
+                paddingVertical: 16,
+                alignItems: 'center',
+                marginTop: 12,
+              }}
+              onPress={resetForm}
+              disabled={loading}
+            >
+              <Text style={{ color: '#666', fontSize: 16, fontWeight: '600' }}>🔄 Limpiar Formulario</Text>
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity
-            style={[styles.button, styles.submitButton, loading && styles.buttonDisabled]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>📤 Enviar Formulario</Text>}
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.button, styles.testButton]} onPress={testConnection} disabled={loading}>
-            <Text style={styles.buttonText}>🔌 Probar Conexión</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.button, styles.resetButton]} onPress={resetForm} disabled={loading}>
-            <Text style={styles.resetButtonText}>🔄 Limpiar Formulario</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

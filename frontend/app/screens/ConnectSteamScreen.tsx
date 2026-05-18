@@ -1,14 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, Alert, Platform, ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
-import { useAuth } from "./Auth/AuthContext"; 
-import client from "../api/client";
-import CustomInputText from "../components/CustomInputText/CustomInputText";
-import CustomButton from "../components/CustomButton/CustomButton";
 import {
   View,
   Text,
   Alert,
-  Platform,
   ActivityIndicator,
   ScrollView,
   TouchableOpacity,
@@ -21,27 +15,18 @@ import styles, { colors } from "./stylesGlobal";
 import Constants from "expo-constants";
 import { isWeb } from "../utils/device";
 
-/**
- * Pantalla final de onboarding: Conexión con Steam.
- * Permite al usuario vincular su Steam ID para que el sistema le asigne encuestas basadas en sus juegos.
- */
 export default function ConnectSteamScreen({ navigation }: any) {
-    // Extraemos los datos del usuario y la función para finalizar el onboarding
-    const { user, updateRegistrationStep } = useAuth(); 
-    const [steamId, setSteamId] = useState("");
-    const [loading, setLoading] = useState(false);
+  const { user, token, updateRegistrationStep } = useAuth();
+  const [steamId, setSteamId] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const baseUrl = Platform.OS === "web" ? "http://localhost:8080" : "http://10.0.2.2:8080";
+  const baseUrl = isWeb ? "http://localhost:8080" : "http://10.0.2.2:8080";
 
-    /**
-     * Envía el Steam ID al backend para finalizar el registro.
-     * Si la validación es correcta, marca el onboarding como completado.
-     */
-    const handleFinalize = async () => {
-        if (!steamId) {
-            Alert.alert("Error", "Por favor, introduce tu Steam ID.");
-            return;
-        }
+  const handleFinalize = async () => {
+    if (!steamId) {
+      Alert.alert("Error", "Por favor, introduce tu Steam ID.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -63,7 +48,8 @@ export default function ConnectSteamScreen({ navigation }: any) {
 
       if (response.ok) {
         Alert.alert("¡Configuración Completa!", "Perfil vinculado correctamente.");
-        navigation.replace("SurveyList");
+        await updateRegistrationStep(3); // Onboarding completado
+        // navigation.replace("SurveyList") ya no es necesario porque App.tsx reaccionará al cambio de step
       } else {
         const errorMsg = await response.text();
         Alert.alert("Error", errorMsg || "No se pudo validar el Steam ID.");
@@ -77,7 +63,7 @@ export default function ConnectSteamScreen({ navigation }: any) {
   };
 
   // ============================================================
-  //  VERSIÓN WEB (exactamente igual al original)
+  //  VERSIÓN WEB (original, sin cambios)
   // ============================================================
   if (isWeb) {
     return (
@@ -108,10 +94,11 @@ export default function ConnectSteamScreen({ navigation }: any) {
             ) : (
               <>
                 <CustomButton title="VINCULAR Y ASIGNAR ENCUESTAS" onPress={handleFinalize} />
-
                 <TouchableOpacity
                   style={[styles.btnSecondary, { borderStyle: "solid", marginTop: 10 }]}
-                  onPress={() => navigation.navigate("SurveyList")}
+                  onPress={async () => {
+                    await updateRegistrationStep(3);
+                  }}
                 >
                   <Text style={{ color: colors.text, fontWeight: "bold" }}>
                     DEBUG: SALTAR A ENCUESTAS (TEST)
@@ -145,7 +132,7 @@ export default function ConnectSteamScreen({ navigation }: any) {
   }
 
   // ============================================================
-  //  VERSIÓN ANDROID (diseño táctil, optimizado para móvil)
+  //  VERSIÓN ANDROID (diseño táctil, optimizado)
   // ============================================================
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -159,8 +146,7 @@ export default function ConnectSteamScreen({ navigation }: any) {
         showsVerticalScrollIndicator={false}
       >
         <Text style={{ fontSize: 34, fontWeight: "bold", color: colors.white, textAlign: "center", marginBottom: 16 }}>
-          Paso Final:{" "}
-          <Text style={{ color: colors.secondary }}>Conecta Steam</Text>
+          Paso Final: <Text style={{ color: colors.secondary }}>Conecta Steam</Text>
         </Text>
 
         <Text
@@ -171,10 +157,6 @@ export default function ConnectSteamScreen({ navigation }: any) {
             marginBottom: 32,
             lineHeight: 22,
           }}
-    return (
-        <ScrollView 
-            style={[styles.alineadoPersonal, { flex: 1 }]} 
-            contentContainerStyle={[styles.scrollContainer, { justifyContent: 'center', padding: 20 }]}
         >
           Al vincular tu ID, nuestro sistema te asignará automáticamente todas las encuestas
           de los juegos que ya tienes en tu biblioteca.
@@ -187,31 +169,17 @@ export default function ConnectSteamScreen({ navigation }: any) {
           onChangeText={setSteamId}
         />
 
-                <View style={{ marginTop: 30, gap: 12, alignItems: 'center' }}>
-                    {loading ? (
-                        <ActivityIndicator size="large" color={colors.primary} />
-                    ) : (
-                        <>
-                            <CustomButton title="VINCULAR Y ASIGNAR ENCUESTAS" onPress={handleFinalize} />
-                            
-                            {/* BOTÓN DE TEST PARA DESARROLLO */}
-                            <TouchableOpacity 
-                                style={[styles.btnSecondary, { borderStyle: 'solid', marginTop: 10 }]} 
-                                onPress={async () => {
-                                    await updateRegistrationStep(3);
-                                    // App.tsx hará el cambio automáticamente
-                                }} 
-                            >
-                                <Text style={{ color: colors.text, fontWeight: 'bold' }}>
-                                    DEBUG: SALTAR A ENCUESTAS (PERSISTENTE)
-                                </Text>
-                            </TouchableOpacity>
-                        </>
-                    )}
-                </View>
+        <View style={{ marginTop: 32, gap: 16 }}>
+          {loading ? (
+            <ActivityIndicator size="large" color={colors.primary} />
+          ) : (
+            <>
+              <CustomButton title="VINCULAR Y ASIGNAR ENCUESTAS" onPress={handleFinalize} />
 
               <TouchableOpacity
-                onPress={() => navigation.navigate("SurveyList")}
+                onPress={async () => {
+                  await updateRegistrationStep(3);
+                }}
                 style={{
                   backgroundColor: "transparent",
                   borderWidth: 1.5,

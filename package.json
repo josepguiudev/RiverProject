@@ -10,6 +10,7 @@
     "@storybook/addon-ondevice-actions": "^10.2.3",
     "@storybook/addon-ondevice-controls": "^10.2.3",
     "@storybook/react-native": "^10.2.3",
+    "@tanstack/react-query": "^5.100.10",
     "babel-loader": "^8.4.1",
     "react-native-config": "^1.6.1",
     "react-native-dotenv": "^3.4.11",

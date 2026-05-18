@@ -8,6 +8,7 @@ config.resolver.extraNodeModules = {
   ...config.resolver.extraNodeModules,
   tty: require.resolve('tty-browserify'),
 };
+config.resolver.resolverMainFields = ['react-native', 'browser', 'main'];
 
 // Forzar la resolución de debug a la versión de navegador SIEMPRE
 config.resolver.resolveRequest = (context, moduleName, platform) => {
