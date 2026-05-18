@@ -7,17 +7,9 @@ import MenuPrincipal from '@/app/components/Menu/CustomMenu';
 import CustomDropdown from '@/app/components/CustomDropDown/CustomDropDown'; 
 import globalStyles from "@/assets/globalStyles/globalStyles";
 
-// 1. IMPORTAMOS EL CONTEXTO DE AUTENTICACIÓN Y EL SERVICIO API
-import { useAuth } from "../Auth/AuthContext"; 
-import { FormApiService } from "../../services/api/service"; // Ajusta la ruta de importación de tu servicio
-import client from "../../api/client"; // Usado para llamadas directas de métricas si no están en el servicio
-
 const screenWidth = Dimensions.get("window").width;
 
 export default function AdminGraphics({ navigation }: any) {
-    const { user } = useAuth(); 
-    const isAdmin = user?.role === 'ADMIN';
-
     const [loadingGrafico, setLoadingGrafico] = useState(false);
     const [loadingPantalla, setLoadingPantalla] = useState(true);
     
@@ -27,77 +19,76 @@ export default function AdminGraphics({ navigation }: any) {
     const [totalEncuestasSistema, setTotalEncuestasSistema] = useState(0);
     const [totalRespondidasSistema, setTotalRespondidasSistema] = useState(0);
 
-    const [chartData, setChartData] = useState<any>(null);
+    const [listaGraficos, setListaGraficos] = useState<any[]>([]);
     const [totalVotos, setTotalVotos] = useState(0);
     const [menuVisible, setMenuVisible] = useState(false);
 
-    // 1. CARGA INICIAL UTILIZANDO FORM_API_SERVICE
     useEffect(() => {
         const cargarDatosIniciales = async () => {
-            if (!user?.id) return;
             try {
-                let dataListado = [];
-
-                // Carga de encuestas idéntica a la lógica del ClientDashboard
-                if (isAdmin) {
-                    dataListado = await FormApiService.getAllSurveys();
-                } else {
-                    dataListado = await FormApiService.getSurveysByClient(Number(user.id));
-                }
+                const resListado = await fetch(`${strings.parte2Desktop}api/surveys/all`);
+                if (!resListado.ok) throw new Error("Error en all");
+                const dataListado = await resListado.json();
                 
-                // Petición B: Métricas globales/específicas mediante la instancia Axios configurada
-                let urlMetricas = "/api/surveys/metrics/global-summary";
-                if (!isAdmin) {
-                    urlMetricas = `/api/surveys/metrics/summary/${user.id}`;
-                }
-                
-                const resMetricas = await client.get(urlMetricas);
-                const dataMetricas = resMetricas.data;
+                const resMetricas = await fetch(`${strings.parte2Desktop}api/surveys/global/metrics-summary`);
+                if (!resMetricas.ok) throw new Error("Error en metrics-summary");
+                const dataMetricas = await resMetricas.json();
 
                 if (Array.isArray(dataListado)) {
                     setEncuestasDisponibles(dataListado);
-                    if (dataListado.length > 0) {
-                        // Cambiado defensivamente a .idForm o .id según cómo lo use tu interfaz/backend
-                        const primerId = dataListado[0].id || dataListado[0].id;
-                        if (primerId) setIdEncuestaSeleccionada(Number(primerId));
+                    // 🛠️ CORRECCIÓN: Acceso seguro al índice del array para el primer ID
+                    if (dataListado.length > 0 && dataListado[0]?.id) {
+                        setIdEncuestaSeleccionada(dataListado[0].id);
                     }
                 }
-
                 setTotalEncuestasSistema(dataMetricas.totalSurveys || 0);
                 setTotalRespondidasSistema(dataMetricas.totalAnswered || 0);
-
             } catch (err) {
-                console.error("Error al cargar la configuración inicial de métricas:", err);
+                console.error("Error en configuración inicial:", err);
             } finally {
                 setLoadingPantalla(false);
             }
         };
-
         cargarDatosIniciales();
-    }, [user?.id, user?.role]);
+    }, []);
 
-    // 2. CARGA REACTIVA: Gráfico dinámico usando el cliente Axios unificado
     useEffect(() => {
         if (idEncuestaSeleccionada == null) return;
 
         setLoadingGrafico(true);
-        client.get(`/api/surveys/${idEncuestaSeleccionada}/resultados`)
+        fetch(`${strings.parte2Desktop}api/surveys/${idEncuestaSeleccionada}/resultados`)
             .then(res => {
-                const data = res.data;
-                const labels = data.map((item: any) => item.opcion || "Opción");
-                const votos = data.map((item: any) => Number(item.votos || 0));
-                
-                const suma = votos.reduce((acc: number, current: number) => acc + current, 0);
-                setTotalVotos(suma);
+                if (!res.ok) throw new Error("Error en respuesta de métricas");
+                return res.json();
+            })
+            .then((data: any[]) => {
+                const sumaVotos = data.reduce((acc, item) => acc + Number(item.votos || 0), 0);
+                setTotalVotos(sumaVotos);
 
-                setChartData({
-                    labels: labels.length > 0 ? labels : ["Sin respuestas"],
-                    datasets: [{ data: votos.length > 0 ? votos : [0] }]
-                });
+                const preguntasAgrupadas = data.reduce((groups: any, item: any) => {
+                    const tituloPregunta = item.pregunta || "Pregunta General";
+                    if (!groups[tituloPregunta]) {
+                        groups[tituloPregunta] = { labels: [], data: [] };
+                    }
+                    groups[tituloPregunta].labels.push(item.opcion || "Opción");
+                    groups[tituloPregunta].data.push(Number(item.votos || 0));
+                    return groups;
+                }, {});
+
+                const graficosFormateados = Object.keys(preguntasAgrupadas).map(titulo => ({
+                    tituloPregunta: titulo,
+                    dataConfig: {
+                        labels: preguntasAgrupadas[titulo].labels,
+                        // 🛠️ CORRECCIÓN CRUCIAL: Se añade [0] como valor por defecto para evitar el crash de texto
+                        datasets: [{ data: preguntasAgrupadas[titulo].data.length > 0 ? preguntasAgrupadas[titulo].data : [0] }]
+                    }
+                }));
+
+                setListaGraficos(graficosFormateados);
                 setLoadingGrafico(false);
             })
             .catch(err => {
-                console.error("Fallo de red cargando gráfico dinámico:", err);
+                console.error("Fallo cargando gráficos múltiples:", err);
                 setLoadingGrafico(false);
             });
     }, [idEncuestaSeleccionada]);
@@ -107,83 +98,69 @@ export default function AdminGraphics({ navigation }: any) {
         backgroundGradientTo: "#171d25",
         color: (opacity = 1) => `rgba(102, 192, 244, ${opacity})`, 
         labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-        barPercentage: 0.6,
+        barPercentage: 0.5,
         decimalPlaces: 0,
     };
 
     if (loadingPantalla) return <ActivityIndicator size="large" color="gold" style={styles.loader} />;
 
-    // Mapeo adaptado con alternativas defensivas (name, title) según tus interfaces de types
-    const opcionesDropdown = encuestasDisponibles.map(encuesta => {
-        const idEncuesta = encuesta.id || encuesta.idForm;
-        return {
-            id: idEncuesta,
-            label: encuesta.name || encuesta.title || `Encuesta #${idEncuesta}`,
-            value: idEncuesta ? idEncuesta.toString() : ""
-        };
-    });
-
     return (
         <View style={[globalStyles.padre, { flex: 1, backgroundColor: '#0d1117', padding: 15 }]}>
-            {/* HEADER */}
-            <View style={[globalStyles.cajaMenu, { height: 60, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20 }]}>
+            <View style={[globalStyles.cajaMenu, { height: 60, justifyContent: 'center', paddingHorizontal: 20 }]}>
                 <TouchableOpacity onPress={() => setMenuVisible(true)}>
                     <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu}</Text>
                 </TouchableOpacity>
-                <Text style={{ color: 'gold', marginLeft: 20, fontWeight: '600', fontSize: 12 }}>
-                    {isAdmin ? "VISTA: ADMINISTRADOR GLOBAL" : "VISTA: EMPRESA"}
-                </Text>
             </View>
         
             <ScrollView style={styles.contenedor}>
                 <Text style={styles.tituloHeader}>MÉTRICAS DE RESULTADOS</Text>
 
-                {/* KPI CARDS */}
                 <View style={styles.filaTarjetas}>
                     <View style={styles.tarjetaNumerica}>
                         <Text style={styles.numeroKpi}>{totalEncuestasSistema}</Text>
-                        <Text style={styles.textoKpi}>{isAdmin ? "Encuestas sistema" : "Mis encuestas"}</Text>
+                        <Text style={styles.textoKpi}>Encuestas creadas</Text>
                     </View>
-
                     <View style={[styles.tarjetaNumerica, { borderLeftColor: 'gold' }]}>
                         <Text style={[styles.numeroKpi, { color: 'gold' }]}>{totalRespondidasSistema}</Text>
-                        <Text style={styles.textoKpi}>{isAdmin ? "Respondidas totales" : "Mis respuestas"}</Text>
+                        <Text style={styles.textoKpi}>Respondidas totales</Text>
                     </View>
                 </View>
 
-                {/* SELECTOR DESPLEGABLE */}
                 <View style={styles.contenedorSelector}>
                     <Text style={styles.labelSelector}>FILTRAR POR FORMULARIO</Text>
-                    {opcionesDropdown.length > 0 ? (
-                        <CustomDropdown 
-                            label="" 
-                            options={opcionesDropdown} 
-                            onSelect={item => setIdEncuestaSeleccionada(Number(item.id))}
-                        />
-                    ) : (
-                        <Text style={{ color: '#aaa', fontSize: 12, paddingVertical: 5 }}>No tienes encuestas asignadas.</Text>
-                    )}
+                    <CustomDropdown 
+                        label="" 
+                        options={encuestasDisponibles.map(e => ({ id: e.id, label: e.name, value: e.id.toString() }))} 
+                        onSelect={item => setIdEncuestaSeleccionada(Number(item.id))}
+                    />
                 </View>
 
                 {loadingGrafico ? (
                     <ActivityIndicator size="large" color="gold" style={{ marginTop: 40 }} />
                 ) : (
-                    chartData && encuestasDisponibles.length > 0 && (
-                        <View style={styles.tarjetaGrafico}>
-                            <Text style={styles.tituloTarjeta}>VOTOS DE LOS USUARIOS</Text>
-                            <Text style={styles.subtituloTarjeta}>Muestra específica: {totalVotos} votos de esta encuesta</Text>
-                            
-                            <BarChart
-                                data={chartData}
-                                width={screenWidth - 50}
-                                height={240}
-                                yAxisLabel=""
-                                yAxisSuffix=""
-                                chartConfig={chartConfig}
-                                verticalLabelRotation={0}
-                                fromZero={true}
-                                style={styles.estiloGrafico}
-                            />
+                    listaGraficos.length > 0 ? (
+                        listaGraficos.map((grafico, index) => (
+                            <View key={index} style={styles.tarjetaGrafico}>
+                                <Text style={styles.tituloTarjeta}>{grafico.tituloPregunta.toUpperCase()}</Text>
+                                <Text style={styles.subtituloTarjeta}>
+                                    Muestra: {grafico.dataConfig.datasets[0].data.reduce((a: number, b: number) => a + b, 0)} votos en esta pregunta
+                                </Text>
+                                <BarChart
+                                    data={grafico.dataConfig}
+                                    width={screenWidth - 80}
+                                    height={220}
+                                    yAxisLabel=""
+                                    yAxisSuffix=""
+                                    chartConfig={chartConfig}
+                                    verticalLabelRotation={0}
+                                    fromZero={true}
+                                    style={styles.estiloGrafico}
+                                />
+                            </View>
+                        ))
+                    ) : (
+                        <View style={{ padding: 30, alignItems: 'center' }}>
+                            <Text style={{ color: '#889fb2' }}>No hay votaciones registradas para esta encuesta</Text>
                         </View>
                     )
                 )}
@@ -205,7 +182,7 @@ const styles = StyleSheet.create({
     contenedorSelector: { marginBottom: 20, backgroundColor: '#171d25', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#2a475e' },
     labelSelector: { color: '#66c0f4', fontSize: 10, fontWeight: '800', marginBottom: 6, letterSpacing: 1 },
     tarjetaGrafico: { backgroundColor: '#1b2838', borderRadius: 12, padding: 15, marginBottom: 20, borderWidth: 1, borderColor: '#2a475e' },
-    tituloTarjeta: { color: 'white', fontWeight: 'bold', fontSize: 14 },
-    subtituloTarjeta: { color: '#66c0f4', fontSize: 11, marginTop: 2, fontWeight: '600' },
-    estiloGrafico: { borderRadius: 8, marginTop: 15 }
+    tituloTarjeta: { color: 'white', fontWeight: 'bold', fontSize: 13, letterSpacing: 0.5, lineHeight: 18 },
+    subtituloTarjeta: { color: '#66c0f4', fontSize: 11, marginTop: 4, fontWeight: '600' },
+    estiloGrafico: { borderRadius: 8, marginTop: 12 }
 });
