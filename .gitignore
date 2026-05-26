@@ -1,5 +1,5 @@
 # ==========================================
-# DEPENDENCIAS GENERALES Y COMPILACIONES
+# DEPENDENCIAS Y COMPILACIONES (BACKEND / NODE)
 # ==========================================
 node_modules/
 backend/target/
@@ -19,17 +19,17 @@ app-example/
 # ==========================================
 # ANDROID NATIVO
 # ==========================================
-android/
-.kotlin/
-*.jks
+/android
 android/.gradle/
 android/build/
 android/app/build/
+.kotlin/
+*.jks
 
 # ==========================================
 # IOS NATIVO
 # ==========================================
-ios/
+/ios
 ios/Pods/
 ios/build/
 *.p8
@@ -45,12 +45,15 @@ ios/build/
 *.pem
 
 # ==========================================
-# ARCHIVOS DE SISTEMA Y DEBUG
+# ARCHIVOS DE SISTEMA Y DEBUG / LOGS
 # ==========================================
 .DS_Store
 npm-debug.*
+npm-debug.log*
 yarn-debug.*
+yarn-debug.log*
 yarn-error.*
+yarn-error.log*
 *storybook.log
 storybook-static/
 *.tsbuildinfo

@@ -4,6 +4,8 @@ import com.equipo.backend.dto.LoginRequest;
 import com.equipo.backend.dto.RegisterRequest;
 import com.equipo.backend.service.AuthService2;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -75,13 +77,6 @@ public class AuthController2 {
         return ResponseEntity.ok().body("{\"message\": \"Encuesta asignada con éxito\"}");
     }
 
-
-    /**
-     * Cambiar la contraseña de un usuario.
-     * Ruta: PUT /api/auth2/change-password
-     * 
-     * Body esperado: { "userId": 1, "currentPassword": "...", "newPassword": "..." }
-     */
     @PutMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody java.util.Map<String, Object> body) {
         try {
@@ -95,4 +90,22 @@ public class AuthController2 {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
+            try {
+                String authHeader = request.getHeader("Authorization");
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token no proporcionado");
+                }
+
+                String token = authHeader.substring(7);
+                // Llamamos al servicio siguiendo tu lógica
+                return ResponseEntity.ok(authService2.getCurrentUser(token));
+                
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            }
+    }
+
 }

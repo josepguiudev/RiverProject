@@ -9,20 +9,28 @@ interface Props extends TextInputProps {
     onChangeText?: (text: string) => void;                                    
 };
 
-const CustomInputText = ({ label, placeholder, isAdmin=false, ...props }: Props) => {
-  return (
-    <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
-      <View style={styles.inputWrapper}>
-        <TextInput
-          style={[styles.input, { fontSize: isAdmin ? 12 : 16 }, { paddingVertical: isAdmin ? 8 : 12 }]}
-          placeholder={placeholder}
-          placeholderTextColor="#666"
-          {...props}
-        />
-      </View>
-    </View>
-  );
+const CustomInputText = ({ label, placeholder, isAdmin = false, ...props }: Props) => {
+    return (
+        <View style={styles.container}>
+            {label && <Text style={styles.label}>{label}</Text>}
+            
+            <View style={styles.inputWrapper}>
+                <TextInput
+                    style={[
+                        styles.input, 
+                        { 
+                            fontSize: isAdmin ? 12 : 16, 
+                            paddingVertical: isAdmin ? 8 : 12 
+                        }
+                    ]}
+                    placeholder={placeholder}
+                    placeholderTextColor="#666"
+                    underlineColorAndroid="transparent"
+                    {...props}
+                />
+            </View>
+        </View>
+    );
 };
 
 export default CustomInputText;

@@ -4,6 +4,7 @@ import { Category, Genere, Survey } from "../../types/formsSurvey.types";
 import { colors } from "../../screens/stylesGlobal";
 import { MetadataSelectorModal } from "./MetadataSelectorModal";
 import { CustomDatePicker } from "./CustomDatePicker";
+import { Ionicons } from "@expo/vector-icons";
 
 interface Props {
     survey: Survey;
@@ -31,44 +32,58 @@ export const SurveySidebar = ({ survey, setSurvey, availableCategories, availabl
     };
 
     return (
-        <ScrollView style={sidebarStyles.container}>
-            <Text style={sidebarStyles.sectionTitle}>CONFIGURACIÓN</Text>
-
-            {/* ALCANCE */}
-            <View style={sidebarStyles.box}>
-                <Text style={sidebarStyles.label}>Usuarios Objetivo</Text>
-                <TextInput
-                    style={sidebarStyles.input}
-                    keyboardType="numeric"
-                    placeholder="Ej: 100"
-                    placeholderTextColor="#444"
-                    value={survey.numUsers ? survey.numUsers.toString() : ""}
-                    onChangeText={(val) => setSurvey({ ...survey, numUsers: parseInt(val) || 0 })}
-                />
+        <ScrollView style={sidebarStyles.container} showsVerticalScrollIndicator={false}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                <Ionicons name="settings-outline" size={16} color={colors.primary} style={{ marginRight: 8 }} />
+                <Text style={sidebarStyles.sectionTitle}>CONFIGURACIÓN DEL TARGET</Text>
             </View>
 
-            {/* BOTONES DE MODAL */}
-            <Text style={sidebarStyles.label}>Metadatos de Steam</Text>
+            {/* ALCANCE DE USUARIOS */}
+            <View style={sidebarStyles.box}>
+                <Text style={sidebarStyles.label}>Usuarios Objetivo</Text>
+                <View style={sidebarStyles.inputWrapper}>
+                    <Ionicons name="people-outline" size={18} color="#666" style={{ marginLeft: 10 }} />
+                    <TextInput
+                        style={sidebarStyles.input}
+                        keyboardType="numeric"
+                        placeholder="Ej: 100"
+                        placeholderTextColor="#444"
+                        value={survey.numUsers ? survey.numUsers.toString() : ""}
+                        onChangeText={(val) => setSurvey({ ...survey, numUsers: parseInt(val) || 0 })}
+                    />
+                </View>
+            </View>
+
+            {/* METADATOS STEAM */}
+            <Text style={sidebarStyles.label}>Filtros de Steam</Text>
             
             <TouchableOpacity style={sidebarStyles.selectorBtn} onPress={() => setShowCatModal(true)}>
-                <Text style={sidebarStyles.selectorBtnText}>
-                    Categorías ({survey.categoryList?.length || 0})
-                </Text>
+                <View style={sidebarStyles.btnContent}>
+                    <Text style={sidebarStyles.selectorBtnText}>
+                        Categorías ({survey.categoryList?.length || 0})
+                    </Text>
+                    <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+                </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[sidebarStyles.selectorBtn, { marginTop: 10 }]} onPress={() => setShowGenModal(true)}>
-                <Text style={sidebarStyles.selectorBtnText}>
-                    Géneros ({survey.genereList?.length || 0})
-                </Text>
+            <TouchableOpacity style={[sidebarStyles.selectorBtn, { marginTop: 12 }]} onPress={() => setShowGenModal(true)}>
+                <View style={sidebarStyles.btnContent}>
+                    <Text style={sidebarStyles.selectorBtnText}>
+                        Géneros ({survey.genereList?.length || 0})
+                    </Text>
+                    <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+                </View>
             </TouchableOpacity>
 
-           {/* --- COMPONENTES DE FECHA NUEVOS --- */}
-            <View style={{ marginTop: 20 }}>
+            {/* FECHAS */}
+            <View style={{ marginTop: 25, borderTopWidth: 1, borderTopColor: '#222', paddingTop: 20 }}>
                 <CustomDatePicker 
                     label="Fecha de Lanzamiento"
                     value={survey.launchDate}
                     onChange={(date) => setSurvey({ ...survey, launchDate: date })}
                 />
+
+                <View style={{ height: 10 }} />
 
                 <CustomDatePicker 
                     label="Fecha de Cierre"
@@ -77,7 +92,7 @@ export const SurveySidebar = ({ survey, setSurvey, availableCategories, availabl
                 />
             </View>
 
-            {/* MODALES REUTILIZANDO EL COMPONENTE */}
+            {/* MODALES */}
             <MetadataSelectorModal
                 visible={showCatModal}
                 title="Categorías de Juego"
@@ -96,25 +111,65 @@ export const SurveySidebar = ({ survey, setSurvey, availableCategories, availabl
                 onClose={() => setShowGenModal(false)}
             />
 
-            <View style={{ height: 40 }} />
+            <View style={{ height: 60 }} />
         </ScrollView>
     );
 };
 
 const sidebarStyles = StyleSheet.create({
-    container: { padding: 15, backgroundColor: "#1a1a2e", borderRadius: 12, height: "100%", borderWidth: 1, borderColor: '#263238' },
-    sectionTitle: { color: colors.primary, fontWeight: "bold", fontSize: 12, marginBottom: 20, letterSpacing: 1 },
-    box: { marginBottom: 20 },
-    label: { color: "#888", fontSize: 11, fontWeight: "bold", marginBottom: 8, textTransform: "uppercase" },
-    input: { backgroundColor: "#1a1a1a", color: "#fff", borderRadius: 8, padding: 10, borderWidth: 1, borderColor: "#333" },
-    inputFecha: { backgroundColor: "#000", color: "#fff", padding: 10, borderRadius: 8, borderWidth: 1, borderColor: "#333" },
+    container: { 
+        padding: 20, 
+        backgroundColor: "#161616", // Acorde a tu cardBg
+        borderRadius: 20, 
+        height: "100%",
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.05)"
+    },
+    sectionTitle: { 
+        color: colors.primary, 
+        fontWeight: "900", 
+        fontSize: 13, 
+        letterSpacing: 1.5 
+    },
+    box: { marginBottom: 25 },
+    label: { 
+        color: colors.textSecondary, 
+        fontSize: 11, 
+        fontWeight: "800", 
+        marginBottom: 10, 
+        textTransform: "uppercase",
+        letterSpacing: 0.5
+    },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: "#000",
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#333",
+    },
+    input: { 
+        flex: 1,
+        color: "#fff", 
+        padding: 12, 
+        fontSize: 15,
+        fontWeight: '600'
+    },
     selectorBtn: {
-        backgroundColor: "#222",
-        padding: 12,
-        borderRadius: 8,
+        backgroundColor: "rgba(91, 85, 192, 0.05)", // Un toque de tu color primary
+        padding: 15,
+        borderRadius: 12,
         borderWidth: 1,
         borderColor: colors.primary,
-        alignItems: "center"
     },
-    selectorBtnText: { color: colors.primary, fontWeight: "bold", fontSize: 13 }
+    btnContent: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    selectorBtnText: { 
+        color: colors.primary, 
+        fontWeight: "bold", 
+        fontSize: 14 
+    }
 });

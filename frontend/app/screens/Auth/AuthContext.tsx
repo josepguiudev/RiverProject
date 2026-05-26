@@ -1,17 +1,19 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import client from '../../api/client';
 
 interface User {
   id: number;
   name: string;
   email: string;
-  role: 'PLAYER' | 'CLIENT' | 'ADMIN';
-  registrationStep?: number; // 1, 2 o 3
+  role: 'USER' | 'CLIENT' | 'ADMIN'; 
+  registrationStep?: number;
+  id_rol?: number; // Para verificar el rol 1
 }
 
 interface AuthContextData {
   user: User | null;
-  token: string | null; // 1. Agregado a la interfaz
+  token: string | null;
   loading: boolean;
   login: (userData: any, token: string, role: string, step: number) => Promise<void>;
   logout: () => Promise<void>;
@@ -26,8 +28,8 @@ export const AuthContext = createContext<AuthContextData>({} as AuthContextData)
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null); // Estado para el token JWT
-  const [loading, setLoading] = useState(true); // Estado para saber si estamos cargando los datos de storage
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     /**
@@ -35,36 +37,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
      * Esto permite que el usuario no tenga que loguearse cada vez que recarga.
      */
     async function loadStorageData() {
-      const [storageUser, storageToken] = await Promise.all([
-        AsyncStorage.getItem('@River:user'),
-        AsyncStorage.getItem('@River:token')
-      ]);
+      try {
+        const storageToken = await AsyncStorage.getItem('@River:token');
 
-      if (storageUser && storageToken) {
-        setUser(JSON.parse(storageUser));
-        setToken(storageToken);
+        if (storageToken) {
+          // Validamos el token con el servidor
+          const response = await client.get('/api/auth2/me', {
+            headers: { Authorization: `Bearer ${storageToken}` }
+          });
+
+          // Extraemos los datos del LoginResponse de Java
+          const { user: userData, role, registrationStep } = response.data;
+
+          // Lógica de Rol 1 -> ADMIN
+          const finalRole = (userData.id_rol === 1) ? 'ADMIN' : role;
+
+          const currentUser: User = { 
+            ...userData, 
+            role: finalRole, 
+            registrationStep 
+          };
+
+          setUser(currentUser);
+          setToken(storageToken);
+          
+          await AsyncStorage.setItem('@River:user', JSON.stringify(currentUser));
+        }
+      } catch (error) {
+        console.error("Sesión inválida o expirada");
+        await AsyncStorage.multiRemove(['@River:user', '@River:token']);
+        setUser(null);
+        setToken(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadStorageData();
   }, []);
 
-  /**
-   * Inicia sesión y guarda los datos en el estado y en el almacenamiento persistente.
-   */
   const login = async (userData: any, token: string, role: string, step: number) => {
-    const completeUser: User = { ...userData, role: role as any, registrationStep: step };
-    
-    setUser(completeUser);
-    setToken(token);
+    try {
+      const finalRole = (userData.id_rol === 1) ? 'ADMIN' : role;
+      const completeUser: User = { ...userData, role: finalRole as any, registrationStep: step };
+      
+      // 1. Guardamos de forma asíncrona y esperamos estrictamente que termine la escritura en disco
+      await AsyncStorage.setItem('@River:user', JSON.stringify(completeUser));
+      await AsyncStorage.setItem('@River:token', token);
 
-    await AsyncStorage.setItem('@River:user', JSON.stringify(completeUser));
-    await AsyncStorage.setItem('@River:token', token);
+      // 2. Una vez guardados con éxito, actualizamos los estados de React.
+      // Así, cuando las nuevas pantallas lean el interceptor, el token existirá sí o sí.
+      setToken(token);
+      setUser(completeUser);
+      
+    } catch (error) {
+      console.error("Error al persistir los datos de sesión:", error);
+      throw error; // Propaga el error para que LoginScreen pueda manejarlo si es necesario
+    }
   };
 
-  /**
-   * Actualiza el paso de registro actual (onboarding) tanto en el estado como en storage.
-   */
   const updateRegistrationStep = async (step: number) => {
     if (user) {
       const updatedUser = { ...user, registrationStep: step };
@@ -73,9 +103,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  /**
-   * Cierra la sesión limpiando el estado y eliminando los datos de storage.
-   */
   const logout = async () => {
     await AsyncStorage.removeItem('@River:user');
     await AsyncStorage.removeItem('@River:token');

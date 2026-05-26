@@ -20,7 +20,6 @@ public class BackendApplication {
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
-
 		@Bean
 		CommandLineRunner initSteamQueries(UserSteamQueriesRepository repository) {
 			return args -> {
@@ -72,6 +71,6 @@ public class BackendApplication {
 				System.out.println("--- Datos de user_steam_queries insertados con éxito ---");
 			};
 		}
-        
+    
         
 	}

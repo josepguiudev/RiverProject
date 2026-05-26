@@ -1,222 +1,436 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Platform, Alert, ScrollView } from "react-native";
+import React, { useState, useCallback } from "react";
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    Platform,
+} from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"; 
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { FormApiService } from "../services/api/service";
 import { useAuth } from "./Auth/AuthContext";
 import { useLayout } from "@/app/utils/useLayout";
 import { Survey } from "../types/formsSurvey.types";
 import styles, { colors } from "./stylesGlobal";
-import CustomButton from "../components/CustomButton/CustomButton";
-import MenuPrincipal from '@/app/components/Menu/CustomMenu';
-import strings from "@/assets/supportFiles/strings.json";
+import { ResponsiveLayout } from "../components/ResponsiveLayout";
+import { isWeb } from "../utils/device";
+import client from "../api/client";
+
+import MenuButton from "@/app/components/Menu/MenuButton";
+import MenuPrincipal from "@/app/components/Menu/CustomMenu";
 
 export default function ClientDashboard() {
     const navigation = useNavigation<any>();
-    const { user, token } = useAuth(); 
+    const { user } = useAuth();
     const { isDesktopView } = useLayout();
-    
+
     const [surveys, setSurveys] = useState<Survey[]>([]);
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
     const [assigningId, setAssigningId] = useState<number | null>(null);
     const [menuVisible, setMenuVisible] = useState(false);
 
-    const fetchMySurveys = async () => {
-        if (!user?.id) {
-            setLoading(false);
-            return;
-        }
+    const isAdmin = user?.role === "ADMIN";
+    const neutralFont = Platform.OS === "ios" ? "System" : "sans-serif";
+
+    const fetchSurveys = async () => {
+        if (!user?.id) return;
         try {
-            const data = await FormApiService.getSurveysByClient(user.id);
+            setLoading(true);
+            let data: Survey[] = [];
+
+            if (isAdmin) {
+                data = await FormApiService.getAllSurveys();
+                console.log(
+                    "Cargando todas las encuestas de la base de datos (Modo Admin)",
+                );
+            } else {
+                data = await FormApiService.getSurveysByClient(user.id);
+                console.log(
+                    `Cargando encuestas asignadas al cliente: ${user.id}`,
+                );
+            }
+
             setSurveys(data);
         } catch (error) {
-            console.error("Error al cargar proyectos:", error);
+            console.error("Error al cargar proyectos/encuestas:", error);
+            Alert.alert("Error", "No se pudieron recuperar las encuestas.");
         } finally {
             setLoading(false);
-            setRefreshing(false);
         }
     };
 
     useFocusEffect(
         useCallback(() => {
-            fetchMySurveys();
-        }, [user?.id])
+            fetchSurveys();
+        }, [user?.id, user?.role]),
     );
 
-    const onRefresh = () => {
-        setRefreshing(true);
-        fetchMySurveys();
+    const handlePublish = async (surveyId: number) => {
+        try {
+            await FormApiService.publishSurvey(surveyId);
+            Alert.alert("Éxito", "Encuesta publicada correctamente.");
+            fetchSurveys();
+        } catch (error) {
+            Alert.alert("Error", "No se pudo publicar la encuesta.");
+        }
     };
 
     const handleAssignToUsers = async (surveyId: number, numUsers: number) => {
-        if (!surveyId) return;
         setAssigningId(surveyId);
         try {
-            const baseUrl = Platform.OS === "web" ? "http://localhost:8080" : "http://10.0.2.2:8080";
-            const response = await fetch(`${baseUrl}/api/auth2/assign-survey/${surveyId}?limit=${numUsers}`, {
-                method: 'POST',
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                Alert.alert("Éxito", `Encuesta asignada correctamente a los usuarios.`);
-                fetchMySurveys();
-            } else {
-                Alert.alert("Error", "No se pudo realizar la asignación masiva.");
+            const response = await client.post(
+                `/api/auth2/assign-survey/${surveyId}?limit=${numUsers}`,
+            );
+            if (response.status === 200) {
+                Alert.alert(
+                    "Éxito",
+                    `Encuesta asignada a ${numUsers} usuarios.`,
+                );
+                fetchSurveys();
             }
         } catch (error) {
-            console.error(error);
-            Alert.alert("Error", "Error de conexión con el servidor.");
+            Alert.alert("Error", "Error en la asignación.");
         } finally {
             setAssigningId(null);
         }
     };
 
-    const renderSurveyItem = ({ item }: { item: Survey }) => (
-        <View style={styles.cajaEncuestas}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{ flex: 1, paddingRight: 15 }}>
-                    <Text style={styles.tittleTextSurvey}>{item.name}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 12 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                            <Ionicons name="list" size={14} color={colors.primary} />
-                            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{item.numQuestions} Qs</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                            <Ionicons name="people" size={14} color={colors.primary} />
-                            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{item.numUsers || 0} objetivo</Text>
-                        </View>
-                    </View>
-                </View>
+    const handlePressAnalysis = (item: any) => {
+        navigation.navigate("SurveyAnalytics", {
+            surveyId: item.id,
+            title: item.name,
+            idCreador: item.idClient,
+        });
+    };
 
-                <View style={{ flexDirection: isDesktopView ? 'row' : 'column', gap: 10 }}>
-                    <TouchableOpacity 
-                        style={[styles.botonResultados, { borderColor: colors.blue, backgroundColor: 'rgba(74, 144, 226, 0.1)' }]}
-                        onPress={() => {
-                            if (item.id !== undefined) {
-                                handleAssignToUsers(item.id, item.numUsers || 0);
-                            }
-                        }}
-                        disabled={assigningId === item.id}
-                    >
-                        {assigningId === item.id ? (
-                            <ActivityIndicator size="small" color={colors.blue} />
-                        ) : (
-                            <>
-                                <Ionicons name="person-add-outline" size={18} color={colors.blue} />
-                                <Text style={[styles.textoBotonResultados, { color: colors.blue }]}>ASIGNAR</Text>
-                            </>
-                        )}
-                    </TouchableOpacity>
+    const renderActionButtons = (item: Survey) => {
+        const isPublished = item.status === true;
 
-                    <TouchableOpacity 
-                        style={styles.botonResultados}
-                        onPress={() => {
+        return (
+            <View style={styles.contenedorBotonesTarjeta}>
+                <TouchableOpacity
+                    style={[
+                        styles.botonResultados,
+                        { flex: 1, minWidth: 100, height: 42 },
+                    ]}
+                    onPress={() => {
+                        if (isAdmin) {
                             if (item.supersetID) {
-                                navigation.navigate("SurveyAnalytics", { supersetID: item.supersetID, title: item.name });
+                                navigation.navigate("AdminGraphics", {
+                                    supersetID: item.supersetID,
+                                    title: item.name,
+                                });
                             } else {
-                                Alert.alert("Aviso", "Esta encuesta no tiene un dashboard vinculado.");
+                                Alert.alert(
+                                    "Aviso",
+                                    "Sin dashboard vinculado para Administrador.",
+                                );
                             }
-                        }}
+                        } else {
+                            handlePressAnalysis(item);
+                        }
+                    }}
+                >
+                    <MaterialCommunityIcons
+                        name="chart-box-outline"
+                        size={18}
+                        color={colors.primary}
+                    />
+                    <Text
+                        style={[
+                            styles.textoBotonResultados,
+                            { fontFamily: neutralFont, marginLeft: 4 },
+                        ]}
                     >
-                        <MaterialCommunityIcons name="chart-box-outline" size={18} color={colors.primary} />
-                        <Text style={styles.textoBotonResultados}>ANÁLISIS</Text>
-                    </TouchableOpacity>
-                </View>
+                        ANÁLISIS
+                    </Text>
+                </TouchableOpacity>
+
+                {isAdmin ? (
+                    <>
+                        {!isPublished && (
+                            <TouchableOpacity
+                                style={[
+                                    styles.botonResultados,
+                                    {
+                                        borderColor: "#22C55E",
+                                        backgroundColor: "rgba(34, 197, 94, 0.1)",
+                                        flex: 1,
+                                        minWidth: 100,
+                                        height: 42,
+                                    },
+                                ]}
+                                onPress={() => handlePublish(item.id!)}
+                            >
+                                <Ionicons
+                                    name="rocket-outline"
+                                    size={18}
+                                    color="#22C55E"
+                                />
+                                <Text
+                                    style={[
+                                        styles.textoBotonResultados,
+                                        { color: "#22C55E", marginLeft: 4 },
+                                    ]}
+                                >
+                                    PUBLICAR
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+
+                        <TouchableOpacity
+                            style={[
+                                styles.botonResultados,
+                                {
+                                    borderColor: colors.secondary,
+                                    backgroundColor: "rgba(59, 130, 246, 0.1)",
+                                    flex: 1,
+                                    minWidth: 100,
+                                    height: 42,
+                                },
+                            ]}
+                            onPress={() =>
+                                handleAssignToUsers(
+                                    item.id!,
+                                    item.numUsers || 0,
+                                )
+                            }
+                            disabled={assigningId === item.id}
+                        >
+                            {assigningId === item.id ? (
+                                <ActivityIndicator
+                                    size="small"
+                                    color={colors.secondary}
+                                />
+                            ) : (
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        alignItems: "center",
+                                        gap: 4,
+                                    }}
+                                >
+                                    <Ionicons
+                                        name="person-add-outline"
+                                        size={18}
+                                        color={colors.secondary}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.textoBotonResultados,
+                                            {
+                                                color: colors.secondary,
+                                                fontWeight: "700",
+                                            },
+                                        ]}
+                                    >
+                                        ASIGNAR
+                                    </Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <>
+                        {!isPublished && (
+                            <TouchableOpacity
+                                style={[
+                                    styles.botonResultados,
+                                    {
+                                        borderColor: "#EAB308",
+                                        backgroundColor: "rgba(234, 179, 8, 0.1)",
+                                        flex: 1,
+                                        minWidth: 100,
+                                        height: 42,
+                                    },
+                                ]}
+                                onPress={() =>
+                                    navigation.navigate("SurveyCreator", {
+                                        surveyEdit: item,
+                                    })
+                                }
+                            >
+                                <Ionicons
+                                    name="create-outline"
+                                    size={18}
+                                    color="#EAB308"
+                                />
+                                <Text
+                                    style={[
+                                        styles.textoBotonResultados,
+                                        { color: "#EAB308", marginLeft: 4 },
+                                    ]}
+                                >
+                                    EDITAR
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+
+                        {isPublished && (
+                            <View
+                                style={[
+                                    styles.botonResultados,
+                                    {
+                                        borderColor: "gray",
+                                        opacity: 0.6,
+                                        flex: 1,
+                                        minWidth: 100,
+                                        height: 42,
+                                    },
+                                ]}
+                            >
+                                <Ionicons
+                                    name="checkmark-circle-outline"
+                                    size={18}
+                                    color="gray"
+                                />
+                                <Text
+                                    style={[
+                                        styles.textoBotonResultados,
+                                        { color: "gray", marginLeft: 4 },
+                                    ]}
+                                >
+                                    ACTIVA
+                                </Text>
+                            </View>
+                        )}
+                    </>
+                )}
             </View>
-        </View>
-    );
+        );
+    };
 
     return (
-        <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <ScrollView 
-                style={{ flex: 1 }}
-                contentContainerStyle={[styles.scrollContainer, { paddingVertical: 40 }]}
-            >
-                {/* BOTÓN MENU ESTANDARIZADO */}
-                <View style={{ 
-                    position: 'absolute',
-                    top: Platform.OS === 'ios' ? 50 : 20,
-                    left: 20,
-                    zIndex: 10,
-                }}>
-                    <TouchableOpacity 
-                        onPress={() => setMenuVisible(true)} 
-                        style={{ 
-                            padding: 10, 
-                            backgroundColor: 'rgba(255,255,255,0.1)', 
-                            borderRadius: 8,
-                            borderWidth: 1,
-                            borderColor: 'rgba(255,255,255,0.1)'
-                        }}
-                    >
-                        <Text style={{ color: 'white', fontWeight: 'bold' }}>{strings.menu || "MENÚ"}</Text>
-                    </TouchableOpacity>
-                </View>
+        <SafeAreaView
+            style={[
+                styles.alineadoPersonal,
+                { backgroundColor: colors.background, flex: 1 },
+            ]}
+        >
+            <MenuButton onPress={() => setMenuVisible(true)} />
 
-                <View style={{ width: '100%', maxWidth: 1000, alignSelf: 'center', paddingHorizontal: 20 }}>
-                    
-                    <View style={{ 
-                        width: '100%', 
-                        marginBottom: 40, 
-                        flexDirection: isDesktopView ? 'row' : 'column', 
-                        justifyContent: 'space-between', 
-                        alignItems: isDesktopView ? 'center' : 'flex-start',
-                        gap: 20,
-                        marginTop: 40 // Espacio para el botón de menú
-                    }}>
-                        <View>
-                            <Text style={[styles.tituloHero, { textAlign: 'left' }]}>
-                                Panel de <Text style={styles.destaqueAzul}>Empresa</Text>
+            <ResponsiveLayout fullWidth={true}>
+                <ScrollView
+                    contentContainerStyle={{
+                        padding: isWeb ? 40 : 20,
+                        paddingTop: Platform.OS === "web" ? 80 : 90,
+                    }}
+                >
+                    {/* CABECERA CORREGIDA: Sin saltos de línea peligrosos */}
+                    <View style={{ marginBottom: 30 }}>
+                        <Text style={[styles.tituloHero, { textAlign: "left", marginBottom: 0 }]}>
+                            {"Panel de "}
+                            <Text style={styles.destaqueAzul}>
+                                {isAdmin ? "Administrador global" : "Empresa"}
                             </Text>
-                            <Text style={{ color: colors.textSecondary, marginTop: 5, fontSize: 16 }}>
-                                Gestiona tus encuestas y lanza campañas masivas.
-                            </Text>
-                        </View>
-
-                        <View style={{ width: isDesktopView ? 350 : '100%', alignItems: 'center' }}>
-                            <CustomButton 
-                                title="NUEVO PROYECTO" 
-                                onPress={() => navigation.navigate("SurveyCreator")} 
-                            />
-                        </View>
+                        </Text>
+                        <Text
+                            style={{
+                                color: "#888",
+                                marginTop: 5,
+                                fontSize: 14,
+                            }}
+                        >
+                            {user?.email || "Bienvenido"}
+                        </Text>
                     </View>
 
-                    <View style={{ width: '100%' }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-                            <Ionicons name="stats-chart" size={20} color={colors.primary} style={{ marginRight: 10 }} />
-                            <Text style={styles.mainText}>Proyectos Activos</Text>
-                        </View>
+                    {/* Botón Nueva Encuesta */}
+                    {!isAdmin && (
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("SurveyCreator")}
+                            style={[
+                                styles.botonGrande,
+                                {
+                                    flexDirection: "row",
+                                    gap: 10,
+                                    marginBottom: 30,
+                                    alignSelf: isWeb ? "flex-start" : "stretch",
+                                },
+                            ]}
+                        >
+                            <Ionicons
+                                name="add-circle"
+                                size={24}
+                                color="white"
+                            />
+                            <Text style={styles.textoBotonGrande}>
+                                NUEVA ENCUESTA
+                            </Text>
+                        </TouchableOpacity>
+                    )}
 
-                        {loading ? (
-                            <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 50 }} />
-                        ) : (
-                            <FlatList
-                                data={surveys}
-                                keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
-                                renderItem={renderSurveyItem}
-                                scrollEnabled={false}
-                                ListEmptyComponent={
-                                    <View style={{ marginTop: 60, alignItems: 'center', opacity: 0.5 }}>
-                                        <Ionicons name="document-text-outline" size={60} color={colors.textSecondary} />
-                                        <Text style={{ color: colors.textSecondary, marginTop: 15, fontSize: 16 }}>
-                                            No hay proyectos registrados todavía.
-                                        </Text>
+                    {loading ? (
+                        <ActivityIndicator
+                            size="large"
+                            color={colors.primary}
+                            style={{ marginTop: 50 }}
+                        />
+                    ) : surveys && surveys.length > 0 ? (
+                        <View style={styles.contenedorListado}>
+                            <View style={styles.gridEncuestas}>
+                                {surveys.map((item) => (
+                                    <View
+                                        key={item.id}
+                                        style={styles.cajaEncuestas}
+                                    >
+                                        <View>
+                                            <Text
+                                                numberOfLines={2}
+                                                style={styles.tittleTextSurvey}
+                                            >
+                                                {item.name}
+                                            </Text>
+                                            <Text style={styles.textoEstado}>
+                                                {"Estado: "}
+                                                <Text
+                                                    style={{
+                                                        fontWeight: "bold",
+                                                        color: item.status
+                                                            ? "#22C55E"
+                                                            : "#EAB308",
+                                                    }}
+                                                >
+                                                    {item.status ? "ACTIVA" : "BORRADOR"}
+                                                </Text>
+                                            </Text>
+                                        </View>
+                                        {renderActionButtons(item)}
                                     </View>
-                                }
-                                contentContainerStyle={{ paddingBottom: 40 }}
+                                ))}
+                            </View>
+                        </View>
+                    ) : (
+                        <View style={{ marginTop: 100, alignItems: "center" }}>
+                            <Ionicons
+                                name="document-text-outline"
+                                size={60}
+                                color="#333"
                             />
-                        )}
-                    </View>
-                </View>
-            </ScrollView>
-            
-            <MenuPrincipal visible={menuVisible} onClose={() => setMenuVisible(false)} />
-        </View>
+                            <Text
+                                style={{
+                                    color: "#666",
+                                    marginTop: 15,
+                                    fontSize: 16,
+                                }}
+                            >
+                                No hay encuestas registradas.
+                            </Text>
+                        </View>
+                    )}
+                </ScrollView>
+            </ResponsiveLayout>
+
+            <MenuPrincipal
+                visible={menuVisible}
+                onClose={() => setMenuVisible(false)}
+                navigation={navigation}
+            />
+        </SafeAreaView>
     );
 }

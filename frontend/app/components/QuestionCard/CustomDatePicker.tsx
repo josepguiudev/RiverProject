@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-// Asumiendo que colors tiene: destaqueAzul, fondoCaja, bordes, etc.
+import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../screens/stylesGlobal"; 
 
 interface Props {
@@ -12,42 +12,21 @@ interface Props {
 
 export const CustomDatePicker = ({ label, value, onChange }: Props) => {
     const [show, setShow] = useState(false);
-    const [isFocused, setIsFocused] = useState(false); // Para el efecto visual en Web
+    const dateInputRef = useRef<any>(null);
 
-    // --- RENDER WEB ---
-    if (Platform.OS === 'web') {
-        return (
-            <View style={styles.container}>
-                <Text style={styles.label}>{label}</Text>
-                <input
-                    type="date"
-                    value={value ? value.split("T")[0] : ""}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    onChange={(e) => {
-                        if (e.target.value) {
-                            onChange(new Date(e.target.value).toISOString());
-                        }
-                    }}
-                    style={{
-                        backgroundColor: "#1a1a1a",
-                        color: "#fff",
-                        padding: "12px",
-                        borderRadius: "8px",
-                        border: `1px solid ${isFocused ? "#007AFF" : "#333"}`, // Cambio de color dinámico
-                        width: "100%",
-                        boxSizing: "border-box", 
-                        outline: "none",
-                        fontSize: "14px",
-                        transition: "border-color 0.2s ease-in-out", 
-                        fontFamily: "inherit"
-                    }}
-                />
-            </View>
-        );
-    }
+    // --- MANEJADOR WEB ---
+    const handlePressWeb = () => {
+        if (Platform.OS === 'web' && dateInputRef.current) {
+            // Esto abre el selector nativo en Chrome/Edge/Safari/Firefox
+            if ('showPicker' in HTMLInputElement.prototype) {
+                dateInputRef.current.showPicker();
+            } else {
+                dateInputRef.current.focus();
+            }
+        }
+    };
 
-    // --- LÓGICA MOBILE ---
+    // --- MANEJADOR MOBILE ---
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         setShow(Platform.OS === 'ios'); 
         if (selectedDate) {
@@ -58,26 +37,46 @@ export const CustomDatePicker = ({ label, value, onChange }: Props) => {
     return (
         <View style={styles.container}>
             <Text style={styles.label}>{label}</Text>
+            
             <TouchableOpacity 
-                activeOpacity={0.7}
+                activeOpacity={0.8}
                 style={[
                     styles.dateButton, 
-                    value ? { borderColor: "#007AFF" } : { borderColor: "#333" }
+                    value ? { borderColor: colors.primary } : { borderColor: "#333" }
                 ]} 
-                onPress={() => setShow(true)}
+                onPress={Platform.OS === 'web' ? handlePressWeb : () => setShow(true)}
             >
-                <Text style={[styles.dateText, !value && { color: "#777" }]}>
-                    {value ? new Date(value).toLocaleDateString() : "Seleccionar fecha"}
-                </Text>
+                {/* Input invisible para Web que se activa al pulsar el botón */}
+                {Platform.OS === 'web' && (
+                    <input
+                        ref={dateInputRef}
+                        type="date"
+                        style={styles.hiddenWebInput}
+                        value={value ? value.split("T")[0] : ""}
+                        onChange={(e) => {
+                            if (e.target.value) {
+                                onChange(new Date(e.target.value).toISOString());
+                            }
+                        }}
+                    />
+                )}
+
+                <View style={styles.content}>
+                    <Text style={[styles.dateText, !value && { color: "#555" }]}>
+                        {value ? new Date(value).toLocaleDateString() : "Seleccionar fecha"}
+                    </Text>
+                    <Ionicons name="calendar-outline" size={18} color={value ? colors.primary : "#555"} />
+                </View>
             </TouchableOpacity>
 
-            {show && (
+            {/* Selector Nativo Mobile */}
+            {show && Platform.OS !== 'web' && (
                 <DateTimePicker
                     value={value ? new Date(value) : new Date()}
                     mode="date"
-                    display="default"
-                    maximumDate={new Date()} // No permite fechas futuras
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     onChange={handleDateChange}
+                    themeVariant="dark"
                 />
             )}
         </View>
@@ -86,26 +85,46 @@ export const CustomDatePicker = ({ label, value, onChange }: Props) => {
 
 const styles = StyleSheet.create({
     container: { 
-        marginBottom: 20,
+        marginBottom: 18,
         width: '100%' 
     },
     label: { 
-        color: "#aaa", // Un gris suave para el label
-        fontSize: 12, 
-        fontWeight: "600", 
+        color: colors.textSecondary || "#888", 
+        fontSize: 11, 
+        fontWeight: "800", 
         marginBottom: 8, 
         textTransform: "uppercase",
-        letterSpacing: 0.5
+        letterSpacing: 0.8
     },
     dateButton: { 
-        backgroundColor: "#1a1a1a", 
+        backgroundColor: "#000", 
         padding: 14, 
-        borderRadius: 8, 
-        borderWidth: 1, 
-        // El color del borde lo manejamos dinámico en el componente
+        borderRadius: 12, 
+        borderWidth: 1,
+        position: 'relative', // Importante para posicionar el input oculto
+    },
+    content: {
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        zIndex: 1 // Por encima del input oculto
     },
     dateText: { 
         color: "#fff", 
-        fontSize: 15 
+        fontSize: 14,
+        fontWeight: '500'
     },
+    // Estilo para que el input web sea invisible pero clickable
+    hiddenWebInput: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0,
+        width: '100%',
+        height: '100%',
+        cursor: 'pointer',
+        zIndex: 0
+    }
 });

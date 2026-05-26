@@ -106,6 +106,10 @@ public class GameSteamService {
         gameRepository.deleteById(id);
     }
 
+    public List<Game> findAll() {
+        return gameRepository.findAll();
+    }
+
     // Llama a Steam, mapea la respuesta y llama a saveLibraryAndLinkToUser.
     public Mono<String> syncLibraryFromSteam(String steamid, String apiKey) { // Cuando un endpoint en Controller
                                                                               // devuelve

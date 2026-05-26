@@ -8,6 +8,7 @@ import com.equipo.backend.model.Genere;   // Importar tu modelo
 import com.equipo.backend.model.Survey;
 import com.equipo.backend.repository.CategoryRepository; // Importar tu repo
 import com.equipo.backend.repository.GenereRepository;   // Importar tu repo
+import com.equipo.backend.repository.SurveyRepository;
 import com.equipo.backend.repository.UserSurveysRepository;
 import com.equipo.backend.service.EncuestaService;
 import com.equipo.backend.service.FormSurveyService;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -26,19 +28,22 @@ public class SurveyAllUrlLogicController {
     private final FormSurveyService formSurveyService;
     private final EncuestaService encuestaService;
     private final UserSurveysRepository userSurveysRepository;
-    private final CategoryRepository categoryRepository; // Inyectado
-    private final GenereRepository genereRepository;     // Inyectado
+    private final CategoryRepository categoryRepository;
+    private final GenereRepository genereRepository;  
+    private final SurveyRepository encuestaRepository; 
 
     public SurveyAllUrlLogicController(FormSurveyService formSurveyService, 
                                        EncuestaService encuestaService, 
                                        UserSurveysRepository userSurveysRepository,
                                        CategoryRepository categoryRepository,
-                                       GenereRepository genereRepository) {
+                                       GenereRepository genereRepository,
+                                       SurveyRepository encuestaRepository) {
         this.formSurveyService = formSurveyService;
         this.encuestaService = encuestaService;
         this.userSurveysRepository = userSurveysRepository;
         this.categoryRepository = categoryRepository;
         this.genereRepository = genereRepository;
+        this.encuestaRepository = encuestaRepository;
     }
 
     // --- NUEVOS MÉTODOS PARA METADATOS (CATEGORÍAS Y GÉNEROS) ---
@@ -131,5 +136,52 @@ public class SurveyAllUrlLogicController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<SurveySummaryDTO>> getSurveysByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(encuestaService.obtenerResumenEncuestasPorUsuario(userId));
+    }
+
+    @GetMapping("/{idSurvey}/resultados")
+    public ResponseEntity<?> getResultadosEncuesta(@PathVariable Long idSurvey) {
+        try {
+            // Llamamos al servicio matemático que acabamos de estabilizar en los pasos anteriores
+            return ResponseEntity.ok(encuestaService.obtenerEstadisticasVotos(idSurvey));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al procesar métricas de votación: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/metrics/global-summary")
+    public ResponseEntity<?> getGlobalSurveyMetrics() {
+        try {
+            // Contamos directamente cuántas filas de la tabla intermedia están marcadas como respondidas (1)
+            long respondidas = userSurveysRepository.countByIsRespondida((byte) 1);
+            
+            // Contamos el total de plantillas de encuestas registradas en el sistema
+            long totales = formSurveyService.obtenerTodas().size();
+
+            return ResponseEntity.ok(Map.of(
+                "totalSurveys", totales,
+                "totalAnswered", respondidas
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al calcular métricas globales: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/pending")
+    public ResponseEntity<List<Survey>> getPendingSurveys() {
+        // Necesitarás crear findByIsPublishedFalse() en el repo
+        return ResponseEntity.ok(encuestaRepository.findByIsPublishedFalse());
+    }
+
+    // 2. Publicar encuesta (Acción del Admin)
+    @PutMapping("/{id}/publish")
+    public ResponseEntity<?> publishSurvey(@PathVariable Long id) {
+        Survey survey = encuestaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No encontrada"));
+        
+        survey.setIsPublished(true);
+        survey.setLaunchDate(LocalDateTime.now());
+        encuestaRepository.save(survey);
+        
+        return ResponseEntity.ok(Map.of("message", "Encuesta publicada y asignada"));
     }
 }

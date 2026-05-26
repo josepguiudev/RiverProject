@@ -32,7 +32,7 @@ public class AuthService2 {
     private final JwtService jwtService;
 
 
-    @Value("${steam.api.baseurl:https://api.steampowered.com}")
+    @Value("${steam.api.baseurl:https://api.steampowered.com/ISteamUser}")
     private String steamBaseUrl;
 
     // Aquí es obligatorio que esté en el YAML o fallará
@@ -71,21 +71,24 @@ public class AuthService2 {
             throw new RuntimeException("El email ya está registrado");
         }
 
-        // 2. Switch por tipo para crear la entidad
+        // 2. Switch modificado para aceptar múltiples variantes
         return switch (request.getType().toUpperCase()) {
-            case "PLAYER" -> {
+            // Al añadir una coma, ambas palabras clave ejecutarán el mismo código
+            case "PLAYER", "USER" -> {
                 User user = new User();
                 user.setEmail(request.getEmail());
                 user.setPassword(passwordEncoder.encode(request.getPassword()));
                 user.setName(request.getName());
-                user.setId_rol((byte) 1);
+                user.setId_rol((byte) 0);
                 user.setRegistrationStep(1);
                 user.setCreacionCuentaUsuario(new Date());
                 
                 userRepository.save(user);
+                // IMPORTANTE: Sigues devolviendo "PLAYER" en el DTO de respuesta 
+                // para no romper la lógica interna de roles del resto de la app
                 yield new LoginResponse(jwtService.generateToken(user), user, "PLAYER", 1);
             }
-            case "CLIENT" -> {
+            case "CLIENT", "EMPRESA" -> {
                 Client client = new Client();
                 client.setEmail(request.getEmail());
                 client.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -95,25 +98,32 @@ public class AuthService2 {
                 clientRepository.save(client);
                 yield new LoginResponse(jwtService.generateTokenForClient(client), client, "CLIENT", 3);
             }
-            default -> throw new RuntimeException("Tipo de cuenta no soportado");
+            default -> throw new RuntimeException("Tipo de cuenta no soportado: " + request.getType());
         };
     }
-
+    
     public LoginResponse login(LoginRequest request) {
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
         Optional<Client> clientOpt = clientRepository.findByEmail(request.getEmail());
 
         String role = "NONE";
-        if (userOpt.isPresent()) role = "PLAYER";
-        else if (clientOpt.isPresent()) role = "CLIENT";
+        if (userOpt.isPresent()) {
+            // Si está en la tabla User, verificamos si es ADMIN por su id_rol
+            User u = userOpt.get();
+            role = (u.getId_rol() != null && u.getId_rol() == 1) ? "ADMIN" : "PLAYER";
+        } else if (clientOpt.isPresent()) {
+            role = "CLIENT";
+        }
 
         switch (role) {
+            case "ADMIN":
             case "PLAYER":
                 User user = userOpt.get();
                 if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                     throw new RuntimeException("Credenciales incorrectas");
                 }
-                return new LoginResponse(jwtService.generateToken(user), user, "PLAYER", user.getRegistrationStep());
+                // Devolvemos el rol explícito ("ADMIN" o "PLAYER")
+                return new LoginResponse(jwtService.generateToken(user), user, role, user.getRegistrationStep());
 
             case "CLIENT":
                 Client client = clientOpt.get();
@@ -126,6 +136,7 @@ public class AuthService2 {
                 throw new RuntimeException("Usuario no encontrado");
         }
     }
+    
     // PASO 2: Completar perfil
     public User completeProfile(Long userId, RegisterRequest request) {
         User user = userRepository.findById(userId)
@@ -144,59 +155,61 @@ public class AuthService2 {
         return userRepository.save(user);
     }
 
-     //PASO 3: Finalizar con Steam y asignar encuestas
+    // PASO 3: Finalizar con Steam y asignar encuestas
     @Transactional
     public User completeSteamRegistration(Long userId, String steamId) {
-        
-    // Sacamos la base (Type 0)
-    String baseDesdeDb = queriesRepository.findByType(0).stream()
-            .filter(q -> q.getQuery().contains("ISteamUser"))
-            .findFirst()
-            .map(UserSteamQueries::getQuery)
-            .orElse(steamBaseUrl + "/ISteamUser/");
+        // 1. Llamamos al método de validación
+        boolean exists = verifySteamIdExists(steamId);
 
-    // Sacamos el endpoint (Type 1)
-    String playerSummaryEndpoint = queriesRepository.findByType(1).stream()
-            .filter(q -> q.getQuery().contains("GetPlayerSummaries"))
-            .findFirst()
-            .map(UserSteamQueries::getQuery)
-            .orElse("GetPlayerSummaries/v2/");
-
-    // Sumamos las dos piezas de la DB
-    String finalUrl = baseDesdeDb + playerSummaryEndpoint + "?key=" + steamApiKey + "&steamids=" + steamId;
-
-
-        try {
-            // 3. Validamos contra Steam
-            Map<String, Object> response = restTemplate.getForObject(finalUrl, Map.class);
-            
-            // Navegamos por el JSON de respuesta de Steam: response -> players -> [0]
-            Map<?, ?> responseBody = (Map<?, ?>) response.get("response");
-            List<?> players = (List<?>) responseBody.get("players");
-
-            if (players == null || players.isEmpty()) {
-                throw new RuntimeException("El ID de Steam no existe o el perfil es privado.");
-            }
-
-            // 4. Si es válido, actualizamos el usuario en nuestra DB
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado en la base de datos"));
-
-            user.setUrlIdStream(steamId);
-            user.setRegistrationStep(3); // Marcamos que ha completado el registro
-            
-            User savedUser = userRepository.save(user);
-            
-            // 5. Disparamos la lógica para asignarle encuestas basadas en su perfil
-            asignarEncuestasDisponibles(savedUser);
-
-            return savedUser;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error en la validación de Steam: " + e.getMessage());
+        if (!exists) {
+            throw new RuntimeException("El ID de Steam no es válido, no existe o el perfil es privado.");
         }
+
+        // 2. Si existe, buscamos al usuario en nuestra DB
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado en la base de datos"));
+
+        // 3. Actualizamos los datos del usuario
+        user.setUrlIdStream(steamId);
+        user.setRegistrationStep(3); // Registro completado
+        
+        User savedUser = userRepository.save(user);
+        
+        // 4. Disparamos la lógica para asignarle encuestas
+        asignarEncuestasDisponibles(savedUser);
+
+        return savedUser;
     }
 
+    // MÉTODO DE APOYO: Solo valida contra la API de Steam
+    public boolean verifySteamIdExists(String steamId) {
+        try {
+            // Construimos la URL completa manualmente para evitar errores de 404
+            // IMPORTANTE: Mantenemos la estructura exacta que Steam requiere
+            String url = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/" 
+                        + "?key=" + steamApiKey 
+                        + "&steamids=" + steamId;
+            
+            System.out.println("DEBUG - Validando en Steam: " + url);
+
+            // Realizamos la petición
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            
+            if (response == null || !response.containsKey("response")) {
+                return false;
+            }
+
+            Map<?, ?> responseBody = (Map<?, ?>) response.get("response");
+            List<?> players = (List<?>) responseBody.get("players");
+            
+            // Steam devuelve una lista vacía si el ID no existe
+            return players != null && !players.isEmpty();
+
+        } catch (Exception e) {
+            System.err.println("Error en la llamada física a Steam: " + e.getMessage());
+            return false;
+        }
+    }
 
     private void asignarEncuestasDisponibles(User user) {
         List<Survey> allSurveys = surveyRepository.findAll();
@@ -212,44 +225,6 @@ public class AuthService2 {
         userSurveysRepository.saveAll(assignments);
     }
 
-   public boolean verifySteamIdExists(String steamId) {
-        try {
-            // Usamos las piezas de la DB para ser coherentes con el resto del service
-            String playerSummaryEndpoint = queriesRepository.findByType(1).stream()
-                    .filter(q -> q.getQuery().contains("GetPlayerSummaries"))
-                    .findFirst()
-                    .map(UserSteamQueries::getQuery)
-                    .orElse("ISteamUser/GetPlayerSummaries/v2/");
-
-            String url = steamBaseUrl + "/" + playerSummaryEndpoint + "?key=" + steamApiKey + "&steamids=" + steamId;
-            
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-            Map<?, ?> responseBody = (Map<?, ?>) response.get("response");
-            List<?> players = (List<?>) responseBody.get("players");
-            return players != null && !players.isEmpty();
-        } catch (Exception e) {
-            return false;
-        }
-        
-    }
-
-    /**
-     * Cambia la contraseña de un usuario.
-     * Valida la contraseña actual antes de actualizar.
-     */
-    public void changePassword(Long userId, String currentPassword, String newPassword) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        // Verificar que la contraseña actual sea correcta
-        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new RuntimeException("La contraseña actual es incorrecta");
-        }
-
-        // Codificar y guardar la nueva contraseña
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
-    }
    @Transactional
     public void assignSurveyToUsers(Long surveyId, Integer limit) {
         Survey survey = surveyRepository.findById(surveyId)
@@ -277,4 +252,37 @@ public class AuthService2 {
         userSurveysRepository.saveAll(newAssignments);
     }
 
+    public LoginResponse getCurrentUser(String token) {
+        String email = jwtService.extractUsername(token);
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            // Validación id_rol = 1 para ADMIN
+            String role = (user.getId_rol() != null && user.getId_rol() == 1) ? "ADMIN" : "PLAYER";
+            return new LoginResponse(token, user, role, user.getRegistrationStep());
+        }
+
+        Optional<Client> clientOpt = clientRepository.findByEmail(email);
+        if (clientOpt.isPresent()) {
+            Client client = clientOpt.get();
+            return new LoginResponse(token, client, "CLIENT", 3);
+        }
+
+        throw new RuntimeException("Usuario no encontrado con el token proporcionado");
+    }
+
+        public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar que la contraseña actual sea correcta
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("La contraseña actual es incorrecta");
+        }
+
+        // Codificar y guardar la nueva contraseña
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 }

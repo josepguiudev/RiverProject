@@ -21,6 +21,9 @@ public interface SurveyRepository extends JpaRepository<Survey, Long> {
     // Si necesitas traer la encuesta con sus preguntas cargadas (Evitar LazyInitializationException)
     @Query("SELECT s FROM Survey s LEFT JOIN FETCH s.questionList WHERE s.id = :id")
     Survey findByIdWithQuestions(@Param("id") Long id);
+
+    List<Survey> findByIsPublishedTrue();
+    List<Survey> findByIsPublishedFalse();
 }
 
 //@Query("SELECT s FROM Survey s WHERE s.id = :id")

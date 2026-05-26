@@ -143,4 +143,8 @@ public class GameSteamController {
         return ResponseEntity.ok(gameService.getTopGenresBySteamId(steamid));
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Game>> getAllGames() {
+        return ResponseEntity.ok(gameService.findAll());
+    }
 }
