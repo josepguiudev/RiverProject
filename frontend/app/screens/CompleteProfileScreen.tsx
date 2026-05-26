@@ -15,10 +15,8 @@ import { useAuth } from "./Auth/AuthContext";
 import client from "../api/client";
 import { CustomDatePicker } from "../components/QuestionCard/CustomDatePicker";
 import styles, { colors } from "./stylesGlobal";
-import CustomButton from "../components/CustomButton/CustomButton";
-import CustomInputText from "../components/CustomInputText/CustomInputText";
 
-import styles, { colors } from "../screens/stylesGlobal"; 
+
 
 interface InputProps extends TextInputProps {
     label?: string;
